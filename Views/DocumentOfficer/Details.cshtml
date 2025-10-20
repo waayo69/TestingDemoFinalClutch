@@ -1,0 +1,165 @@
+@model TestingDemo.Models.ClientModel
+@{
+    ViewData["Title"] = "Client Details";
+}
+
+<div class="container-fluid">
+    <h2 class="mb-4"><i class="bi bi-person-lines-fill"></i> @ViewData["Title"]</h2>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Client: @Model.ClientName</h5>
+            <span class="badge bg-info">@Model.Status</span>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Client Name</dt>
+                <dd class="col-sm-9">@Model.ClientName</dd>
+
+                <dt class="col-sm-3">Contact Number</dt>
+                <dd class="col-sm-9">@Model.ContactPersonNumber</dd>
+
+                <dt class="col-sm-3">Email Address</dt>
+                <dd class="col-sm-9">@Model.Email</dd>
+
+                <dt class="col-sm-3">Address</dt>
+                <dd class="col-sm-9">@Model.RegisteredCompanyAddress</dd>
+
+                <dt class="col-sm-3">Urgency Level</dt>
+                <dd class="col-sm-9">@Model.UrgencyLevel</dd>
+
+                <dt class="col-sm-3">Date Created</dt>
+                <dd class="col-sm-9">@Model.CreatedDate.ToString("g")</dd>
+            </dl>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Permit Type</label>
+                @{
+                    var projectTypes = new[] { "Retainership - BIR", "Retainership - SPP", "One Time Transaction", "External Audit", "Other" };
+                    var optionsString = "";
+                    foreach (var type in projectTypes)
+                    {
+                        optionsString += $"<option value='{type}'{(Model.TypeOfProject == type ? " selected='selected'" : "")}>{type}</option>";
+                    }
+                    var selectHtml = $"<select class='form-select' disabled='disabled'>{optionsString}</select>";
+                    @Html.Raw(selectHtml);
+                }
+            </div>
+        </div>
+        <div class="card-footer bg-light">
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0 fw-semibold"><i class="bi bi-file-earmark-text"></i> Project Type Details</h5>
+        </div>
+        <div class="card-body">
+            <div class="accordion" id="projectTypeAccordion">
+                @if (Model.TypeOfProject == "Retainership - SPP" && Model.RetainershipSPP != null)
+                {
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingSPP">
+                            <button class="accordion-button collapsed bg-info text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSPP" aria-expanded="false" aria-controls="collapseSPP">
+                                <i class="bi bi-file-earmark-text"></i> Retainership - SPP Details
+                            </button>
+                        </h2>
+                        <div id="collapseSPP" class="accordion-collapse collapse" aria-labelledby="headingSPP" data-bs-parent="#projectTypeAccordion">
+                            <div class="accordion-body row g-3">
+                                <div class="col-md-6"><b>SSS Company Registration No.:</b> @Model.RetainershipSPP.SSSCompanyRegNo</div>
+                                <div class="col-md-6"><b>Date of SSS Registration:</b> @Model.RetainershipSPP.SSSRegistrationDate?.ToString("yyyy-MM-dd")</div>
+                                <div class="col-md-6"><b>PHIC Company Registration No.:</b> @Model.RetainershipSPP.PHICCompanyRegNo</div>
+                                <div class="col-md-6"><b>Date of PHIC Registration:</b> @Model.RetainershipSPP.PHICRegistrationDate?.ToString("yyyy-MM-dd")</div>
+                                <div class="col-md-6"><b>HDMF Company Registration No.:</b> @Model.RetainershipSPP.HDMFCompanyRegNo</div>
+                                <div class="col-md-6"><b>Date of HDMF Registration:</b> @Model.RetainershipSPP.HDMFRegistrationDate?.ToString("yyyy-MM-dd")</div>
+                                <div class="col-md-6"><b>Maintenance of SPP Compliance:</b> @Model.RetainershipSPP.SPPComplianceActivities</div>
+                                <div class="col-md-6"><b>Other SPP Compliance:</b> @Model.RetainershipSPP.OtherSPPCompliance</div>
+                                <div class="col-md-12"><b>Target Date to Start Subscription - SPP Retainership:</b> @Model.RetainershipSPP.SPPRetainershipStartDate?.ToString("yyyy-MM-dd")</div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else if (Model.TypeOfProject == "Retainership - BIR" && Model.RetainershipBIR != null)
+                {
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingBIR">
+                            <button class="accordion-button collapsed bg-primary text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBIR" aria-expanded="false" aria-controls="collapseBIR">
+                                <i class="bi bi-file-earmark-text"></i> Retainership - BIR Details
+                            </button>
+                        </h2>
+                        <div id="collapseBIR" class="accordion-collapse collapse" aria-labelledby="headingBIR" data-bs-parent="#projectTypeAccordion">
+                            <div class="accordion-body row g-3">
+                                <div class="col-md-6"><b>Type of Registrant:</b> @Model.RetainershipBIR.TypeOfRegistrant</div>
+                                <div class="col-md-6"><b>OCN Number Notes:</b> @Model.RetainershipBIR.OCNNotes</div>
+                                <div class="col-md-6"><b>Date OCN Generated:</b> @Model.RetainershipBIR.DateOCNGenerated?.ToString("yyyy-MM-dd")</div>
+                                <div class="col-md-6"><b>Date of BIR Registration:</b> @Model.RetainershipBIR.DateBIRRegistration?.ToString("yyyy-MM-dd")</div>
+                                <div class="col-md-6"><b>BIR RDO No.:</b> @Model.RetainershipBIR.BIRRdoNo</div>
+                                <div class="col-md-6"><b>Other BIR RDO No.:</b> @Model.RetainershipBIR.OtherBirRdoNo</div>
+                                <div class="col-md-6"><b>Status of Tax Filing:</b> @Model.RetainershipBIR.TaxFilingStatus</div>
+                                <div class="col-md-6"><b>Catch-Up Accounting Needed?:</b> @Model.RetainershipBIR.NeedCatchUpAccounting</div>
+                                <div class="col-md-6"><b>Catch-Up Reasons:</b> @Model.RetainershipBIR.CatchUpReasons</div>
+                                <div class="col-md-6"><b>Other Catch-Up Reason:</b> @Model.RetainershipBIR.OtherCatchUpReason</div>
+                                <div class="col-md-6"><b>Target Date to Start Catch-Up Accounting:</b> @Model.RetainershipBIR.CatchUpStartDate?.ToString("yyyy-MM-dd")</div>
+                                <div class="col-md-6"><b>BIR Compliance Activities:</b> @Model.RetainershipBIR.BIRComplianceActivities</div>
+                                <div class="col-md-6"><b>Other BIR Compliance:</b> @Model.RetainershipBIR.OtherBIRCompliance</div>
+                                <div class="col-md-12"><b>Target Date to Start Subscription - BIR Retainership:</b> @Model.RetainershipBIR.BIRRetainershipStartDate?.ToString("yyyy-MM-dd")</div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else if (Model.TypeOfProject == "One Time Transaction" && Model.OneTimeTransaction != null)
+                {
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingOneTime">
+                            <button class="accordion-button collapsed bg-warning text-dark fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOneTime" aria-expanded="false" aria-controls="collapseOneTime">
+                                <i class="bi bi-file-earmark-text"></i> One Time Transaction Details
+                            </button>
+                        </h2>
+                        <div id="collapseOneTime" class="accordion-collapse collapse" aria-labelledby="headingOneTime" data-bs-parent="#projectTypeAccordion">
+                            <div class="accordion-body row g-3">
+                                <div class="col-md-6"><b>Type of Registrant:</b> @Model.OneTimeTransaction.TypeOfRegistrant</div>
+                                <div class="col-md-6"><b>Area of Services:</b> @Model.OneTimeTransaction.AreaOfServices</div>
+                                <div class="col-md-6"><b>Other Area of Services:</b> @Model.OneTimeTransaction.OtherAreaOfServices</div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else if (Model.TypeOfProject == "External Audit" && Model.ExternalAudit != null)
+                {
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingAudit">
+                            <button class="accordion-button collapsed bg-secondary text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAudit" aria-expanded="false" aria-controls="collapseAudit">
+                                <i class="bi bi-file-earmark-text"></i> External Audit Details
+                            </button>
+                        </h2>
+                        <div id="collapseAudit" class="accordion-collapse collapse" aria-labelledby="headingAudit" data-bs-parent="#projectTypeAccordion">
+                            <div class="accordion-body row g-3">
+                                <div class="col-md-6"><b>Status of External Audit Client:</b> @Model.ExternalAudit.ExternalAuditStatus</div>
+                                <div class="col-md-6"><b>External Audit - Purposes of Client:</b> @Model.ExternalAudit.ExternalAuditPurposes</div>
+                                <div class="col-md-6"><b>Other Purpose:</b> @Model.ExternalAudit.ExternalAuditOtherPurpose</div>
+                                <div class="col-md-6"><b>Target Date of Issuance of Report:</b> @Model.ExternalAudit.ExternalAuditReportDate?.ToString("yyyy-MM-dd")</div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingNone">
+                            <button class="accordion-button collapsed bg-light text-dark fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNone" aria-expanded="false" aria-controls="collapseNone">
+                                <i class="bi bi-info-circle"></i> No Project Type Details
+                            </button>
+                        </h2>
+                        <div id="collapseNone" class="accordion-collapse collapse show" aria-labelledby="headingNone" data-bs-parent="#projectTypeAccordion">
+                            <div class="accordion-body">
+                                <span class="text-muted">No additional data for this project type.</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

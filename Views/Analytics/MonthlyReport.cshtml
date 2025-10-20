@@ -1,0 +1,74 @@
+@model TestingDemo.ViewModels.AnalyticsViewModel
+@{
+    ViewData["Title"] = "Monthly Report";
+}
+<div class="container py-4">
+    <h2 class="mb-4"><i class="bi bi-calendar3"></i> Monthly Report - @ViewBag.Month</h2>
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card text-bg-primary h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Total Clients</h5>
+                    <h2 class="card-text">@Model.TotalClients</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-bg-success h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Permit Completion Rate</h5>
+                    <h2 class="card-text">@Model.PermitCompletionRate.ToString("F1")% </h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-bg-info h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Most Common Status</h5>
+                    <h2 class="card-text">@Model.ClientsByStatus.OrderByDescending(x => x.Value).FirstOrDefault().Key
+                    </h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-bg-warning h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Most Common Project Type</h5>
+                    <h2 class="card-text">@Model.ClientsByType.OrderByDescending(x => x.Value).FirstOrDefault().Key</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card mb-4">
+        <div class="card-header bg-light fw-bold">Clients This Month</div>
+        <div class="card-body p-0">
+            <table class="table table-striped table-bordered mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Client</th>
+                        <th>Type</th>
+                        <th>Urgency</th>
+                        <th>Status</th>
+                        <th>Supplier Name</th>
+                        <th>Business Type</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model.FilteredClients ?? new List<TestingDemo.Models.ClientModel>())
+                    {
+                        <tr>
+                            <td>@c.ClientName</td>
+                            <td>@c.TypeOfProject</td>
+                            <td>@c.UrgencyLevel</td>
+                            <td>@c.Status</td>
+                            <td>@c.RequestingParty</td>
+                            <td>@c.ClientType</td>
+                            <td>@c.CreatedDate.ToShortDateString()</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

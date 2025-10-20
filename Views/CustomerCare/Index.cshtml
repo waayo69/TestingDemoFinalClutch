@@ -1,0 +1,420 @@
+@model TestingDemo.ViewModels.CustomerCareDashboardViewModel
+@using TestingDemo.Models
+@{
+    ViewData["Title"] = "Customer Care Dashboard";
+    var liaisonClients = Model.LiaisonClients;
+}
+
+<div class="container-fluid py-4">
+    <!-- TEMP: Quick jump to Details -->
+    <div class="row mb-2">
+        <div class="col-12">
+            <form asp-action="Details" method="get" class="d-inline-flex align-items-center gap-2">
+                <div class="input-group input-group-sm" style="max-width: 360px;">
+                    <span class="input-group-text"><i class="bi bi-hash"></i></span>
+                    <input type="number" name="id" class="form-control" placeholder="Enter Client ID to open Details" required />
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-box-arrow-in-right"></i> Open Details</button>
+                </div>
+                <span class="text-muted small ms-2">Temporary navigation for testing</span>
+            </form>
+        </div>
+    </div>
+    <!-- Header -->
+    <div class="row mb-4 align-items-center">
+        <div class="col-12 col-md-6 mb-2 mb-md-0">
+            <h2 class="fw-bold mb-0"><i class="bi bi-people"></i> @ViewData["Title"]</h2>
+        </div>
+        <div class="col-12 col-md-6 d-flex flex-wrap justify-content-md-end align-items-center gap-2">
+            <!-- Search Form -->
+            <form asp-action="Index" method="get" class="d-flex flex-nowrap">
+                <div class="input-group input-group-sm">
+                    <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" class="form-control"
+                        placeholder="Find by name or permit..." aria-label="Search clients" />
+                    <button class="btn btn-outline-secondary" type="submit" title="Search"><i
+                            class="bi bi-search"></i></button>
+                    @if (!String.IsNullOrEmpty(ViewData["CurrentFilter"] as string))
+                    {
+                        <a asp-action="Index" asp-route-sortOrder="@ViewData["CurrentSort"]"
+                            class="btn btn-outline-secondary" title="Clear Search"><i class="bi bi-x-lg"></i></a>
+                    }
+                </div>
+            </form>
+            <div class="dropdown ms-2">
+                <a class="btn btn-outline-secondary dropdown-toggle btn-sm" href="#" role="button" id="sortMenuLink"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-sort-down"></i>
+                    @if (ViewData["CurrentSort"]?.ToString() == "name_desc")
+                    {
+                        <span>Name (Z-A)</span>
+                    }
+                    else if (ViewData["CurrentSort"]?.ToString() == "Date")
+                    {
+
+                        <span>Date (Oldest)</span>
+                    }
+                    else if (ViewData["CurrentSort"]?.ToString() == "date_desc")
+                    {
+
+                        <span>Date (Newest)</span>
+                    }
+                    else
+                    {
+
+                        <span>Name (A-Z)</span>
+                    }
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="sortMenuLink">
+                    <li><a class="dropdown-item" asp-action="Index" asp-route-sortOrder="">Name (A-Z)</a></li>
+                    <li><a class="dropdown-item" asp-action="Index" asp-route-sortOrder="name_desc"
+                            asp-route-searchString="@ViewData["CurrentFilter"]">Name (Z-A)</a></li>
+                    <li><a class="dropdown-item" asp-action="Index" asp-route-sortOrder="Date"
+                            asp-route-searchString="@ViewData["CurrentFilter"]">Date (Oldest)</a></li>
+                    <li><a class="dropdown-item" asp-action="Index" asp-route-sortOrder="date_desc"
+                            asp-route-searchString="@ViewData["CurrentFilter"]">Date (Newest)</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+        <!-- Liaison Clients Column -->
+        <div class="col-12 col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-semibold"><i class="bi bi-person-check"></i> Clients in Liaison</h5>
+                    <span class="badge bg-primary rounded-pill">@liaisonClients.TotalCount</span>
+                </div>
+                <div class="card-body p-0">
+                    @if (liaisonClients.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col">Client</th>
+                                        <th scope="col" class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in liaisonClients)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="fw-bold">@item.ClientName</div>
+                                                <div class="text-muted small">@item.TypeOfProject |
+                                                    @item.CreatedDate.ToShortDateString()</div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <button type="button" class="btn btn-outline-info" data-bs-toggle="modal"
+                                                        data-bs-target="#ccClientModal-@item.Id" title="Inspect">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                                        data-bs-target="#sendToDocModal" data-client-id="@item.Id"
+                                                        data-client-name="@item.ClientName" title="Send to Documentation"><i
+                                                            class="bi bi-send"></i></button>
+                                                    <button type="button" class="btn btn-warning" data-bs-toggle="modal"
+                                                        data-bs-target="#returnToPlanningModal" data-client-id="@item.Id"
+                                                        data-client-name="@item.ClientName" title="Return to Planning"><i
+                                                            class="bi bi-arrow-counterclockwise"></i></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center p-4">
+                            <p class="text-muted mb-0">No clients currently in Liaison.</p>
+                        </div>
+                    }
+                </div>
+                @if (liaisonClients.TotalPages > 1)
+                {
+                    <div class="card-footer bg-light">
+                        <nav aria-label="Liaison clients navigation">
+                            <ul class="pagination justify-content-center mb-0 flex-wrap">
+                                <li class="page-item @(liaisonClients.HasPreviousPage ? "" : "disabled")">
+                                    <a class="page-link" asp-action="Index"
+                                        asp-route-liaisonPageNumber="@(liaisonClients.PageIndex - 1)"
+                                        asp-route-sortOrder="@ViewData["CurrentSort"]"
+                                        asp-route-searchString="@ViewData["CurrentFilter"]">&laquo;</a>
+                                </li>
+                                @for (int i = 1; i <= liaisonClients.TotalPages; i++)
+                                {
+                                    <li class="page-item @(i == liaisonClients.PageIndex ? "active" : "")"><a class="page-link"
+                                            asp-action="Index" asp-route-liaisonPageNumber="@i"
+                                            asp-route-sortOrder="@ViewData["CurrentSort"]"
+                                            asp-route-searchString="@ViewData["CurrentFilter"]">@i</a></li>
+                                }
+                                <li class="page-item @(liaisonClients.HasNextPage ? "" : "disabled")">
+                                    <a class="page-link" asp-action="Index"
+                                        asp-route-liaisonPageNumber="@(liaisonClients.PageIndex + 1)"
+                                        asp-route-sortOrder="@ViewData["CurrentSort"]"
+                                        asp-route-searchString="@ViewData["CurrentFilter"]">&raquo;</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+@* Client Details Modals for both columns *@
+@foreach (var item in liaisonClients)
+{
+    @await Html.PartialAsync("_ClientDetailsModal", item)
+}
+<!-- Send To Documentation Modal -->
+<div class="modal fade" id="sendToDocModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Send to Documentation</h5><button type="button" class="btn-close"
+                    data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">Client: <strong id="stdClientName"></strong></p>
+                <div id="stdAlert" class="alert alert-warning d-none">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    All required requirements must have at least one file uploaded before proceeding.
+                </div>
+                <div class="mb-2 fw-semibold">Requirements</div>
+                <ul id="stdRequirements" class="list-group mb-2"></ul>
+                <button type="button" class="btn btn-outline-info btn-sm" id="stdViewFilesBtn">
+                    <i class="bi bi-folder2-open"></i> View Files
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="stdForm" method="post">
+                    <button id="stdConfirmBtn" type="submit" class="btn btn-primary">
+                        <i class="bi bi-send"></i> Send to Documentation
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    </div>
+<!-- Return to Planning Modal -->
+<div class="modal fade" id="returnToPlanningModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Return to Planning</h5><button type="button" class="btn-close"
+                    data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to return <strong id="rtpClientName"></strong> to the Planning Officer?</p>
+                <p class="text-muted small">This client will be moved back to the Planning stage.</p>
+            </div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary"
+                    data-bs-dismiss="modal">Cancel</button>
+                <form id="rtpForm" method="post"><button type="submit" class="btn btn-warning">Return to
+                        Planning</button></form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Proceed to Document Officer Modal -->
+<div class="modal fade" id="proceedToDocOfficerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Proceed to Document Officer</h5><button type="button" class="btn-close"
+                    data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to proceed <strong id="pdoClientName"></strong> to the Document Officer?</p>
+                <p class="text-muted small">The client will be moved to the Document Officer for the next stage.</p>
+            </div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary"
+                    data-bs-dismiss="modal">Cancel</button>
+                <form id="pdoForm" method="post"><button type="submit" class="btn btn-primary">Proceed</button></form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<audio id="notifySound" src="/sounds/Notifications.wav" preload="auto"></audio>
+
+@section Scripts {
+    <script>
+        // Load full Customer Care Details view into modal when opened
+        document.addEventListener('shown.bs.modal', function (event) {
+            var modal = event.target;
+            if (!modal || !modal.id || !modal.id.startsWith('ccClientModal-')) return;
+            var clientId = modal.id.replace('ccClientModal-', '');
+            var container = modal.querySelector('#ccDetailsContainer-' + clientId);
+            if (!container) return;
+            var url = '/CustomerCare/Details/' + clientId + '?partial=1&t=' + Date.now();
+            fetch(url, { cache: 'no-store', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function (response) { if (!response.ok) throw new Error('Network response was not ok'); return response.text(); })
+                .then(function (html) { container.innerHTML = html; })
+                .catch(function () { container.innerHTML = '<div class="p-4 alert alert-warning mb-0">Failed to load details.</div>'; });
+
+            // Delegate AJAX form submits inside Details container
+            function handleAjaxFormSubmit(e) {
+                var form = e.target;
+                if (!(form instanceof HTMLFormElement)) return;
+                var action = (form.getAttribute('action') || '').toLowerCase();
+                var isDetailsForm = action.includes('/customercare/uploadrequirementfiles') || action.includes('/customercare/deleterequirementphoto') || action.includes('/customercare/saverequirements');
+                if (!isDetailsForm) return;
+                e.preventDefault();
+                var fd = new FormData(form);
+                fetch(form.action, { method: form.method || 'post', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(function (r) { if (!r.ok) throw new Error('net'); return r.text().then(function(txt){ try { return JSON.parse(txt);} catch { return { success: true }; } }); })
+                    .then(function () {
+                        // Re-load details partial to reflect updates
+                        var reloadUrl = '/CustomerCare/Details/' + clientId + '?partial=1&t=' + Date.now();
+                        return fetch(reloadUrl, { cache: 'no-store', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                            .then(function (resp) { if (!resp.ok) throw new Error('reload'); return resp.text(); })
+                            .then(function (html) { container.innerHTML = html; });
+                    })
+                    .catch(function () {
+                        var err = document.createElement('div');
+                        err.className = 'p-3 alert alert-danger';
+                        err.textContent = 'Action failed. Please try again.';
+                        container.prepend(err);
+                    });
+            }
+            // Clean previous listener if any, then attach
+            container.removeEventListener('submit', handleAjaxFormSubmit, true);
+            container.addEventListener('submit', function(e){
+                if (e && e.target && e.target.tagName === 'FORM') handleAjaxFormSubmit(e);
+            }, true);
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Send to Documentation
+            var stdModal = document.getElementById('sendToDocModal');
+            stdModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var clientId = button.getAttribute('data-client-id');
+                var clientName = button.getAttribute('data-client-name');
+                stdModal.querySelector('#stdClientName').textContent = clientName;
+                var listEl = stdModal.querySelector('#stdRequirements');
+                var alertEl = stdModal.querySelector('#stdAlert');
+                var confirmBtn = stdModal.querySelector('#stdConfirmBtn');
+                var form = stdModal.querySelector('#stdForm');
+                listEl.innerHTML = '<li class="list-group-item text-muted">Loading...</li>';
+                alertEl.classList.add('d-none');
+                confirmBtn.disabled = true;
+                form.action = '/CustomerCare/ProceedToDocumentOfficer/' + clientId;
+                // View Files button opens the details modal
+                var viewBtn = stdModal.querySelector('#stdViewFilesBtn');
+                viewBtn.onclick = function(){
+                    var targetModal = document.getElementById('ccClientModal-' + clientId);
+                    if (targetModal){
+                        var modalInstance = bootstrap.Modal.getOrCreateInstance(targetModal);
+                        modalInstance.show();
+                    } else {
+                        window.location.href = '/CustomerCare/Details/' + clientId;
+                    }
+                };
+                fetch('/CustomerCare/GetRequirementSummary?id=' + clientId, { cache: 'no-store' })
+                    .then(function(r){ if(!r.ok) throw new Error('net'); return r.json(); })
+                    .then(function(data){
+                        listEl.innerHTML = '';
+                        var items = (data && data.items) || [];
+                        var hasMissing = false;
+                        items.forEach(function(it){
+                            var li = document.createElement('li');
+                            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                            li.textContent = it.requirementName + (it.isRequired ? ' *' : '');
+                            var badge = document.createElement('span');
+                            badge.className = 'badge bg-' + (it.files > 0 ? 'success' : 'secondary');
+                            badge.textContent = it.files + ' file' + (it.files === 1 ? '' : 's');
+                            li.appendChild(badge);
+                            listEl.appendChild(li);
+                            if (it.isRequired && (!it.files || it.files === 0)) hasMissing = true;
+                        });
+                        if (items.length === 0){
+                            listEl.innerHTML = '<li class="list-group-item text-muted">No requirements added.</li>';
+                        }
+                        if (hasMissing){
+                            alertEl.classList.remove('d-none');
+                            confirmBtn.disabled = true;
+                        } else {
+                            alertEl.classList.add('d-none');
+                            confirmBtn.disabled = false;
+                        }
+                    })
+                    .catch(function(){
+                        listEl.innerHTML = '<li class="list-group-item text-danger">Failed to load requirements.</li>';
+                        alertEl.classList.remove('d-none');
+                        confirmBtn.disabled = true;
+                    });
+            });
+            // Return to Planning
+            var rtpModal = document.getElementById('returnToPlanningModal');
+            rtpModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var clientId = button.getAttribute('data-client-id');
+                var clientName = button.getAttribute('data-client-name');
+                var modalBodyName = rtpModal.querySelector('#rtpClientName');
+                var form = rtpModal.querySelector('#rtpForm');
+                modalBodyName.textContent = clientName;
+                form.action = '/CustomerCare/ReturnToPlanning/' + clientId;
+            });
+            // Proceed to Document Officer
+            var pdoModal = document.getElementById('proceedToDocOfficerModal');
+            pdoModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var clientId = button.getAttribute('data-client-id');
+                var clientName = button.getAttribute('data-client-name');
+                var modalBodyName = pdoModal.querySelector('#pdoClientName');
+                var form = pdoModal.querySelector('#pdoForm');
+                modalBodyName.textContent = clientName;
+                form.action = '/CustomerCare/ProceedToDocumentOfficer/' + clientId;
+            });
+        });
+        // Store initial client IDs for Liaison table only
+        let liaisonClientIds = Array.from(document.querySelectorAll('.col-lg-6:first-child tbody tr')).map(row => row.querySelector('[data-client-id]')?.getAttribute('data-client-id')).filter(Boolean);
+        function playNotifySound() {
+            var audio = document.getElementById('notifySound');
+            if (audio) {
+                audio.currentTime = 0;
+                audio.play();
+            }
+        }
+        function renderCustomerCare(data) {
+            // Check for new clients in Liaison
+            let newLiaisonIds = (data.LiaisonClients.items || []).map(c => c.id?.toString());
+            let isNewLiaison = newLiaisonIds.some(id => !liaisonClientIds.includes(id));
+            if (isNewLiaison) {
+                playNotifySound();
+            }
+            // Avoid full page reloads; if a details modal is open, let the modal handle its own refresh
+            var openDetails = document.querySelector('.modal.show[id^="ccClientModal-"]');
+            if (openDetails) {
+                return;
+            }
+            // Optionally: soft refresh could be implemented here if needed
+        }
+        if (window.connection) {
+            connection.on("ReceiveUpdate", function (message) {
+                fetch('/CustomerCare/GetLatestData')
+                    .then(response => response.json())
+                    .then(data => {
+                        renderCustomerCare(data);
+                    });
+            });
+        }
+    </script>
+}

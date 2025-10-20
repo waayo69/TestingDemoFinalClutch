@@ -1,0 +1,313 @@
+@model TestingDemo.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="dashboard-container">
+    <div class="dashboard-grid">
+        <!-- Liaison Section -->
+        <div class="dashboard-grid-item dashboard-liaison">
+            <div class="dashboard-title">LIAISON</div>
+            <table class="dashboard-table">
+                <thead>
+                    <tr>
+                        <th>NAME</th>
+                        <th>SERVICE</th>
+                        <th>LOCATION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model?.LiaisonClients?.Any() == true)
+                    {
+                        @foreach (var client in Model.LiaisonClients)
+                        {
+                            <tr>
+                                <td title="@client.ClientName">@client.ClientName</td>
+                                <td title="@client.TypeOfProject">@client.TypeOfProject</td>
+                                <td title="@client.RegisteredCompanyAddress">@client.RegisteredCompanyAddress</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="3" class="no-data">No clients available</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Finance Section -->
+        <div class="dashboard-grid-item dashboard-finance">
+            <div class="dashboard-title">FINANCE</div>
+            <table class="dashboard-table">
+                <thead>
+                    <tr>
+                        <th>NAME</th>
+                        <th>SERVICE</th>
+                        <th>LOCATION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model?.FinanceClients?.Any() == true)
+                    {
+                        @foreach (var client in Model.FinanceClients)
+                        {
+                            <tr>
+                                <td title="@client.ClientName">@client.ClientName</td>
+                                <td title="@client.TypeOfProject">@client.TypeOfProject</td>
+                                <td title="@client.RegisteredCompanyAddress">@client.RegisteredCompanyAddress</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="3" class="no-data">No clients available</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Planning Section -->
+        <div class="dashboard-grid-item dashboard-planning">
+            <div class="dashboard-title">PLANNING</div>
+            <table class="dashboard-table">
+                <thead>
+                    <tr>
+                        <th>NAME</th>
+                        <th>SERVICE</th>
+                        <th>LOCATION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model?.PlanningClients?.Any() == true)
+                    {
+                        @foreach (var client in Model.PlanningClients)
+                        {
+                            <tr>
+                                <td title="@client.ClientName">@client.ClientName</td>
+                                <td title="@client.TypeOfProject">@client.TypeOfProject</td>
+                                <td title="@client.RegisteredCompanyAddress">@client.RegisteredCompanyAddress</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="3" class="no-data">No clients available</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Documentation Section -->
+        <div class="dashboard-grid-item dashboard-documentation">
+            <div class="dashboard-title">DOCUMENTATION</div>
+            <table class="dashboard-table">
+                <thead>
+                    <tr>
+                        <th>NAME</th>
+                        <th>SERVICE</th>
+                        <th>LOCATION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model?.DocumentationClients?.Any() == true)
+                    {
+                        @foreach (var client in Model.DocumentationClients)
+                        {
+                            <tr>
+                                <td title="@client.ClientName">@client.ClientName</td>
+                                <td title="@client.TypeOfProject">@client.TypeOfProject</td>
+                                <td title="@client.RegisteredCompanyAddress">@client.RegisteredCompanyAddress</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="3" class="no-data">No clients available</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<audio id="notifySound" src="/sounds/Notifications.mp3" preload="auto"></audio>
+
+<!-- Scripts -->
+<script>
+    // Secondary Screen Detection
+    function checkForSecondaryScreen() {
+        if (window.screen.availWidth > window.screen.width || window.screen.availHeight > window.screen.height) {
+            let newWin = window.open("/", "SecondaryScreen", "width=1920,height=1080");
+            if (newWin) {
+                newWin.moveTo(window.screen.availWidth - newWin.outerWidth, 0);
+                newWin.focus();
+            }
+        } else {
+            console.log("No secondary screen detected. The homepage will be displayed on the primary screen.");
+        }
+    }
+
+    // Initialize on load
+    window.addEventListener('load', checkForSecondaryScreen);
+
+    // Utility function for table sorting (if needed later)
+    function sortTable(tableElement, columnIndex, ascending = true) {
+        const tbody = tableElement.querySelector('tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+
+        rows.sort((a, b) => {
+            const aValue = a.cells[columnIndex].textContent.trim();
+            const bValue = b.cells[columnIndex].textContent.trim();
+
+            if (ascending) {
+                return aValue.localeCompare(bValue);
+            } else {
+                return bValue.localeCompare(aValue);
+            }
+        });
+
+        rows.forEach(row => tbody.appendChild(row));
+    }
+
+    // Add click handlers for responsive table interactions
+    document.addEventListener('DOMContentLoaded', function () {
+        const tables = document.querySelectorAll('.dashboard-table');
+
+        tables.forEach(table => {
+            // Add double-click handler for rows (you can customize this)
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                row.addEventListener('dblclick', function () {
+                    // Example: highlight the row or trigger an action
+                    this.style.backgroundColor = '#e3f2fd';
+                    setTimeout(() => {
+                        this.style.backgroundColor = '';
+                    }, 2000);
+                });
+            });
+        });
+    });
+
+    // Store initial client IDs for all dashboard tables
+    function getClientIds(selector) {
+        return Array.from(document.querySelectorAll(selector)).map(row => row.querySelector('td[title]')?.textContent?.trim()).filter(Boolean);
+    }
+    let liaisonClientIds = getClientIds('.dashboard-liaison tbody tr');
+    let financeClientIds = getClientIds('.dashboard-finance tbody tr');
+    let planningClientIds = getClientIds('.dashboard-planning tbody tr');
+    let documentationClientIds = getClientIds('.dashboard-documentation tbody tr');
+    function playNotifySound() {
+        var audio = document.getElementById('notifySound');
+        if (audio) {
+            audio.currentTime = 0;
+            audio.play();
+        }
+    }
+    function renderHomeDashboard(data) {
+        let isNew = false;
+        if (data.LiaisonClients) {
+            let newIds = (data.LiaisonClients || []).map(c => c.clientName);
+            isNew = newIds.some(id => !liaisonClientIds.includes(id));
+        }
+        if (data.FinanceClients) {
+            let newIds = (data.FinanceClients || []).map(c => c.clientName);
+            isNew = isNew || newIds.some(id => !financeClientIds.includes(id));
+        }
+        if (data.PlanningClients) {
+            let newIds = (data.PlanningClients || []).map(c => c.clientName);
+            isNew = isNew || newIds.some(id => !planningClientIds.includes(id));
+        }
+        if (data.DocumentationClients) {
+            let newIds = (data.DocumentationClients || []).map(c => c.clientName);
+            isNew = isNew || newIds.some(id => !documentationClientIds.includes(id));
+        }
+        if (isNew) {
+            playNotifySound();
+        }
+        location.reload();
+    }
+    if (window.connection) {
+        connection.on("ReceiveUpdate", function (message) {
+            fetch('/Home/GetLatestData')
+                .then(response => response.json())
+                .then(data => {
+                    renderHomeDashboard(data);
+                });
+        });
+    }
+</script>
+
+@functions {
+    public string GetPriorityClass(string priority)
+    {
+        return priority switch
+        {
+            "Normal" => "table-success",
+            "Slightly Important" => "table-warning",
+            "Urgent" => "table-danger",
+            _ => ""
+        };
+    }
+}
+
+@section Scripts {
+    <script>
+        // Store initial client IDs for all dashboard tables
+        function getClientIds(selector) {
+            return Array.from(document.querySelectorAll(selector)).map(row => row.querySelector('td[title]')?.textContent?.trim()).filter(Boolean);
+        }
+        let liaisonClientIds = getClientIds('.dashboard-liaison tbody tr');
+        let financeClientIds = getClientIds('.dashboard-finance tbody tr');
+        let planningClientIds = getClientIds('.dashboard-planning tbody tr');
+        let documentationClientIds = getClientIds('.dashboard-documentation tbody tr');
+        function playNotifySound() {
+            var audio = document.getElementById('notifySound');
+            if (audio) {
+                audio.currentTime = 0;
+                audio.play();
+            }
+        }
+        function renderHomeDashboard(data) {
+            let isNew = false;
+            if (data.LiaisonClients) {
+                let newIds = (data.LiaisonClients || []).map(c => c.clientName);
+                isNew = newIds.some(id => !liaisonClientIds.includes(id));
+            }
+            if (data.FinanceClients) {
+                let newIds = (data.FinanceClients || []).map(c => c.clientName);
+                isNew = isNew || newIds.some(id => !financeClientIds.includes(id));
+            }
+            if (data.PlanningClients) {
+                let newIds = (data.PlanningClients || []).map(c => c.clientName);
+                isNew = isNew || newIds.some(id => !planningClientIds.includes(id));
+            }
+            if (data.DocumentationClients) {
+                let newIds = (data.DocumentationClients || []).map(c => c.clientName);
+                isNew = isNew || newIds.some(id => !documentationClientIds.includes(id));
+            }
+            if (isNew) {
+                playNotifySound();
+            }
+            location.reload();
+        }
+        if (window.connection) {
+            connection.on("ReceiveUpdate", function (message) {
+                fetch('/Home/GetLatestData')
+                    .then(response => response.json())
+                    .then(data => {
+                        renderHomeDashboard(data);
+                    });
+            });
+        }
+    </script>
+}

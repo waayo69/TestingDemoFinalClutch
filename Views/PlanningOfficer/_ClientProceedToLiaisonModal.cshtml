@@ -1,0 +1,84 @@
+@model TestingDemo.Models.ClientModel
+@using TestingDemo.Models
+
+@{
+    var requirementsByClient = ViewBag.Requirements as IDictionary<int, List<PermitRequirementModel>> ?? new Dictionary<int, List<PermitRequirementModel>>();
+    var hasRequirements = requirementsByClient.ContainsKey(Model.Id);
+    var allRequirementsCompleted = false;
+    var totalRequirements = 0;
+    var completedRequirements = 0;
+
+    if (hasRequirements)
+    {
+        var reqList = requirementsByClient[Model.Id];
+        if (reqList != null && reqList.Any())
+        {
+            totalRequirements = reqList.Count;
+            completedRequirements = reqList.Count(r => r.IsCompleted);
+            allRequirementsCompleted = totalRequirements > 0 && totalRequirements == completedRequirements;
+        }
+        else
+        {
+            allRequirementsCompleted = true;
+        }
+    }
+    else
+    {
+        allRequirementsCompleted = true;
+    }
+}
+
+<div class="modal fade" id="proceedToLiaisonModal-@Model.Id" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-success text-white border-0 py-3">
+                <h5 class="modal-title fw-bold mb-0">
+                    <i class="bi bi-arrow-right-circle me-2"></i>Confirm Action
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <div class="text-center mb-3">
+                        <div class="bg-primary bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
+                            <i class="bi bi-arrow-right-circle text-primary" style="font-size: 2.5rem;"></i>
+                        </div>
+                        <h6 class="text-primary fw-bold mb-1">Proceed to Customer Care</h6>
+                        <p class="text-muted mb-0">Confirm sending <strong>@Model.ClientName</strong> to the next phase.</p>
+                    </div>
+                    <div class="bg-light rounded-3 p-3 border-start border-4 border-primary">
+                        <p class="mb-2 fw-medium">Requirements Added (@(hasRequirements && requirementsByClient[Model.Id] != null ? requirementsByClient[Model.Id].Count : 0))</p>
+                        @{
+                            var list = hasRequirements ? requirementsByClient[Model.Id] : new List<PermitRequirementModel>();
+                        }
+                        @if (list != null && list.Any())
+                        {
+                            <ul class="mb-0">
+                                @foreach (var r in list)
+                                {
+                                    <li>@r.RequirementName</li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <div class="text-muted">No requirements have been added yet.</div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 py-3">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4 py-2" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-2"></i>Cancel
+                </button>
+                <form asp-action="ProceedToLiaison" asp-route-id="@Model.Id" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-success rounded-pill px-4 py-2 shadow-sm">
+                        <i class="bi bi-check-lg me-2"></i>Proceed to Liaison
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+

@@ -1,0 +1,46 @@
+@model TestingDemo.Models.ClientModel
+@using TestingDemo.Models
+
+@{
+    var typeBadgeClass = Model.TypeOfProject switch
+    {
+        "Retainership - BIR" => "bg-danger",
+        "Retainership - SPP" => "bg-info text-dark",
+        "One Time Transaction" => "bg-secondary",
+        "External Audit" => "bg-dark",
+        _ => "bg-light text-dark"
+    };
+    var statusBadgeClass = Model.Status switch
+    {
+        "Planning" => "bg-info",
+        "Liaison" => "bg-primary",
+        "CustomerCareReceived" => "bg-success",
+        "DocumentOfficer" => "bg-secondary",
+        _ => "bg-light text-dark"
+    };
+}
+
+<div class="modal fade" id="ccClientModal-@Model.Id" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white border-0 py-3">
+                <h5 class="modal-title d-flex flex-wrap align-items-center gap-3 mb-0">
+                    <i class="bi bi-person-vcard fs-4"></i>
+                    <span class="fw-bold">@Model.ClientName</span>
+                    <span class="badge rounded-pill @typeBadgeClass fs-6">@Model.TypeOfProject</span>
+                    <span class="badge @statusBadgeClass rounded-pill fs-6">@Model.Status</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="ccDetailsContainer-@Model.Id" class="w-100 h-100">
+                    <div class="p-4 text-center text-muted">
+                        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+                        <div class="mt-2">Loading details...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

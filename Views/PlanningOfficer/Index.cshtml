@@ -1,0 +1,160 @@
+@model PaginatedList<TestingDemo.Models.ClientModel>
+@using TestingDemo.Models
+
+@{
+    ViewData["Title"] = "Planning Officer Dashboard";
+}
+
+@* ...existing code... *@
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0"><i class="bi bi-clipboard-check"></i> @ViewData["Title"]</h2>
+            <p class="text-muted">Manage clients, planning details, and permit requirements.</p>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-list-ul"></i> Client List</h5>
+                <form asp-action="Index" method="get" class="d-flex align-items-center">
+                    <div class="input-group input-group-sm">
+                        <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" class="form-control" placeholder="Find by name...">
+                        <button type="submit" class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped align-middle mb-0">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>
+                                    <a asp-action="Index" asp-route-sortOrder="@ViewData["NameSortParm"]" asp-route-currentFilter="@ViewData["CurrentFilter"]">Client Name</a>
+                                </th>
+                                <th>Contact</th>
+                                <th>Permit Type</th>
+                                <th>Status</th>
+                                <th>
+                                    <a asp-action="Index" asp-route-sortOrder="@ViewData["DateSortParm"]" asp-route-currentFilter="@ViewData["CurrentFilter"]">Created Date</a>
+                                </th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr class="@(item.UrgencyLevel == "Urgent" ? "table-danger" : item.UrgencyLevel == "Slightly Urgent" ? "table-warning" : "")">
+                                    <td>
+                                        <div class="fw-medium">@item.ClientName</div>
+                                        <div class="text-muted small">@item.Email</div>
+                                    </td>
+                                    <td class="align-middle">@item.ContactPersonNumber</td>
+                                    <td class="align-middle">@item.TypeOfProject</td>
+                                    <td class="align-middle">
+                                        <span class="badge @(item.Status == "Finance" ? "bg-primary" : "bg-secondary")">@item.Status</span>
+                                        @if (!string.IsNullOrEmpty(item.PlanningReturnNote))
+                                        {
+                                            <i class="bi bi-info-circle-fill text-warning" data-bs-toggle="tooltip" title="Returned from Planning: @item.PlanningReturnNote"></i>
+                                        }
+                                    </td>
+                                    <td class="align-middle">@item.CreatedDate.ToString("MMM dd, yyyy")</td>
+                                    <td class="text-center align-middle">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <button type="button" class="btn btn-outline-info" title="View Details"
+                                                    data-bs-toggle="modal" data-bs-target="#clientModal-@item.Id">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary" data-bs-toggle="tooltip" title="Edit Client"><i class="bi bi-pencil"></i></a>
+                                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-@item.Id" title="Delete Client"><i class="bi bi-trash"></i></button>
+                                            <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#sendToPlanningModal-@item.Id" title="Send to Planning Officer"><i class="bi bi-send"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info m-3">
+                    <i class="bi bi-info-circle"></i> No clients found.
+                </div>
+            }
+        </div>
+        <div class="card-footer bg-light">
+            <nav aria-label="Page navigation">
+                @{
+                    var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
+                    var nextDisabled = !Model.HasNextPage ? "disabled" : "";
+                }
+                <ul class="pagination justify-content-center mb-0">
+                    <li class="page-item @prevDisabled">
+                        <a asp-action="Index"
+                           asp-route-sortOrder="@ViewData["CurrentSort"]"
+                           asp-route-pageNumber="@(Model.PageIndex - 1)"
+                           asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                           class="page-link">&laquo; Previous</a>
+                    </li>
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link">Page @Model.PageIndex of @Model.TotalPages</span>
+                    </li>
+                    <li class="page-item @nextDisabled">
+                        <a asp-action="Index"
+                           asp-route-sortOrder="@ViewData["CurrentSort"]"
+                           asp-route-pageNumber="@(Model.PageIndex + 1)"
+                           asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                           class="page-link">Next &raquo;</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            // Initialize tooltips only on elements that don't have modal triggers
+            $('[data-bs-toggle="tooltip"]').tooltip();
+            
+            // Ensure modals are properly initialized
+            $('[data-bs-toggle="modal"]').on('click', function() {
+                const target = $(this).data('bs-target');
+                if (target) {
+                    const modal = new bootstrap.Modal(document.querySelector(target));
+                    modal.show();
+                }
+            });
+            
+            // Debug: Log modal triggers
+            console.log('Modal triggers found:', $('[data-bs-toggle="modal"]').length);
+        });
+
+        // Re-open the client's modal after redirect if flagged by server
+        (function() {
+            var openId = '@(TempData["OpenClientId"] ?? "")';
+            if (openId) {
+                var modalEl = document.getElementById('clientModal-' + openId);
+                if (modalEl) {
+                    var m = new bootstrap.Modal(modalEl);
+                    m.show();
+                }
+            }
+        })();
+    </script>
+}

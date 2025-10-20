@@ -1,0 +1,206 @@
+@model TestingDemo.Models.ClientModel
+
+@{
+    ViewData["Title"] = "Delete Client";
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index">Clients</a></li>
+                    <li class="breadcrumb-item active">Delete Client</li>
+                </ol>
+            </nav>
+            <h2><i class="bi bi-trash"></i> Delete Client</h2>
+        </div>
+    </div>
+
+    <div class="alert alert-danger mb-4">
+        <i class="bi bi-exclamation-triangle-fill"></i> Are you sure you want to delete this client? This action cannot
+        be undone.
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="bi bi-info-circle"></i> Client Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.ClientName)</dt>
+                        <dd class="col-sm-8">@Html.DisplayFor(model => model.ClientName)</dd>
+
+                        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.ContactPersonNumber)</dt>
+                        <dd class="col-sm-8">@Html.DisplayFor(model => model.ContactPersonNumber)</dd>
+
+                        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Email)</dt>
+                        <dd class="col-sm-8">@Html.DisplayFor(model => model.Email)</dd>
+
+                        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.RegisteredCompanyAddress)</dt>
+                        <dd class="col-sm-8">@Html.DisplayFor(model => model.RegisteredCompanyName)</dd>
+                    </dl>
+                </div>
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.TypeOfProject)</dt>
+                        <dd class="col-sm-8">@Html.DisplayFor(model => model.TypeOfProject)</dd>
+
+                        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.UrgencyLevel)</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.UrgencyLevel == "Urgent")
+                            {
+                                <span class="badge bg-danger">Urgent</span>
+                            }
+                            else if (Model.UrgencyLevel == "Slightly Urgent")
+                            {
+                                <span class="badge bg-warning text-dark">Slightly Urgent</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">Normal</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Status)</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.Status == "Pending")
+                            {
+                                <span class="badge bg-warning text-dark">@Model.Status</span>
+                            }
+                            else if (Model.Status == "Approved")
+                            {
+                                <span class="badge bg-success">@Model.Status</span>
+                            }
+                            else if (Model.Status == "Rejected")
+                            {
+                                <span class="badge bg-danger">@Model.Status</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-info">@Model.Status</span>
+                            }
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            <p class="text-muted small mb-2">You are about to delete this client. This action cannot be undone. Hover
+                over any button to see what will happen before you click.</p>
+
+            <form asp-action="Delete" method="post" class="mt-4">
+                <input type="hidden" asp-for="Id" />
+                <button type="submit" class="btn btn-danger" data-bs-toggle="tooltip"
+                    title="Permanently delete this client.">
+                    <i class="bi bi-trash"></i> Confirm Delete
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary" data-bs-toggle="tooltip"
+                    title="Cancel and return to the client list. No changes will be made.">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+
+    <!-- Project Type Specific Sections -->
+    @if (Model.TypeOfProject == "Retainership - BIR")
+    {
+        <div class="card shadow mb-3 border-primary">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0"><i class="bi bi-file-earmark-text"></i> Retainership - BIR Details</h6>
+            </div>
+            <div class="card-body row g-3">
+                @if (Model.RetainershipBIR != null)
+                {
+                    <div class="col-md-6"><strong>Type of Registrant:</strong> @Model.RetainershipBIR.TypeOfRegistrant</div>
+                    <div class="col-md-6"><strong>OCN Number Notes:</strong> @Model.RetainershipBIR.OCNNotes</div>
+                    <div class="col-md-6"><strong>Date OCN Generated:</strong> @Model.RetainershipBIR.DateOCNGenerated?.ToString("yyyy-MM-dd")</div>
+                    <div class="col-md-6"><strong>Date of BIR Registration:</strong> @Model.RetainershipBIR.DateBIRRegistration?.ToString("yyyy-MM-dd")</div>
+                    <div class="col-md-6"><strong>BIR RDO No.:</strong> @Model.RetainershipBIR.BIRRdoNo</div>
+                    <div class="col-md-6"><strong>Other BIR RDO No.:</strong> @Model.RetainershipBIR.OtherBirRdoNo</div>
+                    <div class="col-md-6"><strong>Status of Tax Filing:</strong> @Model.RetainershipBIR.TaxFilingStatus</div>
+                    <div class="col-md-6"><strong>Catch-Up Accounting Needed?:</strong> @Model.RetainershipBIR.NeedCatchUpAccounting</div>
+                    <div class="col-md-6"><strong>Catch-Up Reasons:</strong> @Model.RetainershipBIR.CatchUpReasons</div>
+                    <div class="col-md-6"><strong>Other Catch-Up Reason:</strong> @Model.RetainershipBIR.OtherCatchUpReason</div>
+                    <div class="col-md-6"><strong>Target Date to Start Catch-Up Accounting:</strong> @Model.RetainershipBIR.CatchUpStartDate?.ToString("yyyy-MM-dd")</div>
+                    <div class="col-md-6"><strong>BIR Compliance Activities:</strong> @Model.RetainershipBIR.BIRComplianceActivities</div>
+                    <div class="col-md-6"><strong>Other BIR Compliance:</strong> @Model.RetainershipBIR.OtherBIRCompliance</div>
+                    <div class="col-md-6"><strong>Target Date to Start Subscription - BIR Retainership:</strong> @Model.RetainershipBIR.BIRRetainershipStartDate?.ToString("yyyy-MM-dd")</div>
+                }
+                else
+                {
+                    <div class="col-12 text-muted">No additional data for this project type.</div>
+                }
+            </div>
+        </div>
+    }
+    @if (Model.TypeOfProject == "Retainership - SPP")
+    {
+        <div class="card shadow mb-3 border-info">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="bi bi-file-earmark-text"></i> Retainership - SPP Details</h6>
+            </div>
+            <div class="card-body row g-3">
+                @if (Model.RetainershipSPP != null)
+                {
+                    <div class="col-md-6"><strong>SSS Company Registration No.:</strong> @Model.RetainershipSPP.SSSCompanyRegNo</div>
+                    <div class="col-md-6"><strong>Date of SSS Registration:</strong> @Model.RetainershipSPP.SSSRegistrationDate?.ToString("yyyy-MM-dd")</div>
+                    <div class="col-md-6"><strong>PHIC Company Registration No.:</strong> @Model.RetainershipSPP.PHICCompanyRegNo</div>
+                    <div class="col-md-6"><strong>Date of PHIC Registration:</strong> @Model.RetainershipSPP.PHICRegistrationDate?.ToString("yyyy-MM-dd")</div>
+                    <div class="col-md-6"><strong>HDMF Company Registration No.:</strong> @Model.RetainershipSPP.HDMFCompanyRegNo</div>
+                    <div class="col-md-6"><strong>Date of HDMF Registration:</strong> @Model.RetainershipSPP.HDMFRegistrationDate?.ToString("yyyy-MM-dd")</div>
+                    <div class="col-md-6"><strong>Maintenance of SPP Compliance:</strong> @Model.RetainershipSPP.SPPComplianceActivities</div>
+                    <div class="col-md-6"><strong>Other SPP Compliance:</strong> @Model.RetainershipSPP.OtherSPPCompliance</div>
+                    <div class="col-md-6"><strong>Target Date to Start Subscription - SPP Retainership:</strong> @Model.RetainershipSPP.SPPRetainershipStartDate?.ToString("yyyy-MM-dd")</div>
+                }
+                else
+                {
+                    <div class="col-12 text-muted">No additional data for this project type.</div>
+                }
+            </div>
+        </div>
+    }
+    @if (Model.TypeOfProject == "One Time Transaction")
+    {
+        <div class="card shadow mb-3 border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0"><i class="bi bi-file-earmark-text"></i> One Time Transaction Details</h6>
+            </div>
+            <div class="card-body row g-3">
+                @if (Model.OneTimeTransaction != null)
+                {
+                    <div class="col-md-6"><strong>Type of Registrant:</strong> @Model.OneTimeTransaction.TypeOfRegistrant</div>
+                    <div class="col-md-6"><strong>Area of Services:</strong> @Model.OneTimeTransaction.AreaOfServices</div>
+                    <div class="col-md-6"><strong>Other Area of Services:</strong> @Model.OneTimeTransaction.OtherAreaOfServices</div>
+                }
+                else
+                {
+                    <div class="col-12 text-muted">No additional data for this project type.</div>
+                }
+            </div>
+        </div>
+    }
+    @if (Model.TypeOfProject == "External Audit")
+    {
+        <div class="card shadow mb-3 border-secondary">
+            <div class="card-header bg-secondary text-white">
+                <h6 class="mb-0"><i class="bi bi-file-earmark-text"></i> External Audit Details</h6>
+            </div>
+            <div class="card-body row g-3">
+                @if (Model.ExternalAudit != null)
+                {
+                    <div class="col-md-6"><strong>Status of External Audit Client:</strong> @Model.ExternalAudit.ExternalAuditStatus</div>
+                    <div class="col-md-6"><strong>External Audit - Purposes of Client:</strong> @Model.ExternalAudit.ExternalAuditPurposes</div>
+                    <div class="col-md-6"><strong>Other Purpose:</strong> @Model.ExternalAudit.ExternalAuditOtherPurpose</div>
+                    <div class="col-md-6"><strong>Target Date of Issuance of Report:</strong> @Model.ExternalAudit.ExternalAuditReportDate?.ToString("yyyy-MM-dd")</div>
+                }
+                else
+                {
+                    <div class="col-12 text-muted">No additional data for this project type.</div>
+                }
+            </div>
+        </div>
+    }
+</div>

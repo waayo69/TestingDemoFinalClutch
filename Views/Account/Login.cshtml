@@ -1,0 +1,263 @@
+﻿@{
+    ViewData["Title"] = "Login";
+    Layout = "~/Views/Shared/_SpecifiedNav.cshtml";
+}
+<div class="login-container">
+    @if (ViewBag.Error != null)
+    {
+        <p class="error-message">@ViewBag.Error</p>
+    }
+
+    @if (ViewBag.Success != null)
+    {
+        <p class="success-message">@ViewBag.Success</p>
+    }
+
+    <form method="post" class="login-form">
+        <div class="logo-login">
+            <img src="~/css/CPCPA.svg" alt="Logo"> 
+        </div>
+        <div class="input-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="Enter your email" required />
+        </div>
+
+        <div class="input-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Enter your password" required />
+        </div>
+        <!-- Show Password Checkbox (Fixed Alignment) -->
+        <div class="checkbox-group">
+            <input type="checkbox" id="showPassword" onclick="togglePassword()">
+            <label for="showPassword">Show Password</label>
+        </div>
+
+        <button type="submit" class="btn-login">Login</button>
+    </form>
+    <div class="text-center mt-3">
+        <a href="/Account/ForgotPassword" class="btn btn-link">Forgot Password?</a>
+    </div>
+    <div class="text-center mt-2">
+        <a href="/Home/TrackRequest" class="btn btn-outline-primary w-100 mt-2"><i class="bi bi-search"></i> Track Your
+            Request (No Login Required)</a>
+    </div>
+</div>
+
+<!-- JavaScript Function to Toggle Password Visibility -->
+<script>
+    function togglePassword() {
+        var passwordField = document.getElementById("password");
+        passwordField.type = passwordField.type === "password" ? "text" : "password";
+    }
+</script>
+
+<style>
+    .logo-login img{
+        max-width: 100px;
+        max-height: 100px;
+        margin-bottom: -20px;
+    }
+    .login-container {
+        max-width: 400px;
+        align-items: center;
+        align-content: center;
+        margin: 30px auto;
+        padding: 10px;
+        background: #ffffff;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        text-align: center;
+    }
+
+    h2 {
+        margin-bottom: 20px;
+        font-size: 24px;
+        color: #333;
+    }
+
+    .input-group {
+        margin-bottom: 5px;
+        text-align: left;
+    }
+
+    label {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 2px;
+        color: #555;
+    }
+
+    input {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+    }
+
+    /* Fixed Checkbox Alignment */
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 15px;
+    }
+
+    .checkbox-group input {
+        width: auto;
+    }
+
+    input:focus {
+        border-color: #007BFF;
+        outline: none;
+    }
+
+    .btn-login {
+        width: 100%;
+        padding: 12px;
+        background: #007BFF;
+        color: white;
+        font-size: 16px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .btn-login:hover {
+        background: #0056b3;
+    }
+
+    .forgot-password {
+        margin-top: 10px;
+    }
+
+    .forgot-password a {
+        color: #007BFF;
+        text-decoration: none;
+    }
+
+    .forgot-password a:hover {
+        text-decoration: underline;
+    }
+
+    .error-message {
+        color: red;
+        margin-bottom: 15px;
+    }
+
+    /* Login Page Styles */
+    .login-container {
+        max-width: 400px;
+        margin: 30px auto;
+        padding: 30px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .login-container h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        color: #333;
+        font-weight: 600;
+    }
+
+    .login-form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .input-group label {
+        font-weight: 500;
+        color: #555;
+        font-size: 14px;
+    }
+
+    .input-group input {
+        padding: 12px 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+        transition: border-color 0.3s;
+    }
+
+    .input-group input:focus {
+        border-color: #4A90E2;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+    }
+
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: -10px;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: #4A90E2;
+    }
+
+    .checkbox-group label {
+        font-size: 14px;
+        color: #555;
+        cursor: pointer;
+    }
+
+    .btn-login {
+        background-color: #4A90E2;
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 4px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .btn-login:hover {
+        background-color: #3A80D2;
+    }
+
+    .forgot-password {
+        text-align: center;
+        margin-top: 10px;
+        font-size: 14px;
+    }
+
+    .forgot-password a {
+        color: #4A90E2;
+        text-decoration: none;
+        transition: color 0.3s;
+    }
+
+    .forgot-password a:hover {
+        color: #3A80D2;
+        text-decoration: underline;
+    }
+
+    .error-message {
+        background-color: #ffe0e0;
+        color: #d32f2f;
+        padding: 10px 15px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        border-left: 4px solid #d32f2f;
+    }
+
+    /* Dark mode overrides */
+    
+</style>

@@ -1,0 +1,147 @@
+@model TestingDemo.ViewModels.AnalyticsViewModel
+@{
+    ViewData["Title"] = "Expense Analytics";
+}
+<div class="container py-4">
+    <h2 class="mb-4"><i class="bi bi-bar-chart"></i> Expense Analytics Dashboard</h2>
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card text-bg-primary h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Total Expenses</h5>
+                    <h2 class="card-text">₱@Model.TotalExpenses.ToString("N2")</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-light fw-bold">Monthly Expense Trend</div>
+                <div class="card-body">
+                    <canvas id="expenseMonthChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-header bg-light fw-bold">Expenses by Category</div>
+                <div class="card-body">
+                    <canvas id="expenseCategoryChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-header bg-light fw-bold">Expenses by Status</div>
+                <div class="card-body">
+                    <canvas id="expenseStatusChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card mt-4">
+        <div class="card-header bg-light fw-bold">All Expenses</div>
+        <div class="card-body p-0 table-responsive">
+            <table class="table table-striped table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Name</th>
+                        <th>Amount</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                        <th>Category</th>
+                        <th>Location</th>
+                        <th>Recurring</th>
+                        <th>Paid Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var e in Model.AllExpenses)
+                    {
+                        <tr>
+                            <td>@e.Name</td>
+                            <td>₱@e.Amount.ToString("N2")</td>
+                            <td>@e.DueDate.ToString("yyyy-MM-dd")</td>
+                            <td>@e.Status</td>
+                            <td>@e.Category</td>
+                            <td>@e.Location</td>
+                            <td>@(e.Recurring ? "Yes" : "No")</td>
+                            <td>@(e.PaidDate?.ToString("yyyy-MM-dd") ?? "-")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Prepare data for charts
+        const expensesByMonth = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ExpensesByMonth));
+        const expensesByCategory = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ExpensesByCategory));
+        const expensesByStatus = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ExpensesByStatus));
+
+        // Monthly Trend Chart
+        const monthCtx = document.getElementById('expenseMonthChart').getContext('2d');
+        new Chart(monthCtx, {
+            type: 'line',
+            data: {
+                labels: Object.keys(expensesByMonth),
+                datasets: [{
+                    label: 'Total Expenses',
+                    data: Object.values(expensesByMonth),
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13,110,253,0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // Category Chart
+        const catCtx = document.getElementById('expenseCategoryChart').getContext('2d');
+        new Chart(catCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(expensesByCategory),
+                datasets: [{
+                    label: 'Expenses by Category',
+                    data: Object.values(expensesByCategory),
+                    backgroundColor: [
+                        '#0d6efd', '#ffc107', '#198754', '#dc3545', '#6f42c1', '#fd7e14', '#20c997', '#0dcaf0', '#adb5bd', '#212529'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+
+        // Status Chart
+        const statusCtx = document.getElementById('expenseStatusChart').getContext('2d');
+        new Chart(statusCtx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(expensesByStatus),
+                datasets: [{
+                    label: 'Expenses by Status',
+                    data: Object.values(expensesByStatus),
+                    backgroundColor: [
+                        '#198754', '#ffc107', '#dc3545', '#6c757d'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } }
+            }
+        });
+    </script>
+}

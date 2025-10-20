@@ -1,0 +1,149 @@
+@model IEnumerable<TestingDemo.Models.ViewModels.RecurringExpenseViewModel>
+@{
+    ViewData["Title"] = "Recurring Expense Calendar";
+    var year = ViewBag.Year ?? DateTime.Now.Year;
+    var month = ViewBag.Month ?? DateTime.Now.Month;
+    var firstDayOfMonth = new DateTime(year, month, 1);
+    var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+    var firstDayOfWeek = (int)firstDayOfMonth.DayOfWeek;
+    var daysInMonth = DateTime.DaysInMonth(year, month);
+    var expensesByDate = Model?.GroupBy(e => e.DueDate.Date).ToDictionary(g => g.Key, g => g.ToList()) ?? new Dictionary<DateTime, List<TestingDemo.Models.ViewModels.RecurringExpenseViewModel>>();
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                <div>
+                    <h1 class="h2 mb-0"><i class="bi bi-calendar-event"></i> Recurring Expense Calendar</h1>
+                    <p class="text-muted mb-0">View your recurring expenses in a calendar format</p>
+                </div>
+                <div class="d-flex flex-column flex-sm-row gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-list"></i>
+                        <span class="d-none d-sm-inline">List View</span>
+                        <span class="d-inline d-sm-none">List</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Month Navigation -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-12 col-md-6 mb-3 mb-md-0">
+                            <div class="btn-group w-100" role="group">
+                                <a asp-action="Calendar" asp-route-year="@(year)" asp-route-month="@(month - 1)"
+                                   class="btn btn-outline-secondary">
+                                    <i class="bi bi-chevron-left"></i>
+                                    <span class="d-none d-sm-inline">Previous</span>
+                                </a>
+                                <button type="button" class="btn btn-outline-secondary disabled flex-grow-1">
+                                    <i class="bi bi-calendar3"></i> @firstDayOfMonth.ToString("MMMM yyyy")
+                                </button>
+                                <a asp-action="Calendar" asp-route-year="@(year)" asp-route-month="@(month + 1)"
+                                   class="btn btn-outline-secondary">
+                                    <span class="d-none d-sm-inline">Next</span>
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 text-center text-md-end">
+                            <a asp-action="Calendar" asp-route-year="@DateTime.Now.Year" asp-route-month="@DateTime.Now.Month"
+                               class="btn btn-outline-info">
+                                <i class="bi bi-calendar-today"></i>
+                                <span class="d-none d-sm-inline">Today</span>
+                                <span class="d-inline d-sm-none">Now</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendar Grid -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-bordered mb-0 calendar-table">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th class="text-center calendar-header">Sunday</th>
+                                    <th class="text-center calendar-header">Monday</th>
+                                    <th class="text-center calendar-header">Tuesday</th>
+                                    <th class="text-center calendar-header">Wednesday</th>
+                                    <th class="text-center calendar-header">Thursday</th>
+                                    <th class="text-center calendar-header">Friday</th>
+                                    <th class="text-center calendar-header">Saturday</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var currentDay = 1;
+                                    var totalWeeks = (int)Math.Ceiling((firstDayOfWeek + daysInMonth) / 7.0);
+                                    for (int week = 0; week < totalWeeks; week++)
+                                    {
+                                        <tr class="calendar-row">
+                                            @for (int dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++)
+                                            {
+                                                var isCurrentMonth = (week == 0 && dayOfWeek >= firstDayOfWeek) ||
+                                                                   (week > 0 && currentDay <= daysInMonth);
+                                                var currentDate = isCurrentMonth ? new DateTime(year, month, currentDay) : DateTime.MinValue;
+                                                var hasExpenses = isCurrentMonth && expensesByDate.ContainsKey(currentDate);
+                                                var isToday = currentDate == DateTime.Today;
+
+                                                <td class="calendar-cell @(isCurrentMonth ? "" : "bg-light")"
+                                                    style="height: 140px; vertical-align: top;">
+                                                    @if (isCurrentMonth)
+                                                    {
+                                                        <div class="d-flex justify-content-between align-items-start p-2">
+                                                            <span class="badge @(isToday ? "bg-primary" : "bg-secondary") rounded-pill">
+                                                                @currentDay
+                                                            </span>
+                                                            @if (hasExpenses)
+                                                            {
+                                                                <span class="badge bg-danger rounded-pill">
+                                                                    @expensesByDate[currentDate].Count
+                                                                </span>
+                                                            }
+                                                        </div>
+                                                        @if (hasExpenses)
+                                                        {
+                                                            <div class="px-2">
+                                                                @foreach (var expense in expensesByDate[currentDate])
+                                                                {
+                                                                    <div class="mb-1">
+                                                                        <small class="d-block text-truncate expense-item"
+                                                                               style="max-width: 120px;"
+                                                                               title="@expense.Name - ₱@expense.Amount.ToString("N2")">
+                                                                            <span class="badge bg-@(expense.Status == "Paid" ? "success" : "warning") me-1">
+                                                                                @expense.Status
+                                                                            </span>
+                                                                            @expense.Name
+                                                                        </small>
+                                                                    </div>
+                                                                }
+                                                            </div>
+                                                        }
+                                                        currentDay++;
+                                                    }
+                                                </td>
+                                            }
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

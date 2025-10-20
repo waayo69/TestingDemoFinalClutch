@@ -1,0 +1,47 @@
+@model ViewDataDictionary
+@{
+    var pageModel = ViewData["pageModel"] as TestingDemo.Models.PaginatedList<TestingDemo.Models.ClientModel>;
+    var pageAction = ViewData["pageAction"]?.ToString() ?? string.Empty;
+    // Determine which page number belongs to this pagination instance
+    var isPendingPaginator = (ViewData["pageNumberParam"]?.ToString() ?? "") == "pendingPageNumber";
+
+    // Get both page numbers from the main view's model
+    var otherPageNumberObj = ViewData["otherPageNumber"];
+    var otherPageNumber = otherPageNumberObj is int pageNum ? pageNum : 1;
+    var pendingPage = isPendingPaginator ? (pageModel?.PageIndex ?? 1) : otherPageNumber;
+    var clearancePage = !isPendingPaginator ? (pageModel?.PageIndex ?? 1) : otherPageNumber;
+
+    var sortOrder = ViewData["CurrentSort"] as string;
+    var searchString = ViewData["CurrentFilter"] as string;
+}
+
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center mb-0">
+        <!-- Previous Button -->
+        <li class="page-item @(pageModel?.HasPreviousPage == true ? "" : "disabled")">
+            <a class="page-link" asp-action="@pageAction" asp-route-sortOrder="@sortOrder"
+                asp-route-searchString="@searchString"
+                asp-route-pendingPageNumber="@(isPendingPaginator ? (pageModel?.PageIndex ?? 1) - 1 : pendingPage)"
+                asp-route-clearancePageNumber="@(!isPendingPaginator ? (pageModel?.PageIndex ?? 1) - 1 : clearancePage)">&laquo;</a>
+        </li>
+
+        <!-- Page Number Links -->
+        @for (int i = 1; i <= (pageModel?.TotalPages ?? 1); i++)
+        {
+            <li class="page-item @(i == (pageModel?.PageIndex ?? 1) ? "active" : "")">
+                <a class="page-link" asp-action="@pageAction" asp-route-sortOrder="@sortOrder"
+                    asp-route-searchString="@searchString"
+                    asp-route-pendingPageNumber="@(isPendingPaginator ? i : pendingPage)"
+                    asp-route-clearancePageNumber="@(!isPendingPaginator ? i : clearancePage)">@i</a>
+            </li>
+        }
+
+        <!-- Next Button -->
+        <li class="page-item @(pageModel?.HasNextPage == true ? "" : "disabled")">
+            <a class="page-link" asp-action="@pageAction" asp-route-sortOrder="@sortOrder"
+                asp-route-searchString="@searchString"
+                asp-route-pendingPageNumber="@(isPendingPaginator ? (pageModel?.PageIndex ?? 1) + 1 : pendingPage)"
+                asp-route-clearancePageNumber="@(!isPendingPaginator ? (pageModel?.PageIndex ?? 1) + 1 : clearancePage)">&raquo;</a>
+        </li>
+    </ul>
+</nav>

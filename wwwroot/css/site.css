@@ -1,0 +1,1016 @@
+/* Root HTML settings */
+html {
+  font-size: 14px;
+  position: relative;
+  min-height: 100%;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f8f9fa;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Main Dashboard Container */
+
+.dashboard-container {
+    width: 100vw;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Dashboard Grid Layout */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-areas:
+    "liaison finance received"
+    "liaison planning documentation";
+  gap: 20px;
+}
+
+/* Grid Item Base */
+.dashboard-grid-item {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 240px;
+}
+
+/* Individual Area Heights */
+.dashboard-liaison {
+  grid-area: liaison;
+  min-height: 500px;
+  overflow-y: auto;
+}
+
+.dashboard-finance {
+  grid-area: finance;
+  overflow-y: auto;
+  max-height: 240px;
+}
+
+.dashboard-received {
+    grid-area: received;
+    overflow-y: auto;
+    max-height: 240px;
+}
+
+.dashboard-planning {
+    grid-area: planning;
+    overflow-y: auto;
+    max-height: 240px;
+}
+
+.dashboard-documentation {
+    grid-area: documentation;
+    overflow-y: auto;
+    max-height: 240px;
+}
+
+/* Hover effect */
+.dashboard-grid-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  transition: 0.2s ease-in-out;
+}
+
+/* Title */
+.dashboard-title {
+  background: #0d6efd;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 12px 0;
+  margin: 0;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  flex: 0 0 auto;
+}
+
+/* Table Styling */
+.dashboard-table {
+  flex: 1 1 auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.875rem;
+}
+
+.dashboard-table thead {
+  background-color: #e9ecef;
+  flex-shrink: 0;
+}
+
+.dashboard-table th {
+  padding: 8px 12px;
+  background-color: #e9ecef;
+  color: #495057;
+  font-weight: 600;
+  border: 1px solid #dee2e6;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.dashboard-table tbody {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  display: block;
+}
+
+.dashboard-table tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.dashboard-table td {
+  padding: 8px 12px;
+  background-color: #ffffff;
+  color: #212529;
+  border: 1px solid #dee2e6;
+  border-top: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+.dashboard-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.dashboard-table tbody tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+.dashboard-table tbody tr:nth-child(even):hover {
+  background-color: #e9ecef;
+}
+
+/* Column Widths */
+.dashboard-table th:nth-child(1),
+.dashboard-table td:nth-child(1) {
+  width: 35%;
+}
+
+.dashboard-table th:nth-child(2),
+.dashboard-table td:nth-child(2) {
+  width: 35%;
+}
+
+.dashboard-table th:nth-child(3),
+.dashboard-table td:nth-child(3) {
+  width: 30%;
+}
+
+/* Scrollbar */
+.dashboard-table tbody::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dashboard-table tbody::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.dashboard-table tbody::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.dashboard-table tbody::-webkit-scrollbar-thumb:hover {
+  background: #888;
+}
+
+/* Responsive Layout */
+@media (max-width: 1200px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "liaison liaison"
+      "finance received"
+      "planning documentation";
+  }
+
+  .dashboard-liaison {
+    min-height: 400px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 8px;
+  }
+
+  .dashboard-grid {
+    gap: 12px;
+  }
+
+  .dashboard-grid-item {
+    margin-bottom: 8px;
+    min-height: 180px;
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard-grid {
+    gap: 8px;
+  }
+
+  .dashboard-grid-item {
+    border-radius: 8px;
+    min-height: 120px;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+  }
+
+  .dashboard-title {
+    font-size: 0.95rem;
+    padding: 7px 0;
+    border-radius: 8px 8px 0 0;
+  }
+
+  .dashboard-table {
+    font-size: 0.7rem;
+    overflow-x: auto;
+    display: block;
+    width: 100%;
+  }
+
+  .dashboard-table thead,
+  .dashboard-table tbody {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+  }
+
+  .dashboard-table th,
+  .dashboard-table td {
+    padding: 4px 4px;
+    font-size: 0.7rem;
+    min-width: 80px;
+    white-space: nowrap;
+  }
+
+  .dashboard-table th:nth-child(3),
+  .dashboard-table td:nth-child(3) {
+    display: none;
+  }
+
+  .dashboard-table th:nth-child(1),
+  .dashboard-table td:nth-child(1),
+  .dashboard-table th:nth-child(2),
+  .dashboard-table td:nth-child(2) {
+    width: 50%;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-title {
+    font-size: 0.9rem;
+    padding: 8px 0;
+  }
+
+  .dashboard-table th,
+  .dashboard-table td {
+    padding: 4px 6px;
+    font-size: 0.75rem;
+  }
+
+  .dashboard-table th:nth-child(3),
+  .dashboard-table td:nth-child(3) {
+    display: none;
+  }
+
+  .dashboard-table th:nth-child(1),
+  .dashboard-table td:nth-child(1),
+  .dashboard-table th:nth-child(2),
+  .dashboard-table td:nth-child(2) {
+    width: 50%;
+  }
+
+  .dashboard-grid-item {
+    margin-bottom: 14px;
+  }
+}
+
+/* No Data Message */
+.no-data {
+  color: #6c757d;
+  font-style: italic;
+  text-align: center;
+}
+
+/* Responsive styles for Finance client table */
+@media (max-width: 576px) {
+  .table-responsive .btn-group .btn {
+    min-width: 40px;
+    font-size: 1rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .table-responsive th,
+  .table-responsive td {
+    white-space: normal;
+  }
+}
+
+/* Modern Planning Officer Styles */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.bg-gradient-secondary {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.bg-gradient-success {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.bg-gradient-info {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.bg-gradient-warning {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.bg-gradient-danger {
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+}
+
+/* Enhanced Card Styles */
+.card-modern {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.card-modern:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* Modern Button Styles */
+.btn-modern {
+    border-radius: 12px;
+    font-weight: 600;
+    padding: 10px 24px;
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Enhanced Table Styles */
+.table-modern {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table-modern thead th {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6c757d;
+}
+
+.table-modern tbody tr {
+    transition: all 0.2s ease;
+}
+
+.table-modern tbody tr:hover {
+    background-color: rgba(102, 126, 234, 0.05);
+    transform: scale(1.01);
+}
+
+/* Modern Badge Styles */
+.badge-modern {
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+
+/* Enhanced Modal Styles */
+.modal-modern .modal-content {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.modal-modern .modal-header {
+    border-radius: 20px 20px 0 0;
+    border-bottom: none;
+}
+
+.modal-modern .modal-footer {
+    border-radius: 0 0 20px 20px;
+    border-top: none;
+}
+
+/* Progress Bar Enhancement */
+.progress-modern {
+    height: 10px;
+    border-radius: 10px;
+    background-color: #e9ecef;
+    overflow: hidden;
+}
+
+.progress-modern .progress-bar {
+    border-radius: 10px;
+    transition: width 0.6s ease;
+}
+
+/* Loading Animation */
+.loading-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Enhanced Form Controls */
+.form-control-modern {
+    border-radius: 12px;
+    border: 2px solid #e9ecef;
+    padding: 12px 16px;
+    transition: all 0.3s ease;
+}
+
+.form-control-modern:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+/* Alert Enhancements */
+.alert-modern {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Pagination Enhancement */
+.pagination-modern .page-link {
+    border: none;
+    border-radius: 12px;
+    margin: 0 4px;
+    padding: 10px 16px;
+    color: #6c757d;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.pagination-modern .page-link:hover {
+    background-color: #667eea;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.pagination-modern .page-item.active .page-link {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+}
+
+/* Icon Enhancement */
+.icon-modern {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    color: #667eea;
+    transition: all 0.3s ease;
+}
+
+.icon-modern:hover {
+    transform: scale(1.1);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+}
+
+/* Enhanced Modal Styles with Backdrop Blur */
+.modal-backdrop {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    background-color: rgba(0, 0, 0, 0.3) !important;
+}
+
+.modal-backdrop.show {
+    opacity: 1;
+}
+
+/* Modal Content Enhancement */
+.modal-content {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.modal-header {
+    border-radius: 20px 20px 0 0;
+    border-bottom: none;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.modal-footer {
+    border-radius: 0 0 20px 20px;
+    border-top: none;
+    background: rgba(248, 249, 250, 0.8);
+}
+
+/* Modal Animation Enhancement */
+.modal.fade .modal-dialog {
+    transform: scale(0.8) translateY(-50px);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal.show .modal-dialog {
+    transform: scale(1) translateY(0);
+}
+
+/* Modal Focus Enhancement */
+.modal:focus {
+    outline: none;
+}
+
+.modal-content:focus {
+    outline: none;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25), 0 0 0 3px rgba(102, 126, 234, 0.3);
+}
+
+/* Enhanced Modal Backdrop */
+.modal-backdrop.show {
+    animation: backdropFadeIn 0.3s ease-out;
+}
+
+@keyframes backdropFadeIn {
+    from {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+        -webkit-backdrop-filter: blur(0px);
+    }
+    to {
+        opacity: 1;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+    }
+}
+
+/* Modal Body Enhancement */
+.modal-body {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+/* Modal Close Button Enhancement */
+.btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+    transition: all 0.2s ease;
+}
+
+.btn-close:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Modal Form Enhancement */
+.modal .form-control {
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid rgba(102, 126, 234, 0.2);
+    transition: all 0.3s ease;
+}
+
+.modal .form-control:focus {
+    background: rgba(255, 255, 255, 1);
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+/* Modal Button Enhancement */
+.modal .btn {
+    transition: all 0.3s ease;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.modal .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Specific Modal Themes */
+.modal-header.bg-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.modal-header.bg-success {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+}
+
+.modal-header.bg-warning {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%) !important;
+}
+
+.modal-header.bg-danger {
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%) !important;
+}
+
+/* Modal Size Variations */
+.modal-dialog.modal-xl {
+    max-width: 1140px;
+}
+
+.modal-dialog.modal-lg {
+    max-width: 800px;
+}
+
+.modal-dialog.modal-sm {
+    max-width: 400px;
+}
+
+/* Modal Responsive Enhancement */
+@media (max-width: 768px) {
+    .modal-dialog {
+        margin: 1rem;
+        max-width: calc(100% - 2rem);
+    }
+    
+    .modal-content {
+        border-radius: 16px;
+    }
+    
+    .modal-header {
+        border-radius: 16px 16px 0 0;
+    }
+    
+    .modal-footer {
+        border-radius: 0 0 16px 16px;
+    }
+}
+
+/* Modal Loading States */
+.modal-loading {
+    position: relative;
+}
+
+.modal-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050;
+}
+
+.modal-loading::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    z-index: 1051;
+}
+
+/* Fix Modal Layering Issues */
+.modal {
+    z-index: 1055 !important;
+}
+
+.modal-backdrop {
+    z-index: 1054 !important;
+}
+
+/* Ensure proper modal stacking */
+.modal-dialog {
+    z-index: 1056 !important;
+}
+
+/* Prevent multiple backdrops */
+.modal-backdrop + .modal-backdrop {
+    display: none !important;
+}
+
+/* Fix body padding when multiple modals */
+body.modal-open {
+    padding-right: 0 !important;
+}
+
+/* Ensure modals are properly positioned */
+.modal.fade .modal-dialog {
+    transform: scale(0.8) translateY(-50px);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal.show .modal-dialog {
+    transform: scale(1) translateY(0);
+}
+
+/* Modal cleanup utilities */
+.modal-cleanup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    z-index: 1053;
+    pointer-events: none;
+}
+
+/* Force modal cleanup */
+.modal-force-cleanup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1057;
+    display: none;
+}
+
+.modal-force-cleanup.show {
+    display: block;
+}
+
+/* Success Message Animations */
+.success-message-enter {
+    animation: slideInDown 0.5s ease-out;
+}
+
+.success-message-exit {
+    animation: slideOutUp 0.3s ease-in;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideOutUp {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+}
+
+/* Form State Transitions */
+.form-fields-exit {
+    animation: fadeOut 0.3s ease-out forwards;
+}
+
+.form-fields-enter {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Button State Transitions */
+.btn-state-transition {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+/* Success Button Enhancement */
+.btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    box-shadow: 0 4px 16px rgba(40, 167, 69, 0.3);
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
+/* Form Validation Enhancement */
+.form-control.is-valid {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+  
+.form-control.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+/* Sidebar */
+.sidebar {
+    width: 220px;
+    min-height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #0d6efd; /* Bootstrap primary */
+    padding-top: 1rem;
+}
+
+    .sidebar .nav-link {
+        color: #fff;
+        font-weight: 500;
+        padding: 0.75rem 1rem;
+    }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background-color: #0b5ed7; /* darker blue */
+            color: #fff;
+        }
+
+/* Sidebar */
+.sidebar {
+    width: 46px; /* collapsed width */
+    min-height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #0d6efd;
+    padding-top: 1rem;
+    transition: width 0.3s ease;
+    z-index: 1030; /* stays on top */
+    overflow-x: hidden;
+}
+
+    .sidebar:hover {
+        width: 220px; /* expanded width */
+    }
+
+    .sidebar .nav-link {
+        color: #fff;
+        font-weight: 500;
+        padding: 0.75rem 1rem;  
+        white-space: nowrap;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        transition: background-color 0.2s;
+    }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background-color: #0b5ed7;
+            color: #fff;
+        }
+
+        .sidebar .nav-link i {
+            font-size: 1.2rem;
+            margin-right: 10px;
+        }
+
+        /* Hide text until expanded */
+        .sidebar .nav-link span {
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+    .sidebar:hover .nav-link span {
+        opacity: 1;
+    }
+.sidebar-logo {
+    padding:2;
+    width: 40px;
+    filter: invert(1);
+    transition: width 0.3s ease-in-out;
+}
+
+.sidebar:hover .sidebar-logo {
+    width: 60px;
+}
+
+/* Content */
+.content {
+    margin-left: 70px; /* always account for collapsed sidebar */
+    transition: margin-left 0.3s ease;
+    padding: 20px;
+}
+
+/* Footer stays aligned with content */
+footer {
+    margin-left: 70px;
+    transition: margin-left 0.3s ease;
+}
+
+
+
+/* Mobile view adjustments */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 60px;
+    }
+
+        .sidebar:hover {
+            width: 200px;
+        }
+
+    .content {
+        margin-left: 60px; /* consistent with collapsed sidebar */
+    }
+
+    footer {
+        margin-left: 60px;
+    }
+}
+
+

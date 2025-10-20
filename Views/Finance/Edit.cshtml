@@ -1,0 +1,421 @@
+@model TestingDemo.Models.ClientModel
+
+@{
+    ViewData["Title"] = "Edit Client";
+}
+
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index">Clients</a></li>
+                    <li class="breadcrumb-item active">Edit Client</li>
+                </ol>
+            </nav>
+            <h2 class="mb-3"><i class="bi bi-pencil-square"></i> Edit Client</h2>
+        </div>
+    </div>
+    <form asp-action="Edit" method="post" class="needs-validation" novalidate enctype="multipart/form-data">
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="CreatedDate" />
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+        <div class="row g-4">
+            <!-- Client Info Section -->
+            <div class="col-12">
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <i class="bi bi-person-badge"></i> Client Information
+                    </div>
+                    <div class="card-body row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="ClientName" class="form-label fw-bold">Client Name <span
+                                    class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input asp-for="ClientName" class="form-control" placeholder="Enter client name"
+                                    required />
+                            </div>
+                            <span asp-validation-for="ClientName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ClientType" class="form-label fw-bold">Type of Client <span
+                                    class="text-danger">*</span></label>
+                            <select asp-for="ClientType" class="form-select" required>
+                                <option value="">-- Select Type of Client --</option>
+                                <option value="New or Walk-in Client">New or Walk-in Client</option>
+                                <option value="Continuing or Returning Client">Continuing or Returning Client</option>
+                                <option value="Retainer Client">Retainer Client</option>
+                            </select>
+                            <span asp-validation-for="ClientType" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Contact Info Section -->
+            <div class="col-12">
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-secondary text-white">
+                        <i class="bi bi-telephone"></i> Contact Information
+                    </div>
+                    <div class="card-body row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="ContactPersonNumber" class="form-label fw-bold">Contact Number <span
+                                    class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                                <input asp-for="ContactPersonNumber" class="form-control"
+                                    placeholder="Enter contact number" required />
+                            </div>
+                            <span asp-validation-for="ContactPersonNumber" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Email" class="form-label fw-bold">Email <span
+                                    class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <input asp-for="Email" class="form-control" placeholder="Enter email address"
+                                    required />
+                            </div>
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ContactPersonEmailAddress" class="form-label fw-bold">Contact Person
+                                Email</label>
+                            <input asp-for="ContactPersonEmailAddress" class="form-control"
+                                placeholder="Enter contact person email address (optional)" />
+                            <span asp-validation-for="ContactPersonEmailAddress" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Company Info Section -->
+            <div class="col-12">
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-info text-white">
+                        <i class="bi bi-building"></i> Company Information
+                    </div>
+                    <div class="card-body row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="RegisteredCompanyName" class="form-label fw-bold">Registered Company
+                                Name</label>
+                            <input asp-for="RegisteredCompanyName" class="form-control"
+                                placeholder="Enter registered company name (optional)" />
+                            <span asp-validation-for="RegisteredCompanyName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="RegisteredCompanyAddress" class="form-label fw-bold">Company Address <span
+                                    class="text-danger">*</span></label>
+                            <input asp-for="RegisteredCompanyAddress" class="form-control"
+                                placeholder="Enter company address" required />
+                            <span asp-validation-for="RegisteredCompanyAddress" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="TaxId" class="form-label fw-bold">Tax ID</label>
+                            <input asp-for="TaxId" class="form-control" placeholder="Enter tax ID/number (optional)" />
+                            <span asp-validation-for="TaxId" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Project Info Section -->
+            <div class="col-12">
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-success text-white">
+                        <i class="bi bi-kanban"></i> Project Information
+                    </div>
+                    <div class="card-body row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="TypeOfProject" class="form-label fw-bold">Project Type <span
+                                    class="text-danger">*</span></label>
+                            <select asp-for="TypeOfProject" class="form-select" id="typeOfProjectSelect" required>
+                                <option value="">-- Select Project Type --</option>
+                                <option value="Retainership - BIR">Retainership - BIR</option>
+                                <option value="Retainership - SPP">Retainership - SPP</option>
+                                <option value="One Time Transaction">One Time Transaction</option>
+                                <option value="External Audit">External Audit</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <span asp-validation-for="TypeOfProject" class="text-danger small"></span>
+                            <div id="otherTypeOfProjectDiv" class="mt-2" style="display:none;">
+                                <input type="text" class="form-control" id="otherTypeOfProjectInput"
+                                    name="OtherTypeOfProject" placeholder="Please specify project type"
+                                    value="@Model.OtherTypeOfProject" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="UrgencyLevel" class="form-label fw-bold">Urgency Level <span
+                                    class="text-danger">*</span></label>
+                            <div class="btn-group w-100" role="group" aria-label="Urgency Level">
+                                <input type="radio" class="btn-check" asp-for="UrgencyLevel" id="urgencyNormal"
+                                    value="Normal" autocomplete="off">
+                                <label class="btn btn-outline-success" for="urgencyNormal"><i
+                                        class="bi bi-thermometer-half"></i> Normal</label>
+                                <input type="radio" class="btn-check" asp-for="UrgencyLevel" id="urgencySlightly"
+                                    value="Slightly Urgent" autocomplete="off">
+                                <label class="btn btn-outline-warning" for="urgencySlightly"><i
+                                        class="bi bi-exclamation-triangle"></i> Slightly Urgent</label>
+                                <input type="radio" class="btn-check" asp-for="UrgencyLevel" id="urgencyUrgent"
+                                    value="Urgent" autocomplete="off">
+                                <label class="btn btn-outline-danger" for="urgencyUrgent"><i
+                                        class="bi bi-exclamation-octagon"></i> Urgent</label>
+                            </div>
+                            <span asp-validation-for="UrgencyLevel" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Additional Info Section -->
+            <div class="col-12">
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-light text-dark">
+                        <i class="bi bi-info-circle"></i> Additional Information
+                    </div>
+                    <div class="card-body row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="RequestingParty" class="form-label fw-bold">Requesting Party</label>
+                            <select asp-for="RequestingParty" class="form-select" id="requestingPartySelect">
+                                <option value="">-- Select Requesting Party --</option>
+                                <option value="Office of the President">Office of the President</option>
+                                <option value="Finance, Accounting and Customer Service Department">Finance, Accounting
+                                    and Customer Service Department</option>
+                                <option value="Sales and Operations Department">Sales and Operations Department</option>
+                                <option value="Special Operations Department">Special Operations Department</option>
+                                <option value="Operational Planning and Invoicing Department">Operational Planning and
+                                    Invoicing Department</option>
+                                <option value="Facebook Inquiry">Facebook Inquiry</option>
+                                <option value="Instagram Inquiry">Instagram Inquiry</option>
+                                <option value="X (formerly Twitter) Inquiry">X (formerly Twitter) Inquiry</option>
+                                <option value="LinkedIn Inquiry">LinkedIn Inquiry</option>
+                                <option value="Google SEO Inquiry">Google SEO Inquiry</option>
+                                <option value="Tiktok Inquiry">Tiktok Inquiry</option>
+                                <option value="Referral by">Referral by</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <span asp-validation-for="RequestingParty" class="text-danger small"></span>
+                            <div id="otherRequestingPartyDiv" class="mt-2" style="display:none;">
+                                <input type="text" class="form-control" id="otherRequestingPartyInput"
+                                    name="OtherRequestingParty"
+                                    placeholder="Please specify (e.g. name of referrer or other details)"
+                                    value="@Model.OtherRequestingParty" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="RequestorName" class="form-label fw-bold">Requestor Name</label>
+                            <input asp-for="RequestorName" class="form-control"
+                                placeholder="Enter requestor name (optional)" />
+                            <span asp-validation-for="RequestorName" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Project Type Specific Sections (BIR, SPP, One Time, External Audit) -->
+            <!-- Copy the structure from Create, but pre-fill values from the model -->
+            <div class="col-12" id="retainerBIRSection" style="display:none;">
+                <div class="card shadow-sm mb-3 border-primary">
+                    <div class="card-header bg-primary text-white">
+                        <i class="bi bi-file-earmark-text"></i> Retainership - BIR Details
+                    </div>
+                    <div class="card-body row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Type of Registrant</label>
+                            <input class="form-control" name="RetainershipBIR.TypeOfRegistrant"
+                                value="@Model.RetainershipBIR?.TypeOfRegistrant" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">OCN Number Notes</label>
+                            <input class="form-control" name="RetainershipBIR.OCNNotes"
+                                value="@Model.RetainershipBIR?.OCNNotes" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Date OCN Generated</label>
+                            <input type="date" class="form-control" name="RetainershipBIR.DateOCNGenerated"
+                                value="@(Model.RetainershipBIR?.DateOCNGenerated?.ToString("yyyy-MM-dd"))" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Date of BIR Registration</label>
+                            <input type="date" class="form-control" name="RetainershipBIR.DateBIRRegistration"
+                                value="@(Model.RetainershipBIR?.DateBIRRegistration?.ToString("yyyy-MM-dd"))" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">BIR RDO No.</label>
+                            <input class="form-control" name="RetainershipBIR.BIRRdoNo"
+                                value="@Model.RetainershipBIR?.BIRRdoNo" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Other BIR RDO No.</label>
+                            <input class="form-control" name="RetainershipBIR.OtherBirRdoNo"
+                                value="@Model.RetainershipBIR?.OtherBirRdoNo" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Status of Tax Filing</label>
+                            <input class="form-control" name="RetainershipBIR.TaxFilingStatus"
+                                value="@Model.RetainershipBIR?.TaxFilingStatus" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Catch-Up Accounting Needed?</label>
+                            <input class="form-control" name="RetainershipBIR.NeedCatchUpAccounting"
+                                value="@Model.RetainershipBIR?.NeedCatchUpAccounting" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Catch-Up Reasons</label>
+                            <input class="form-control" name="RetainershipBIR.CatchUpReasons"
+                                value="@Model.RetainershipBIR?.CatchUpReasons" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Other Catch-Up Reason</label>
+                            <input class="form-control" name="RetainershipBIR.OtherCatchUpReason"
+                                value="@Model.RetainershipBIR?.OtherCatchUpReason" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Target Date to Start Catch-Up Accounting</label>
+                            <input type="date" class="form-control" name="RetainershipBIR.CatchUpStartDate"
+                                value="@(Model.RetainershipBIR?.CatchUpStartDate?.ToString("yyyy-MM-dd"))" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">BIR Compliance Activities</label>
+                            <input class="form-control" name="RetainershipBIR.BIRComplianceActivities"
+                                value="@Model.RetainershipBIR?.BIRComplianceActivities" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Other BIR Compliance</label>
+                            <input class="form-control" name="RetainershipBIR.OtherBIRCompliance"
+                                value="@Model.RetainershipBIR?.OtherBIRCompliance" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Target Date to Start Subscription - BIR
+                                Retainership</label>
+                            <input type="date" class="form-control" name="RetainershipBIR.BIRRetainershipStartDate"
+                                value="@(Model.RetainershipBIR?.BIRRetainershipStartDate?.ToString("yyyy-MM-dd"))" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12" id="retainerSPPSection" style="display:none;">
+                <div class="card shadow-sm mb-3 border-info">
+                    <div class="card-header bg-info text-white">
+                        <i class="bi bi-file-earmark-text"></i> Retainership - SPP Details
+                    </div>
+                    <div class="card-body row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">SSS Company Registration No.</label>
+                            <input class="form-control" name="RetainershipSPP.SSSCompanyRegNo"
+                                value="@Model.RetainershipSPP?.SSSCompanyRegNo" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Date of SSS Registration</label>
+                            <input type="date" class="form-control" name="RetainershipSPP.SSSRegistrationDate"
+                                value="@(Model.RetainershipSPP?.SSSRegistrationDate?.ToString("yyyy-MM-dd"))" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">PHIC Company Registration No.</label>
+                            <input class="form-control" name="RetainershipSPP.PHICCompanyRegNo"
+                                value="@Model.RetainershipSPP?.PHICCompanyRegNo" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Date of PHIC Registration</label>
+                            <input type="date" class="form-control" name="RetainershipSPP.PHICRegistrationDate"
+                                value="@(Model.RetainershipSPP?.PHICRegistrationDate?.ToString("yyyy-MM-dd"))" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">HDMF Company Registration No.</label>
+                            <input class="form-control" name="RetainershipSPP.HDMFCompanyRegNo"
+                                value="@Model.RetainershipSPP?.HDMFCompanyRegNo" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Date of HDMF Registration</label>
+                            <input type="date" class="form-control" name="RetainershipSPP.HDMFRegistrationDate"
+                                value="@(Model.RetainershipSPP?.HDMFRegistrationDate?.ToString("yyyy-MM-dd"))" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Maintenance of SPP Compliance</label>
+                            <input class="form-control" name="RetainershipSPP.SPPComplianceActivities"
+                                value="@Model.RetainershipSPP?.SPPComplianceActivities" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Other SPP Compliance</label>
+                            <input class="form-control" name="RetainershipSPP.OtherSPPCompliance"
+                                value="@Model.RetainershipSPP?.OtherSPPCompliance" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Target Date to Start Subscription - SPP
+                                Retainership</label>
+                            <input type="date" class="form-control" name="RetainershipSPP.SPPRetainershipStartDate"
+                                value="@(Model.RetainershipSPP?.SPPRetainershipStartDate?.ToString("yyyy-MM-dd"))" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12" id="oneTimeTransactionSection" style="display:none;">
+                <div class="card shadow-sm mb-3 border-warning">
+                    <div class="card-header bg-warning text-dark">
+                        <i class="bi bi-file-earmark-text"></i> One Time Transaction Details
+                    </div>
+                    <div class="card-body row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Type of Registrant</label>
+                            <input class="form-control" name="OneTimeTransaction.TypeOfRegistrant"
+                                value="@Model.OneTimeTransaction?.TypeOfRegistrant" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Area of Services</label>
+                            <input class="form-control" name="OneTimeTransaction.AreaOfServices"
+                                value="@Model.OneTimeTransaction?.AreaOfServices" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Other Area of Services</label>
+                            <input class="form-control" name="OneTimeTransaction.OtherAreaOfServices"
+                                value="@Model.OneTimeTransaction?.OtherAreaOfServices" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12" id="externalAuditSection" style="display:none;">
+                <div class="card shadow-sm mb-3 border-secondary">
+                    <div class="card-header bg-secondary text-white">
+                        <i class="bi bi-file-earmark-text"></i> External Audit Details
+                    </div>
+                    <div class="card-body row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Status of External Audit Client</label>
+                            <input class="form-control" name="ExternalAudit.ExternalAuditStatus"
+                                value="@Model.ExternalAudit?.ExternalAuditStatus" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">External Audit - Purposes of Client</label>
+                            <input class="form-control" name="ExternalAudit.ExternalAuditPurposes"
+                                value="@Model.ExternalAudit?.ExternalAuditPurposes" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Other Purpose</label>
+                            <input class="form-control" name="ExternalAudit.ExternalAuditOtherPurpose"
+                                value="@Model.ExternalAudit?.ExternalAuditOtherPurpose" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Target Date of Issuance of Report</label>
+                            <input type="date" class="form-control" name="ExternalAudit.ExternalAuditReportDate"
+                                value="@(Model.ExternalAudit?.ExternalAuditReportDate?.ToString("yyyy-MM-dd"))" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 d-flex justify-content-end gap-2 mt-3">
+            <button type="submit" class="btn btn-primary px-4" data-bs-toggle="tooltip"
+                title="Save changes to this client. This will update their information.">
+                <i class="bi bi-save"></i> Update Client
+            </button>
+            <a asp-action="Index" class="btn btn-outline-secondary px-4" data-bs-toggle="tooltip"
+                title="Cancel and return to the client list. No changes will be saved.">
+                <i class="bi bi-x-circle"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="~/js/finance-create.js"></script>
+}

@@ -1,0 +1,108 @@
+@model TestingDemo.Models.ClientModel
+@{
+    ViewData["Title"] = "Tracking Result";
+    // Define the ordered workflow steps
+    var steps = new[] { "Pending", "Finance", "Planning", "Liaison", "Received", "DocumentOfficer", "Clearance",
+"Archived" };
+    var currentStep = steps.ToList().FindIndex(s => s.Equals(Model.Status, System.StringComparison.OrdinalIgnoreCase));
+    var percent = (int)(((currentStep + 1) / (double)steps.Length) * 100);
+}
+<div class="container py-5" style="max-width: 500px;">
+    <h2 class="mb-4 text-center"><i class="bi bi-geo-alt"></i> Request Status</h2>
+    <!-- Progress Bar -->
+    <div class="mb-4">
+        <div class="progress" style="height: 30px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar"
+                style="width: @percent%" aria-valuenow="@percent" aria-valuemin="0" aria-valuemax="100">
+                @if (currentStep >= 0)
+                {
+                    <span class="fw-bold">@steps[currentStep] (@percent%)</span>
+                }
+                else
+                {
+                    <span class="fw-bold">Unknown Status</span>
+                }
+            </div>
+        </div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center mt-3 gap-2 status-steps">
+            @foreach (var step in steps)
+            {
+                <span
+                    class="status-step px-2 py-1 rounded @(Model.Status.Equals(step, System.StringComparison.OrdinalIgnoreCase) ? "fw-bold text-success bg-light status-active" : "text-muted bg-transparent")">@step</span>
+            }
+        </div>
+    </div>
+    <div class="card shadow-sm p-4">
+        <div class="mb-3">
+            <span class="fw-bold">Tracking Number:</span>
+            <span class="text-monospace">@Model.TrackingNumber</span>
+        </div>
+        <div class="mb-2">
+            <span class="fw-bold">Client Name:</span> @Model.ClientName
+        </div>
+        <div class="mb-2">
+            <span class="fw-bold">Project Type:</span> @Model.TypeOfProject
+        </div>
+        <div class="mb-2">
+            <span class="fw-bold">Current Department:</span> @Model.Status
+        </div>
+        <div class="mb-2">
+            <span class="fw-bold">Company Address:</span> @Model.RegisteredCompanyAddress
+        </div>
+        <div class="mb-2">
+            <span class="fw-bold">Date Submitted:</span> @Model.CreatedDate.ToString("yyyy-MM-dd")
+        </div>
+    </div>
+    <div class="text-center mt-4">
+        <a href="@Url.Action("TrackRequest", "Home")" class="btn btn-outline-secondary">Track Another Request</a>
+    </div>
+</div>
+
+<style>
+    (max-width: 600px) {
+        .progress {
+            height: 20px !important;
+        }
+
+        .status-steps {
+            font-size: 12px;
+        }
+    }
+
+    .status-steps {
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .status-step {
+        min-width: 70px;
+        text-align: center;
+        transition: background 0.2s, color 0.2s;
+        font-size: 1rem;
+        background: #f8f9fa;
+    }
+
+    .status-active {
+        background: #d1e7dd !important;
+        color: #198754 !important;
+        box-shadow: 0 2px 8px rgba(25, 135, 84, 0.08);
+    }
+
+    /* Dark mode support */
+    body.dark-mode .progress,
+    body.dark-mode .progress-bar {
+        background: #23272b !important;
+        color: #e8e6e3 !important;
+        border-color: #444 !important;
+    }
+
+    body.dark-mode .status-step {
+        background: #23272b !important;
+        color: #b5b5b5 !important;
+    }
+
+    body.dark-mode .status-active {
+        background: #375a7f !important;
+        color: #fff !important;
+    }
+</style>

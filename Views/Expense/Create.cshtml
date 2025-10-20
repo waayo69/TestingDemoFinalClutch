@@ -1,0 +1,326 @@
+@model TestingDemo.Models.ExpenseModel
+@{
+    ViewData["Title"] = "Add Expense";
+}
+
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-10 col-xl-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-plus-circle fs-4 me-2"></i>
+                        <div>
+                            <h3 class="mb-0">Add New Expense</h3>
+                            <small class="opacity-75">Fill in the details below to create a new expense record</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-warning">
+                            <ul>
+                                @foreach (var key in ViewData.ModelState.Keys)
+                                {
+                                    foreach (var error in ViewData.ModelState[key].Errors)
+                                    {
+                                        <li>@key: @error.ErrorMessage</li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    }
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <!-- Basic Information -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3"><i class="bi bi-info-circle"></i> Basic Information</h5>
+                            </div>
+                            <div class="col-12 col-md-6 mb-3">
+                                <label asp-for="Name" class="form-label">Expense Name *</label>
+                                <input asp-for="Name" class="form-control" placeholder="Enter expense name" />
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-12 col-md-6 mb-3">
+                                <label asp-for="Amount" class="form-label">Amount *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">₱</span>
+                                    <input asp-for="Amount" class="form-control" type="number" step="0.01" min="0"
+                                        placeholder="0.00" />
+                                </div>
+                                <span asp-validation-for="Amount" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Dates and Status -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3"><i class="bi bi-calendar-event"></i> Dates & Status</h5>
+                            </div>
+                            <div class="col-12 col-md-6 mb-3">
+                                <label asp-for="DueDate" class="form-label">Due Date *</label>
+                                <input asp-for="DueDate" class="form-control" type="date" />
+                                <span asp-validation-for="DueDate" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-12 col-md-6 mb-3">
+                                <label asp-for="Status" class="form-label">Status *</label>
+                                <select asp-for="Status" class="form-select">
+                                    <option value="">Select status</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Overdue">Overdue</option>
+                                    <option value="Postponed">Postponed</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Category and Location -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3"><i class="bi bi-tags"></i> Category & Location</h5>
+                            </div>
+                            <div class="col-12 col-md-6 mb-3">
+                                <label asp-for="Category" class="form-label">Category *</label>
+                                <select asp-for="Category" class="form-select" id="categorySelect" required>
+                                    <option value="">Select category</option>
+                                    <option value="Utilities">Utilities</option>
+                                    <option value="Rent">Rent</option>
+                                    <option value="Insurance">Insurance</option>
+                                    <option value="Transportation">Transportation</option>
+                                    <option value="Food">Food</option>
+                                    <option value="Entertainment">Entertainment</option>
+                                    <option value="Healthcare">Healthcare</option>
+                                    <option value="Education">Education</option>
+                                    <option value="Shopping">Shopping</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <span asp-validation-for="Category" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-12 col-md-6 mb-3" id="otherCategoryDiv" style="display: none;">
+                                <label for="otherCategory" class="form-label">Other Category *</label>
+                                <input type="text" id="otherCategory" name="otherCategory" class="form-control"
+                                    placeholder="Enter custom category" />
+                                <span class="text-danger" id="otherCategoryError"></span>
+                            </div>
+
+                            <div class="col-12 col-md-6 mb-3">
+                                <label asp-for="Location" class="form-label">Location *</label>
+                                <input asp-for="Location" class="form-control" placeholder="Enter location" required />
+                                <span asp-validation-for="Location" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Additional Options -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3"><i class="bi bi-gear"></i> Additional Options</h5>
+                            </div>
+                            <div class="col-12 col-md-6 mb-3">
+                                <label asp-for="PaidDate" class="form-label">Paid Date</label>
+                                <input asp-for="PaidDate" class="form-control" type="date" />
+                                <span asp-validation-for="PaidDate" class="text-danger"></span>
+                                <small class="form-text text-muted">Leave empty if not paid yet</small>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex flex-column flex-sm-row justify-content-between gap-3">
+                                    <a asp-action="Index" class="btn btn-outline-secondary">
+                                        <i class="bi bi-arrow-left"></i>
+                                        <span class="d-none d-sm-inline">Back to List</span>
+                                        <span class="d-inline d-sm-none">Back</span>
+                                    </a>
+                                    <div class="d-flex gap-2">
+                                        <button type="reset" class="btn btn-outline-warning">
+                                            <i class="bi bi-arrow-clockwise"></i>
+                                            <span class="d-none d-sm-inline">Reset</span>
+                                            <span class="d-inline d-sm-none">Clear</span>
+                                        </button>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-check-circle"></i>
+                                            <span class="d-none d-sm-inline">Create Expense</span>
+                                            <span class="d-inline d-sm-none">Create</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Use a more robust selector for the form
+            const form = document.querySelector('form[action*="Expense/Create"]') || document.querySelector('form');
+            const modalEl = document.getElementById('expenseSummaryModal');
+            const summaryContent = document.getElementById('expenseSummaryContent');
+            const confirmBtn = document.getElementById('confirmSubmitBtn');
+
+            // Check for Bootstrap Modal
+            if (typeof bootstrap === 'undefined' || !bootstrap.Modal) {
+                alert('Bootstrap JS is not loaded. The summary modal will not work. Please ensure Bootstrap JS is included in your layout.');
+                return;
+            }
+            const modal = new bootstrap.Modal(modalEl);
+
+            let formIsValid = false;
+
+            if (!form) {
+                console.error('Expense form not found on the page.');
+                return;
+            }
+
+            form.addEventListener('submit', function (e) {
+                if (!formIsValid) {
+                    e.preventDefault();
+
+                    // Gather form data
+                    const formData = new FormData(form);
+                    const fields = [
+                        { name: 'Name', label: 'Expense Name', required: true },
+                        { name: 'Amount', label: 'Amount', required: true },
+                        { name: 'DueDate', label: 'Due Date', required: true },
+                        { name: 'Status', label: 'Status', required: true },
+                        { name: 'Category', label: 'Category', required: true },
+                        { name: 'Location', label: 'Location', required: true },
+                        { name: 'PaidDate', label: 'Paid Date', required: false }
+                    ];
+
+                    let summaryHtml = '<ul class="list-group">';
+                    let missingFields = [];
+
+                    fields.forEach(field => {
+                        let value = formData.get(field.name);
+                        let displayValue = value ? value : '<span class="text-danger">[Missing]</span>';
+                        if (field.required && !value) {
+                            missingFields.push(field.label);
+                        }
+                        summaryHtml += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>${field.label}${field.required ? ' <span class=\'text-danger\'>*</span>' : ''}</span>
+                                        <span>${displayValue}</span>
+                                    </li>`;
+                    });
+
+                    summaryHtml += '</ul>';
+
+                    if (missingFields.length > 0) {
+                        summaryHtml += `<div class="alert alert-danger mt-3">
+                                        <strong>Missing required fields:</strong> ${missingFields.join(', ')}
+                                    </div>`;
+                        confirmBtn.disabled = true;
+                    } else {
+                        confirmBtn.disabled = false;
+                    }
+
+                    summaryContent.innerHTML = summaryHtml;
+                    try {
+                        modal.show();
+                    } catch (err) {
+                        alert('Could not show the summary modal. Please check that Bootstrap JS is loaded.');
+                        console.error(err);
+                    }
+                }
+            });
+
+            confirmBtn.addEventListener('click', function () {
+                // Trigger client-side validation before submitting
+                if (typeof $ !== 'undefined' && typeof $.validator !== 'undefined') {
+                    if (!$(form).valid()) {
+                        // If not valid, hide modal and let validation messages show
+                        formIsValid = false;
+                        modal.hide();
+                        // Scroll to first validation error
+                        setTimeout(function () {
+                            var error = document.querySelector('.input-validation-error, .text-danger:empty ~ .text-danger');
+                            if (error) {
+                                error.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                        }, 200);
+                        return;
+                    }
+                }
+                formIsValid = true;
+                modal.hide();
+                form.submit();
+            });
+        });
+    </script>
+}
+
+<!-- Expense Summary Modal -->
+<div class="modal fade" id="expenseSummaryModal" tabindex="-1" aria-labelledby="expenseSummaryModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="expenseSummaryModalLabel">Expense Entry Summary</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="expenseSummaryContent">
+                <!-- Summary will be injected here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Edit</button>
+                <button type="button" class="btn btn-primary" id="confirmSubmitBtn">Submit Expense</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .form-label {
+        font-weight: 500;
+    }
+
+    .input-group-text {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+    }
+
+    @@media (max-width: 768px) {
+        .container-fluid {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+
+        .card-header {
+            padding: 1rem;
+        }
+
+        .card-body {
+            padding: 1rem;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .btn {
+            font-size: 0.875rem;
+            padding: 0.5rem 0.75rem;
+        }
+    }
+</style>

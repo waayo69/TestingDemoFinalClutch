@@ -1,0 +1,75 @@
+﻿/* ===== Navbar Styling (Compact & Responsive) ===== */
+.navbar {
+    background-color: #007bff !important; /* Primary Blue */
+    padding: 8px 15px; /* Reduced padding */
+    height: auto; /* Adjusts automatically */
+    min-height: 50px; /* Ensures a smaller header */
+}
+
+/* Navbar Brand */
+.navbar-brand {
+    font-size: 1.2rem; /* Reduce text size */
+    font-weight: bold;
+    white-space: nowrap;
+    padding: 5px 10px;
+}
+.navbar-nav .nav-link {
+    transition: all 0.3s ease-in-out;
+}
+
+    .navbar-nav .nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 5px;
+    }
+
+.dropdown-menu .dropdown-item:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+.navbar-brand img {
+    filter: invert(1); /* Makes the image white */
+    width: 100px; /* Adjust width */
+    height: auto; /* Maintain aspect ratio */
+}
+
+/* Navbar Links */
+.navbar-nav .nav-link {
+    font-size: 1rem;
+    padding: 5px 12px; /* Smaller spacing */
+}
+
+/* Navbar Toggle Button */
+.navbar-toggler {
+    border: none;
+    padding: 5px;
+    font-size: 1rem;
+}
+
+/* ===== Responsive Adjustments ===== */
+@media (max-width: 992px) {
+    .navbar {
+        padding: 6px 10px;
+    }
+
+    .navbar-nav {
+        text-align: center;
+    }
+
+        .navbar-nav .nav-item {
+            margin-bottom: 5px;
+        }
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        padding: 5px;
+        min-height: 45px; /* Even smaller on mobile */
+    }
+
+    .navbar-brand {
+        font-size: 1rem;
+    }
+
+    .nav-link {
+        font-size: 0.9rem;
+    }
+}

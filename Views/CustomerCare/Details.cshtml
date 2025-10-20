@@ -1,0 +1,359 @@
+@model TestingDemo.Models.ClientModel
+@using TestingDemo.Models
+@{
+    ViewData["Title"] = "Client Inspection";
+    var requirements = ViewBag.Requirements as List<PermitRequirementModel> ?? new List<PermitRequirementModel>();
+    if (ViewBag.IsPartial == true)
+    {
+        Layout = null;
+    }
+}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index">Clients</a></li>
+                    <li class="breadcrumb-item active">Client Inspection</li>
+                </ol>
+            </nav>
+            <h2><i class="bi bi-eye"></i> Client Inspection</h2>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card shadow mb-4">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-person-badge"></i> Client Information</h5>
+            <div>
+                <a asp-action="Index" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip"
+                    title="Return to the client list.">
+                    <i class="bi bi-arrow-left"></i> Back to List
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.ClientName)</dt>
+                        <dd class="col-sm-8">@Html.DisplayFor(model => model.ClientName)</dd>
+                        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.ContactPersonNumber)</dt>
+                        <dd class="col-sm-8">@Html.DisplayFor(model => model.ContactPersonNumber)</dd>
+                        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Email)</dt>
+                        <dd class="col-sm-8">@Html.DisplayFor(model => model.Email)</dd>
+                        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.RegisteredCompanyAddress)</dt>
+                        <dd class="col-sm-8">@Html.DisplayFor(model => model.RegisteredCompanyAddress)</dd>
+                    </dl>
+                </div>
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.TypeOfProject)</dt>
+                        <dd class="col-sm-8">
+                            @{
+                                var projectTypes = new[] { "Retainership - BIR", "Retainership - SPP", "One Time Transaction", "External Audit", "Other" };
+                                var optionsString = "";
+                                foreach (var type in projectTypes)
+                                {
+                                    optionsString += $"<option value='{type}'{(Model.TypeOfProject == type ? " selected='selected'" : "")}>{type}</option>";
+                                }
+                                var selectHtml = $"<select class='form-select' disabled='disabled'>{optionsString}</select>";
+                                @Html.Raw(selectHtml);
+                            }
+                        </dd>
+                        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.UrgencyLevel)</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.UrgencyLevel == "Urgent")
+                            {
+                                <span class="badge bg-danger">@Model.UrgencyLevel</span>
+                            }
+                            else if (Model.UrgencyLevel == "Slightly Urgent")
+                            {
+                                <span class="badge bg-warning text-dark">@Model.UrgencyLevel</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">@Model.UrgencyLevel</span>
+                            }
+                        </dd>
+                        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Status)</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.Status == "Pending")
+                            {
+                                <span class="badge bg-warning text-dark">@Model.Status</span>
+                            }
+                            else if (Model.Status == "Approved")
+                            {
+                                <span class="badge bg-success">@Model.Status</span>
+                            }
+                            else if (Model.Status == "Rejected")
+                            {
+                                <span class="badge bg-danger">@Model.Status</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-info">@Model.Status</span>
+                            }
+                        </dd>
+                        <dt class="col-sm-4">Created On</dt>
+                        <dd class="col-sm-8">@Model.CreatedDate.ToString("MMM dd, yyyy hh:mm tt")</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0 fw-semibold"><i class="bi bi-file-earmark-text"></i> Project Type Details</h5>
+        </div>
+        <div class="card-body">
+            <div class="accordion" id="projectTypeAccordion">
+                @if (Model.TypeOfProject == "Retainership - SPP" && Model.RetainershipSPP != null)
+                {
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingSPP">
+                            <button class="accordion-button collapsed bg-info text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSPP" aria-expanded="false" aria-controls="collapseSPP">
+                                <i class="bi bi-file-earmark-text"></i> Retainership - SPP Details
+                            </button>
+                        </h2>
+                        <div id="collapseSPP" class="accordion-collapse collapse" aria-labelledby="headingSPP" data-bs-parent="#projectTypeAccordion">
+                            <div class="accordion-body row g-3">
+                                <div class="col-md-6"><b>SSS Company Registration No.:</b> @Model.RetainershipSPP.SSSCompanyRegNo</div>
+                                <div class="col-md-6"><b>Date of SSS Registration:</b> @Model.RetainershipSPP.SSSRegistrationDate?.ToString("yyyy-MM-dd")</div>
+                                <div class="col-md-6"><b>PHIC Company Registration No.:</b> @Model.RetainershipSPP.PHICCompanyRegNo</div>
+                                <div class="col-md-6"><b>Date of PHIC Registration:</b> @Model.RetainershipSPP.PHICRegistrationDate?.ToString("yyyy-MM-dd")</div>
+                                <div class="col-md-6"><b>HDMF Company Registration No.:</b> @Model.RetainershipSPP.HDMFCompanyRegNo</div>
+                                <div class="col-md-6"><b>Date of HDMF Registration:</b> @Model.RetainershipSPP.HDMFRegistrationDate?.ToString("yyyy-MM-dd")</div>
+                                <div class="col-md-6"><b>Maintenance of SPP Compliance:</b> @Model.RetainershipSPP.SPPComplianceActivities</div>
+                                <div class="col-md-6"><b>Other SPP Compliance:</b> @Model.RetainershipSPP.OtherSPPCompliance</div>
+                                <div class="col-md-12"><b>Target Date to Start Subscription - SPP Retainership:</b> @Model.RetainershipSPP.SPPRetainershipStartDate?.ToString("yyyy-MM-dd")</div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else if (Model.TypeOfProject == "Retainership - BIR" && Model.RetainershipBIR != null)
+                {
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingBIR">
+                            <button class="accordion-button collapsed bg-primary text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBIR" aria-expanded="false" aria-controls="collapseBIR">
+                                <i class="bi bi-file-earmark-text"></i> Retainership - BIR Details
+                            </button>
+                        </h2>
+                        <div id="collapseBIR" class="accordion-collapse collapse" aria-labelledby="headingBIR" data-bs-parent="#projectTypeAccordion">
+                            <div class="accordion-body row g-3">
+                                <div class="col-md-6"><b>Type of Registrant:</b> @Model.RetainershipBIR.TypeOfRegistrant</div>
+                                <div class="col-md-6"><b>OCN Number Notes:</b> @Model.RetainershipBIR.OCNNotes</div>
+                                <div class="col-md-6"><b>Date OCN Generated:</b> @Model.RetainershipBIR.DateOCNGenerated?.ToString("yyyy-MM-dd")</div>
+                                <div class="col-md-6"><b>Date of BIR Registration:</b> @Model.RetainershipBIR.DateBIRRegistration?.ToString("yyyy-MM-dd")</div>
+                                <div class="col-md-6"><b>BIR RDO No.:</b> @Model.RetainershipBIR.BIRRdoNo</div>
+                                <div class="col-md-6"><b>Other BIR RDO No.:</b> @Model.RetainershipBIR.OtherBirRdoNo</div>
+                                <div class="col-md-6"><b>Status of Tax Filing:</b> @Model.RetainershipBIR.TaxFilingStatus</div>
+                                <div class="col-md-6"><b>Catch-Up Accounting Needed?:</b> @Model.RetainershipBIR.NeedCatchUpAccounting</div>
+                                <div class="col-md-6"><b>Catch-Up Reasons:</b> @Model.RetainershipBIR.CatchUpReasons</div>
+                                <div class="col-md-6"><b>Other Catch-Up Reason:</b> @Model.RetainershipBIR.OtherCatchUpReason</div>
+                                <div class="col-md-6"><b>Target Date to Start Catch-Up Accounting:</b> @Model.RetainershipBIR.CatchUpStartDate?.ToString("yyyy-MM-dd")</div>
+                                <div class="col-md-6"><b>BIR Compliance Activities:</b> @Model.RetainershipBIR.BIRComplianceActivities</div>
+                                <div class="col-md-6"><b>Other BIR Compliance:</b> @Model.RetainershipBIR.OtherBIRCompliance</div>
+                                <div class="col-md-12"><b>Target Date to Start Subscription - BIR Retainership:</b> @Model.RetainershipBIR.BIRRetainershipStartDate?.ToString("yyyy-MM-dd")</div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else if (Model.TypeOfProject == "One Time Transaction" && Model.OneTimeTransaction != null)
+                {
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingOneTime">
+                            <button class="accordion-button collapsed bg-warning text-dark fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOneTime" aria-expanded="false" aria-controls="collapseOneTime">
+                                <i class="bi bi-file-earmark-text"></i> One Time Transaction Details
+                            </button>
+                        </h2>
+                        <div id="collapseOneTime" class="accordion-collapse collapse" aria-labelledby="headingOneTime" data-bs-parent="#projectTypeAccordion">
+                            <div class="accordion-body row g-3">
+                                <div class="col-md-6"><b>Type of Registrant:</b> @Model.OneTimeTransaction.TypeOfRegistrant</div>
+                                <div class="col-md-6"><b>Area of Services:</b> @Model.OneTimeTransaction.AreaOfServices</div>
+                                <div class="col-md-6"><b>Other Area of Services:</b> @Model.OneTimeTransaction.OtherAreaOfServices</div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else if (Model.TypeOfProject == "External Audit" && Model.ExternalAudit != null)
+                {
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingAudit">
+                            <button class="accordion-button collapsed bg-secondary text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAudit" aria-expanded="false" aria-controls="collapseAudit">
+                                <i class="bi bi-file-earmark-text"></i> External Audit Details
+                            </button>
+                        </h2>
+                        <div id="collapseAudit" class="accordion-collapse collapse" aria-labelledby="headingAudit" data-bs-parent="#projectTypeAccordion">
+                            <div class="accordion-body row g-3">
+                                <div class="col-md-6"><b>Status of External Audit Client:</b> @Model.ExternalAudit.ExternalAuditStatus</div>
+                                <div class="col-md-6"><b>External Audit - Purposes of Client:</b> @Model.ExternalAudit.ExternalAuditPurposes</div>
+                                <div class="col-md-6"><b>Other Purpose:</b> @Model.ExternalAudit.ExternalAuditOtherPurpose</div>
+                                <div class="col-md-6"><b>Target Date of Issuance of Report:</b> @Model.ExternalAudit.ExternalAuditReportDate?.ToString("yyyy-MM-dd")</div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingNone">
+                            <button class="accordion-button collapsed bg-light text-dark fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNone" aria-expanded="false" aria-controls="collapseNone">
+                                <i class="bi bi-info-circle"></i> No Project Type Details
+                            </button>
+                        </h2>
+                        <div id="collapseNone" class="accordion-collapse collapse show" aria-labelledby="headingNone" data-bs-parent="#projectTypeAccordion">
+                            <div class="accordion-body">
+                                <span class="text-muted">No additional data for this project type.</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <strong>Requirements Inspection</strong>
+        </div>
+        <div class="card-body">
+            <form asp-action="SaveRequirements" asp-route-id="@Model.Id" method="post">
+                <table class="table table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>Requirement</th>
+                            <th>Description</th>
+                            <th style="width:140px;">Status</th>
+                            <th style="width:220px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var req in requirements)
+                        {
+                            <tr>
+                                <td>@req.RequirementName</td>
+                                <td>@req.Description</td>
+                                <td>
+                                    @if (req.IsCompleted)
+                                    {
+                                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Completed</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary"><i class="bi bi-hourglass-split me-1"></i>Pending</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editRequirementModal-@req.Id">
+                                            <i class="bi bi-upload"></i> Upload
+                                        </button>
+                                        @{
+                                            var firstPhoto = req.Photos?.FirstOrDefault();
+                                        }
+                                        @if (firstPhoto != null)
+                                        {
+                                            <a href="@firstPhoto.PhotoPath" target="_blank" rel="noopener" class="btn btn-sm btn-outline-info">
+                                                <i class="bi bi-folder2-open"></i> View
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="btn btn-sm btn-outline-info" disabled title="No files to view">
+                                                <i class="bi bi-folder2-open"></i> View
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <div class="mt-3">
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @* Per-requirement modals for editing (upload files) *@
+    @foreach (var req in requirements)
+    {
+        <div class="modal fade" id="editRequirementModal-@req.Id" tabindex="-1" aria-labelledby="editRequirementModalLabel-@req.Id" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header bg-primary text-white border-0 py-3">
+                        <h5 class="modal-title fw-bold mb-0" id="editRequirementModalLabel-@req.Id">
+                            <i class="bi bi-pencil-square me-2"></i>Edit Requirement
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <div class="text-muted small">Requirement</div>
+                            <div class="fw-semibold">@req.RequirementName</div>
+                            <div class="text-muted">@req.Description</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-medium">
+                                <i class="bi bi-paperclip me-2 text-primary"></i>Upload Files
+                            </label>
+                            <form asp-action="UploadRequirementFiles" method="post" enctype="multipart/form-data" class="d-flex gap-2 align-items-center">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="requirementId" value="@req.Id" />
+                                <input type="file" name="files" class="form-control" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" onchange="this.form.querySelector('.upload-btn').disabled = this.files.length === 0" />
+                                <button type="submit" class="btn btn-primary upload-btn" disabled>
+                                    <i class="bi bi-upload"></i> Upload
+                                </button>
+                            </form>
+                            <div class="form-text text-muted mt-2">
+                                Accepted: images, PDF, Word, Excel, PowerPoint, TXT
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <h6 class="text-primary mb-2"><i class="bi bi-folder2-open me-2"></i>Current Files (@(req.Photos?.Count ?? 0))</h6>
+                            @if (req.Photos != null && req.Photos.Count > 0)
+                            {
+                                <div class="list-group">
+                                    @foreach (var photo in req.Photos)
+                                    {
+                                        <div class="list-group-item d-flex align-items-center gap-2">
+                                            <a href="@photo.PhotoPath" target="_blank" class="text-decoration-none flex-grow-1">@System.IO.Path.GetFileName(photo.PhotoPath)</a>
+                                            <form asp-action="DeleteRequirementPhoto" method="post" class="ms-auto">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="photoId" value="@photo.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete file" onclick="return confirm('Delete this file?');">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-muted">No files uploaded.</div>
+                            }
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 py-3">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-1"></i>Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

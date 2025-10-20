@@ -1,0 +1,42 @@
+@model List<UserViewModel>
+@{
+    ViewData["Title"] = "Pending Approvals";
+}
+<div class="container users-container">
+    <h2 class="text-center mb-4">Users Pending Approval</h2>
+    @if (!Model.Any())
+    {
+        <div class="alert alert-success">No users are pending approval.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">Email</th>
+                        <th scope="col">Full Name</th>
+                        <th scope="col">Role</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model)
+                    {
+                        <tr>
+                            <td>@user.Email</td>
+                            <td>@user.FullName</td>
+                            <td>@user.Role</td>
+                            <td>
+                                <form asp-action="ApproveUser" method="post" style="display:inline">
+                                    <input type="hidden" name="id" value="@user.Id" />
+                                    <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

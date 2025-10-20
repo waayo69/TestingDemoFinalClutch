@@ -1,0 +1,63 @@
+@{
+    ViewData["Title"] = "Settings";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@if (TempData["PasswordChanged"] != null)
+{
+    <script>
+        window.onload = function () {
+            alert('@TempData["PasswordChanged"]');
+        };
+    </script>
+}
+<div class="container py-4">
+    <h2 class="mb-4"><i class="bi bi-gear"></i> Account Settings</h2>
+    <div class="card mb-3">
+        <div class="card-body d-flex flex-column flex-md-row align-items-md-center justify-content-between">
+            <div>
+                <h5 class="mb-1">Change Password</h5>
+                <p class="mb-2 text-muted">Update your account password for security.</p>
+            </div>
+            <a href="@Url.Action("ChangePassword", "Account")" class="btn btn-primary">
+                <i class="bi bi-key"></i> Change Password
+            </a>
+        </div>
+    </div>
+    <div class="card mb-3">
+        <div class="card-body d-flex flex-column flex-md-row align-items-md-center justify-content-between">
+            <div>
+                <h5 class="mb-1">Dark Mode</h5>
+                <p class="mb-2 text-muted">Toggle dark mode for a more comfortable viewing experience.</p>
+            </div>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="darkModeToggleSettings">
+                <label class="form-check-label" for="darkModeToggleSettings">Enable Dark Mode</label>
+            </div>
+        </div>
+    </div>
+    <!-- Add more settings options here as needed -->
+</div>
+<script>
+    // Sync toggle with current mode
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggle = document.getElementById('darkModeToggleSettings');
+        const isDark = localStorage.getItem('darkMode') === 'enabled';
+        toggle.checked = isDark;
+        toggle.addEventListener('change', function () {
+            if (toggle.checked) {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                document.body.classList.remove('dark-mode');
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        });
+        // Listen for changes from other tabs/windows
+        window.addEventListener('storage', function (e) {
+            if (e.key === 'darkMode') {
+                toggle.checked = e.newValue === 'enabled';
+                document.body.classList.toggle('dark-mode', e.newValue === 'enabled');
+            }
+        });
+    });
+</script>

@@ -1,0 +1,103 @@
+﻿@model UserViewModel
+
+@{
+    ViewData["Title"] = "Confirm Delete";
+}
+
+<div class="confirm-delete-container container">
+    <h2 class="text-danger text-center mb-4">Confirm Deletion</h2>
+
+    <p class="lead text-center">
+        Are you sure you want to delete this user? This action cannot be undone.
+    </p>
+
+    <!-- User Details Section -->
+    <div class="user-details card shadow-sm p-4 mb-4">
+        <h5 class="card-title">User Information</h5>
+        <hr />
+
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Email:</strong> @Model.Email</p>
+                <p><strong>Full Name:</strong> @Model.FullName</p>
+                <p><strong>Age:</strong> @(Model.Age.HasValue ? Model.Age.ToString() : "Not Provided")</p>
+                <p><strong>Birth Date:</strong> @(Model.BirthDate.HasValue ? Model.BirthDate.Value.ToShortDateString() : "Not Provided")</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Address:</strong> @(string.IsNullOrEmpty(Model.Address) ? "Not Provided" : Model.Address)</p>
+                <p><strong>City:</strong> @(string.IsNullOrEmpty(Model.City) ? "Not Provided" : Model.City)</p>
+                <p><strong>State:</strong> @(string.IsNullOrEmpty(Model.State) ? "Not Provided" : Model.State)</p>
+                <p><strong>Zip Code:</strong> @(string.IsNullOrEmpty(Model.ZipCode) ? "Not Provided" : Model.ZipCode)</p>
+                <p><strong>Country:</strong> @(string.IsNullOrEmpty(Model.Country) ? "Not Provided" : Model.Country)</p>
+                <p><strong>Role:</strong> @Model.Role</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="text-center">
+        <form asp-action="ConfirmDelete" method="post" class="d-inline">
+            <input type="hidden" asp-for="Id" />
+            <button type="submit" class="btn btn-danger me-3">Yes, Delete</button>
+        </form>
+        <a asp-action="Users" class="btn btn-secondary">Cancel</a>
+    </div>
+</div>
+
+<!-- Styles -->
+<style>
+    .confirm-delete-container {
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+        background: #ffffff;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+    }
+
+    h2.text-danger {
+        font-size: 2rem;
+        font-weight: bold;
+    }
+
+    .lead {
+        font-size: 1.2rem;
+        color: #555;
+    }
+
+    .user-details {
+        background: #f9f9f9;
+        border-radius: 8px;
+    }
+
+    .user-details h5 {
+        font-size: 1.5rem;
+        color: #333;
+    }
+
+    .user-details p {
+        margin: 0.5rem 0;
+        font-size: 1rem;
+        color: #444;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+
+        .btn-danger:hover {
+            background-color: #bb2d3b;
+            border-color: #b02a37;
+        }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        border-color: #6c757d;
+    }
+
+        .btn-secondary:hover {
+            background-color: #5c636a;
+            border-color: #565e64;
+        }
+</style>    

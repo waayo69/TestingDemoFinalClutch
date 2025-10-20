@@ -1,0 +1,324 @@
+@model TestingDemo.Models.PermitRequirementModel
+
+@{
+    var client = ViewBag.Client as TestingDemo.Models.ClientModel;
+}
+
+<div class="modal fade" id="editRequirementModal-@Model.Id" tabindex="-1"
+    aria-labelledby="editRequirementModalLabel-@Model.Id" aria-hidden="true" data-client-id="@Model.ClientId">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white border-0 py-3">
+                <h5 class="modal-title fw-bold mb-0" id="editRequirementModalLabel-@Model.Id">
+                    <i class="bi bi-pencil-square me-2"></i>Edit Requirement
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="editRequirementForm-@Model.Id" asp-action="EditRequirement" asp-route-id="@Model.Id"
+                    method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="ClientId" />
+                    <input type="hidden" asp-for="CreatedDate" />
+
+                    <!-- Requirement Name -->
+                    <div class="mb-4">
+                        <label asp-for="RequirementName" class="form-label fw-medium">
+                            <i class="bi bi-card-text me-2 text-primary"></i>Requirement Name <span
+                                class="text-danger">*</span>
+                        </label>
+                        <textarea asp-for="RequirementName" class="form-control rounded-3" rows="3"
+                            placeholder="Enter the requirement name..." required></textarea>
+                        <span asp-validation-for="RequirementName" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <label asp-for="Description" class="form-label fw-medium">
+                            <i class="bi bi-chat-left-text me-2 text-primary"></i>Description <span
+                                class="text-danger">*</span>
+                        </label>
+                        <textarea asp-for="Description" class="form-control rounded-3" rows="3"
+                            placeholder="Provide detailed description..." required></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Files Upload Section (disabled for Planning Officer) -->
+                    <div class="mb-4">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-1"></i>
+                            File uploads for proof are now handled by Customer Care. You can view existing files below.
+                        </div>
+                    </div>
+
+                    <!-- Current Files Display -->
+                    @if (Model.Photos != null && Model.Photos.Count > 0)
+                    {
+                        <div class="mb-4">
+                            <h6 class="text-primary mb-3">
+                                <i class="bi bi-folder2-open me-2"></i>Current Files (@Model.Photos.Count)
+                            </h6>
+                            <div class="row g-2">
+                                @foreach (var photo in Model.Photos)
+                                {
+                                    <div class="col-6 col-md-4">
+                                        <div class="card border-0 shadow-sm position-relative">
+                                            <div class="card-body p-2">
+                                                @{
+                                                    var ext = System.IO.Path.GetExtension(photo.PhotoPath)?.ToLowerInvariant();
+                                                    var isImage = ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".gif"
+                                                    || ext == ".webp" || ext == ".bmp" || ext == ".svg";
+                                                }
+                                                @if (isImage)
+                                                {
+                                                    <img src="@photo.PhotoPath" alt="Proof file" class="img-fluid rounded clickable-media"
+                                                        style="width: 100%; height: 100px; object-fit: cover; cursor: pointer;"
+                                                        data-media-url="@photo.PhotoPath"
+                                                        data-media-type="image"
+                                                        onclick="openFullscreenViewer('@photo.PhotoPath', 'image')"
+                                                        onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2Y4ZjlmYSIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjEyIiBmaWxsPSIjNmM3NTdkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+SW1hZ2UgTm90IEZvdW5kPC90ZXh0Pjwvc3ZnPg==';" />
+                                                }
+                                                else
+                                                {
+                                                    <div class="d-flex align-items-center gap-2 p-2 bg-light rounded border clickable-media" 
+                                                        style="cursor: pointer;"
+                                                        data-media-url="@photo.PhotoPath"
+                                                        data-media-type="document"
+                                                        onclick="openFullscreenViewer('@photo.PhotoPath', 'document')">
+                                                        @{
+                                                            string icon = ext switch
+                                                            {
+                                                                ".pdf" => "bi-filetype-pdf text-danger",
+                                                                ".doc" or ".docx" => "bi-filetype-docx text-primary",
+                                                                ".xls" or ".xlsx" => "bi-filetype-xlsx text-success",
+                                                                ".ppt" or ".pptx" => "bi-filetype-pptx text-warning",
+                                                                ".txt" => "bi-filetype-txt text-secondary",
+                                                                _ => "bi-file-earmark text-secondary"
+                                                            };
+                                                        }
+                                                        <i class="bi @icon" style="font-size: 1.5rem;"></i>
+                                                        <a href="@photo.PhotoPath" class="text-decoration-none flex-grow-1" target="_blank"
+                                                            download onclick="event.stopPropagation();">
+                                                            @System.IO.Path.GetFileName(photo.PhotoPath)
+                                                        </a>
+                                                    </div>
+                                                }
+
+                                                <!-- Toggle Delete Button -->
+                                                <button type="button"
+                                                    class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 rounded-circle"
+                                                    style="width: 20px; height: 20px; padding: 0; font-size: 10px;"
+                                                    onclick="togglePhotoDeletion(@photo.Id)" title="Delete/Undo">
+                                                    <i id="deleteIcon-@photo.Id" class="bi bi-x"></i>
+                                                </button>
+
+                                                <!-- Hidden checkbox for deletion -->
+                                                <input type="checkbox" name="deletePhotoIds" value="@photo.Id"
+                                                    id="deletePhotoInput-@photo.Id" style="display:none;" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <input type="hidden" asp-for="IsRequired" value="true" />
+                </form>
+            </div>
+            <div class="modal-footer border-0 py-3">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4 py-2" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-2"></i>Cancel
+                </button>
+                <button type="submit" form="editRequirementForm-@Model.Id"
+                    class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
+                    <i class="bi bi-save me-2"></i>Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fullscreen Viewer Modal -->
+<div class="modal fade" id="fullscreenViewerModal" tabindex="-1" aria-labelledby="fullscreenViewerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-dark text-white border-0 py-3">
+                <h5 class="modal-title fw-bold mb-0" id="fullscreenViewerModalLabel">
+                    <i class="bi bi-fullscreen me-2"></i>Fullscreen Viewer
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="fullscreenViewerContent" class="ratio ratio-16x9">
+                    <!-- Image or document content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // File selection handler
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('editRequirementModal-@Model.Id');
+        const fileInput = modal ? modal.querySelector('input[name="proofOfCompletionPhotos"]') : null;
+        const preview = document.getElementById('filePreview-@Model.Id');
+        const editForm = document.getElementById('editRequirementForm-@Model.Id');
+
+        function renderSelectedFiles() {
+            if (!fileInput || !preview) return;
+            const files = fileInput.files;
+            if (!files || files.length === 0) {
+                preview.innerHTML = `
+                    <div class="alert alert-light border-2 border-dashed">
+                        <i class="bi bi-upload me-2"></i>
+                        <strong>No files selected</strong> - Click "Choose Files" above to select files
+                    </div>
+                `;
+                return;
+            }
+            let items = '';
+            for (let i = 0; i < files.length; i++) {
+                const f = files[i];
+                items += `
+                    <li class="d-flex justify-content-between align-items-center py-1">
+                        <span>${f.name} (${(f.size / 1024).toFixed(1)} KB)</span>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeSelectedFile_${@Model.Id}(${i})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </li>
+                `;
+            }
+            preview.innerHTML = `
+                <div class="alert alert-success mb-2">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <strong>Selected ${files.length} file(s) for upload:</strong>
+                </div>
+                <ul class="list-unstyled mb-0">${items}</ul>
+            `;
+        }
+
+        if (fileInput && preview) {
+            fileInput.addEventListener('change', renderSelectedFiles);
+            renderSelectedFiles();
+        }
+
+        // Expose a scoped remover for this modal instance
+        window['removeSelectedFile_' + @Model.Id] = function (index) {
+            if (!fileInput || !fileInput.files) return;
+            const dt = new DataTransfer();
+            Array.from(fileInput.files).forEach((file, i) => {
+                if (i !== index) dt.items.add(file);
+            });
+            fileInput.files = dt.files;
+            renderSelectedFiles();
+        };
+
+        // Form submit handler with deletion warning
+        if (editForm) {
+            editForm.addEventListener('submit', function(e) {
+                // Count how many photos are marked for deletion
+                const deleteCheckboxes = editForm.querySelectorAll('input[name="deletePhotoIds"]:checked');
+                const deleteCount = deleteCheckboxes.length;
+                
+                if (deleteCount > 0) {
+                    e.preventDefault();
+                    
+                    // Show confirmation dialog
+                    const confirmMessage = deleteCount === 1 
+                        ? `⚠️ Warning!\n\nYou are about to delete ${deleteCount} file.\n\nAre you sure you want to proceed?`
+                        : `⚠️ Warning!\n\nYou are about to delete ${deleteCount} files.\n\nAre you sure you want to proceed?`;
+                    
+                    if (confirm(confirmMessage)) {
+                        // User confirmed, submit the form
+                        editForm.submit();
+                    }
+                    // If user cancels, do nothing (form won't submit)
+                }
+                // If no deletions, form submits normally
+            });
+        }
+    });
+
+    // Photo deletion handler
+    function markPhotoForDeletion(photoId) {
+        const input = document.getElementById('deletePhotoInput-' + photoId);
+        const card = input ? input.closest('.card') : null;
+        const icon = document.getElementById('deleteIcon-' + photoId);
+        if (!input) return;
+        input.checked = true;
+        if (card) {
+            card.style.opacity = '0.5';
+            card.style.border = '2px solid #dc3545';
+        }
+        if (icon) {
+            icon.classList.remove('bi-x');
+            icon.classList.add('bi-arrow-counterclockwise');
+        }
+    }
+
+    function unmarkPhotoForDeletion(photoId) {
+        const input = document.getElementById('deletePhotoInput-' + photoId);
+        const card = input ? input.closest('.card') : null;
+        const icon = document.getElementById('deleteIcon-' + photoId);
+        if (!input) return;
+        input.checked = false;
+        if (card) {
+            card.style.opacity = '';
+            card.style.border = '';
+        }
+        if (icon) {
+            icon.classList.remove('bi-arrow-counterclockwise');
+            icon.classList.add('bi-x');
+        }
+    }
+
+    function togglePhotoDeletion(photoId) {
+        const input = document.getElementById('deletePhotoInput-' + photoId);
+        if (!input) return;
+        if (input.checked) {
+            unmarkPhotoForDeletion(photoId);
+        } else {
+            markPhotoForDeletion(photoId);
+        }
+    }
+
+    // Fullscreen viewer handler
+    function openFullscreenViewer(url, type) {
+        const modalElement = document.getElementById('fullscreenViewerModal');
+        const content = document.getElementById('fullscreenViewerContent');
+        
+        if (!modalElement || !content) return;
+        
+        // Clear previous content
+        content.innerHTML = '';
+        content.className = 'd-flex align-items-center justify-content-center bg-dark';
+        content.style.minHeight = '100vh';
+        
+        if (type === 'image') {
+            const img = document.createElement('img');
+            img.src = url;
+            img.alt = 'Fullscreen image viewer';
+            img.className = 'img-fluid';
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '95vh';
+            img.style.objectFit = 'contain';
+            content.appendChild(img);
+        } else if (type === 'document') {
+            const iframe = document.createElement('iframe');
+            iframe.src = url;
+            iframe.className = 'w-100';
+            iframe.style.height = '95vh';
+            iframe.style.border = 'none';
+            content.appendChild(iframe);
+        }
+        
+        // Use Bootstrap's modal API to show the modal
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    }
+</script>

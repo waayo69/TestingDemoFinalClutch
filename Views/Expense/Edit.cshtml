@@ -1,0 +1,194 @@
+@model TestingDemo.Models.ExpenseModel
+@{
+    ViewData["Title"] = "Edit Expense";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="mb-0"><i class="bi bi-pencil-square"></i> Edit Expense</h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Name" class="form-label">Expense Name *</label>
+                                <input asp-for="Name" class="form-control" placeholder="Enter expense name" />
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Amount" class="form-label">Amount *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">₱</span>
+                                    <input asp-for="Amount" class="form-control" type="number" step="0.01" min="0" placeholder="0.00" />
+                                </div>
+                                <span asp-validation-for="Amount" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="DueDate" class="form-label">Due Date *</label>
+                                <input asp-for="DueDate" class="form-control" type="date" />
+                                <span asp-validation-for="DueDate" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Status" class="form-label">Status *</label>
+                                <select asp-for="Status" class="form-select">
+                                    <option value="">Select status</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Paid">Paid</option>
+                                    <option value="Overdue">Overdue</option>
+                                    <option value="Postponed">Postponed</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Category" class="form-label">Category</label>
+                                <select asp-for="Category" class="form-select" id="categorySelect">
+                                    <option value="">Select category</option>
+                                    <option value="Utilities">Utilities</option>
+                                    <option value="Rent">Rent</option>
+                                    <option value="Insurance">Insurance</option>
+                                    <option value="Transportation">Transportation</option>
+                                    <option value="Food">Food</option>
+                                    <option value="Entertainment">Entertainment</option>
+                                    <option value="Healthcare">Healthcare</option>
+                                    <option value="Education">Education</option>
+                                    <option value="Shopping">Shopping</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <span asp-validation-for="Category" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3" id="otherCategoryDiv" style="display: none;">
+                                <label for="otherCategory" class="form-label">Other Category *</label>
+                                <input type="text" id="otherCategory" name="otherCategory" class="form-control" placeholder="Enter custom category" />
+                                <span class="text-danger" id="otherCategoryError"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Location" class="form-label">Location</label>
+                                <input asp-for="Location" class="form-control" placeholder="Enter location" />
+                                <span asp-validation-for="Location" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Recurring" class="form-label">Recurring Expense</label>
+                                <div class="form-check">
+                                    <input asp-for="Recurring" class="form-check-input" type="checkbox" />
+                                    <label asp-for="Recurring" class="form-check-label">
+                                        This is a recurring expense
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="PaidDate" class="form-label">Paid Date</label>
+                                <input asp-for="PaidDate" class="form-control" type="date" />
+                                <span asp-validation-for="PaidDate" class="text-danger"></span>
+                                <small class="form-text text-muted">Leave empty if not paid yet</small>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to List
+                            </a>
+                            <div>
+                                <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger me-2">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="bi bi-check-circle"></i> Update Expense
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Auto-set paid date when status is changed to "Paid"
+        document.getElementById('Status').addEventListener('change', function() {
+            const paidDateField = document.getElementById('PaidDate');
+            if (this.value === 'Paid' && !paidDateField.value) {
+                const today = new Date().toISOString().split('T')[0];
+                paidDateField.value = today;
+            }
+        });
+
+        // Handle category selection for "Other" option
+        document.getElementById('categorySelect').addEventListener('change', function() {
+            const otherCategoryDiv = document.getElementById('otherCategoryDiv');
+            const otherCategoryInput = document.getElementById('otherCategory');
+            
+            if (this.value === 'Other') {
+                otherCategoryDiv.style.display = 'block';
+                otherCategoryInput.required = true;
+            } else {
+                otherCategoryDiv.style.display = 'none';
+                otherCategoryInput.required = false;
+                otherCategoryInput.value = '';
+            }
+        });
+
+        // Form validation for "Other" category
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const categorySelect = document.getElementById('categorySelect');
+            const otherCategoryInput = document.getElementById('otherCategory');
+            const otherCategoryError = document.getElementById('otherCategoryError');
+            
+            if (categorySelect.value === 'Other' && !otherCategoryInput.value.trim()) {
+                e.preventDefault();
+                otherCategoryError.textContent = 'Please enter a custom category.';
+                return false;
+            } else {
+                otherCategoryError.textContent = '';
+            }
+            
+            // Set the category value to the custom input if "Other" is selected
+            if (categorySelect.value === 'Other' && otherCategoryInput.value.trim()) {
+                categorySelect.value = otherCategoryInput.value.trim();
+            }
+        });
+
+        // Initialize "Other" category field if needed
+        document.addEventListener('DOMContentLoaded', function() {
+            const categorySelect = document.getElementById('categorySelect');
+            const otherCategoryDiv = document.getElementById('otherCategoryDiv');
+            const otherCategoryInput = document.getElementById('otherCategory');
+            
+            // Check if current category is not in the predefined list
+            const predefinedCategories = ['Utilities', 'Rent', 'Insurance', 'Transportation', 'Food', 'Entertainment', 'Healthcare', 'Education', 'Shopping'];
+            const currentCategory = categorySelect.value;
+            
+            if (currentCategory && !predefinedCategories.includes(currentCategory)) {
+                categorySelect.value = 'Other';
+                otherCategoryDiv.style.display = 'block';
+                otherCategoryInput.value = currentCategory;
+                otherCategoryInput.required = true;
+            }
+        });
+    </script>
+} 

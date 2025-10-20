@@ -1,0 +1,93 @@
+@model IEnumerable<TestingDemo.Models.PermitRequirementModel>
+
+@if (Model != null && Model.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="bg-light">
+                <tr>
+                    <th class="border-0 text-center" style="width: 40px;">#</th>
+                    <th class="border-0">Name</th>
+                    <th class="border-0">Description</th>
+                    <th class="border-0">Content</th>
+                    <th class="border-0 text-center">Status</th>
+                    @{
+                        var readOnlyHeader = (ViewData["ReadOnly"] as bool?) ?? false;
+                    }
+                    @if (!readOnlyHeader && (User.IsInRole("PlanningOfficer") || User.IsInRole("Admin")))
+                    {
+                        <th class="border-0 text-center" style="width: 100px;">Actions</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    var i = 1;
+                }
+                @foreach (var r in Model)
+                {
+                    <tr class="border-bottom">
+                        <td class="text-center fw-bold text-muted">@i</td>
+                        <td class="fw-medium">@r.RequirementName</td>
+                        <td class="text-muted small">@r.Description</td>
+                        <td>
+                            @if (r.Photos != null && r.Photos.Count > 0)
+                            {
+                                <span class="badge bg-primary rounded-pill px-3 py-2">@r.Photos.Count file(s)</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">No content</span>
+                            }
+                        </td>
+
+                        <td class="text-center">
+                            @if (r.IsCompleted)
+                            {
+                                <span class="badge bg-success rounded-pill px-3 py-2">
+                                    <i class="bi bi-check-circle me-1"></i>Completed
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark rounded-pill px-3 py-2">
+                                    <i class="bi bi-clock me-1"></i>Pending
+                                </span>
+                            }
+                        </td>
+                        @{
+                            var readOnlyRow = (ViewData["ReadOnly"] as bool?) ?? false;
+                        }
+                        @if (!readOnlyRow && (User.IsInRole("PlanningOfficer") || User.IsInRole("Admin")))
+                        {
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <button type="button" class="btn btn-outline-primary rounded-pill border-0 shadow-sm"
+                                        onclick="openEditRequirementModal(@r.Id, @r.ClientId)" title="Edit this requirement">
+                                        <i class="bi bi-pencil fs-6"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger rounded-pill border-0 shadow-sm"
+                                        onclick="deleteRequirement(@r.Id, @r.ClientId)" title="Remove this requirement">
+                                        <i class="bi bi-trash fs-6"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        }
+                    </tr>
+                    i++;
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="text-center py-4">
+        <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3"
+            style="width: 80px; height: 80px;">
+            <i class="bi bi-info-circle text-muted" style="font-size: 2rem;"></i>
+        </div>
+        <h6 class="text-muted fw-bold mb-2">No Requirements Defined</h6>
+        <p class="text-muted mb-0">No requirements have been defined for this client yet.</p>
+    </div>
+}
