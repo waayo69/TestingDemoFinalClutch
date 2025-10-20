@@ -295,18 +295,29 @@ public class AdminController : Controller
         return RedirectToAction("PendingApprovals");
     }
 
-    public async Task<IActionResult> Clients()
+    //Search Bar 
+    public async Task<IActionResult> Clients(string searchString)
     {
-        var clients = await _context.Clients
+        ViewData["CurrentFilter"] = searchString;
+
+        var clients = _context.Clients
             .Where(c => c.Status != "Archived") // Exclude archived clients
             .Include(c => c.RetainershipBIR)
             .Include(c => c.RetainershipSPP)
             .Include(c => c.OneTimeTransaction)
             .Include(c => c.ExternalAudit)
+            .AsQueryable();
+
+        if (!string.IsNullOrEmpty(searchString))
+        {
+            clients = clients.Where(c => c.ClientName.Contains(searchString));
+        }
+
+        var clientList = await clients
             .OrderByDescending(c => c.CreatedDate)
             .ToListAsync();
 
-        return View(clients);
+        return View(clientList);
     }
 
     [HttpGet]

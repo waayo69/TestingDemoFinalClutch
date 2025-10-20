@@ -29,6 +29,7 @@ namespace TestingDemo.Controllers
                 LiaisonClients = clients.Where(c => c.Status == "Liaison").ToList(),
                 FinanceClients = clients.Where(c => c.Status == "Pending" || c.Status == "Finance" || c.Status == "Clearance").ToList(),
                 PlanningClients = clients.Where(c => c.Status == "Planning").ToList(),
+                ReceivedClients = clients.Where(c => c.Status == "CustomerCareReceived").ToList(),
                 DocumentationClients = clients.Where(c => c.Status == "DocumentOfficer").ToList()
             };
 
@@ -44,6 +45,7 @@ namespace TestingDemo.Controllers
                 LiaisonClients = clients.Where(c => c.Status == "Liaison").ToList(),
                 FinanceClients = clients.Where(c => c.Status == "Pending" || c.Status == "Finance" || c.Status == "Clearance").ToList(),
                 PlanningClients = clients.Where(c => c.Status == "Planning").ToList(),
+                ReceivedClients = clients.Where(c => c.Status == "CustomerCareReceived").ToList(),
                 DocumentationClients = clients.Where(c => c.Status == "DocumentOfficer").ToList()
             };
             return Json(model);

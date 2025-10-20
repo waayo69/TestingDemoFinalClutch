@@ -131,7 +131,7 @@
         $(function () {
             // Initialize tooltips only on elements that don't have modal triggers
             $('[data-bs-toggle="tooltip"]').tooltip();
-            
+
             // Ensure modals are properly initialized
             $('[data-bs-toggle="modal"]').on('click', function() {
                 const target = $(this).data('bs-target');
@@ -140,7 +140,7 @@
                     modal.show();
                 }
             });
-            
+
             // Debug: Log modal triggers
             console.log('Modal triggers found:', $('[data-bs-toggle="modal"]').length);
         });

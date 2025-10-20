@@ -5,16 +5,861 @@
     ViewData["Title"] = "Client Archive";
 }
 
-<!-- Hero Section with Gradient Background -->
+@functions {
+    public string GetProjectTypeClass(string type)
+    {
+        if (string.IsNullOrWhiteSpace(type)) return "";
+        switch (type.Trim())
+        {
+            case "Retainership - BIR": return "type-bir";
+            case "Retainership - SPP": return "type-spp";
+            case "One Time Transaction": return "type-ott";
+            case "External Audit": return "type-audit";
+            default: return "type-other";
+        }
+    }
+
+    public string GetProjectTypeIcon(string type)
+    {
+        if (string.IsNullOrWhiteSpace(type)) return "<i class='bi bi-tag'></i>";
+        switch (type.Trim())
+        {
+            case "Retainership - BIR": return "<i class='bi bi-journal-check'></i>";
+            case "Retainership - SPP": return "<i class='bi bi-diagram-3'></i>";
+            case "One Time Transaction": return "<i class='bi bi-lightning-charge'></i>";
+            case "External Audit": return "<i class='bi bi-clipboard-check'></i>";
+            default: return "<i class='bi bi-tag'></i>";
+        }
+    }
+}
+
+<style>
+    :root {
+        --bg: #ffffff;
+        --bg-soft: #f8f9fa;
+        --bg-muted: #f4f5f6;
+        --text: #222;
+        --muted: #6b7280;
+        --primary: #2563eb;
+        --primary-600: #1d4ed8;
+        --primary-100: #dbeafe;
+        --success: #16a34a;
+        --warning: #f59e0b;
+        --danger: #dc2626;
+        --info: #0ea5e9;
+        --secondary: #6b7280;
+        --border: #e5e7eb;
+        --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+        --radius: 12px;
+    }
+
+    /* Base */
+    body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+    }
+
+    .archive-hero-section {
+        background: transparent; /* was a gradient */
+        padding: 20px 0; /* slightly reduced padding */
+        color: inherit; /* no forced white text */
+        box-shadow: none; /* remove drop shadow */
+        margin-bottom: 16px; /* keep some spacing below */
+        border-bottom: 1px solid var(--border); /* subtle separator (optional) */
+    }
+
+    .text-muted {
+        color: var(--muted);
+    }
+
+    .text-white {
+        color: #fff;
+    }
+
+    .text-primary {
+        color: var(--primary);
+    }
+
+    .text-success {
+        color: var(--success);
+    }
+
+    .text-info {
+        color: var(--info);
+    }
+
+    .small {
+        font-size: 0.875rem;
+    }
+
+    .fw-bold {
+        font-weight: 700;
+    }
+
+    .fw-semibold {
+        font-weight: 600;
+    }
+
+    .fw-medium {
+        font-weight: 500;
+    }
+
+    .lead {
+        font-size: 1.125rem;
+        color: var(--muted);
+    }
+
+    /* Spacing */
+    .mb-0 {
+        margin-bottom: 0;
+    }
+
+    .mb-1 {
+        margin-bottom: 0.25rem;
+    }
+
+    .mb-3 {
+        margin-bottom: 1rem;
+    }
+
+    .mb-4 {
+        margin-bottom: 1.25rem;
+    }
+
+    .me-1 {
+        margin-right: 0.25rem;
+    }
+
+    .me-2 {
+        margin-right: 0.5rem;
+    }
+
+    .me-3 {
+        margin-right: 0.75rem;
+    }
+
+    .mt-3 {
+        margin-top: 1rem;
+    }
+
+    .my-4 {
+        margin-top: 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .gap-2 {
+        gap: 0.5rem;
+    }
+
+    .gap-3 {
+        gap: 0.75rem;
+    }
+
+    /* Display/align */
+    .d-flex {
+        display: flex;
+    }
+
+    .d-grid {
+        display: grid;
+    }
+
+    .w-100 {
+        width: 100%;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .align-items-center {
+        align-items: center;
+    }
+
+    .align-items-start {
+        align-items: flex-start;
+    }
+
+    .justify-content-between {
+        justify-content: space-between;
+    }
+
+    .justify-content-center {
+        justify-content: center;
+    }
+
+    .min-vh-25 {
+        min-height: 25vh;
+    }
+
+    .d-none {
+        display: none !important;
+    }
+
+    /* Grid system (subset) */
+    .container-fluid {
+        width: 100%;
+        max-width: 1200px;
+        padding: 0 20px;
+        margin: 0 auto;
+    }
+
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-left: -10px;
+        margin-right: -10px;
+    }
+
+        .row > [class*="col-"] {
+            padding: 0 10px;
+        }
+
+    .col-12 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .col-auto {
+        flex: 0 0 auto;
+        width: auto;
+    }
+
+    .col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-6, .col-lg-4 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    @@media (min-width: 768px) {
+        .col-md-1 {
+            flex: 0 0 8.333%;
+            max-width: 8.333%;
+        }
+
+        .col-md-2 {
+            flex: 0 0 16.666%;
+            max-width: 16.666%;
+        }
+
+        .col-md-3 {
+            flex: 0 0 25%;
+            max-width: 25%;
+        }
+
+        .col-md-4 {
+            flex: 0 0 33.333%;
+            max-width: 33.333%;
+        }
+
+        .col-md-6 {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+    }
+
+    @@media (min-width: 992px) {
+        .col-lg-4 {
+            flex: 0 0 33.333%;
+            max-width: 33.333%;
+        }
+    }
+
+    /* Hero */
+
+
+    .hero-content h1 {
+        margin: 0;
+        letter-spacing: 0.3px;
+    }
+
+    .animate-fade-in {
+        animation: fadeInUp 0.5s ease;
+    }
+
+    .animate-fade-in-delay {
+        animation: fadeInUp 0.6s ease;
+    }
+
+    .animate-fade-in-delay-2 {
+        animation: fadeInUp 0.7s ease;
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .archive-stats .stat-item {
+        background: rgba(255,255,255,0.12);
+        border-radius: 10px;
+        padding: 10px 14px;
+        color: #fff;
+    }
+
+    /* Filters */
+    .archive-container {
+        padding: 10px 0 40px;
+    }
+
+    .filter-card {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    .filter-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        background: var(--bg-soft);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .filter-body {
+        padding: 16px;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 0.9rem;
+        color: var(--muted);
+        margin-bottom: 6px;
+    }
+
+    .input-group {
+        display: flex;
+        align-items: stretch;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .input-group-text {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 10px;
+        color: var(--muted);
+        background: #fff;
+        border-right: 1px solid var(--border);
+    }
+
+    .form-control, .form-select, input[type="date"] {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        outline: none;
+        background: #fff;
+        color: var(--text);
+        font-size: 0.95rem;
+    }
+
+        .form-control.border-start-0 {
+            border-left: 0;
+            border-radius: 0 10px 10px 0;
+        }
+
+    .form-select {
+        appearance: none;
+        background-image: none;
+    }
+
+    .g-3 {
+        row-gap: 12px;
+    }
+
+    .g-4 {
+        row-gap: 16px;
+    }
+
+    /* Buttons */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: 1px solid transparent;
+        background: #fff;
+        color: var(--text);
+        padding: 8px 12px;
+        border-radius: 999px;
+        cursor: pointer;
+        font-size: 0.95rem;
+        transition: all 0.18s ease;
+        text-decoration: none;
+    }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+    .btn-primary {
+        background: var(--primary);
+        color: #fff;
+        border-color: var(--primary);
+    }
+
+        .btn-primary:hover {
+            background: var(--primary-600);
+            border-color: var(--primary-600);
+        }
+
+    .btn-outline-secondary {
+        background: transparent;
+        color: var(--text);
+        border-color: var(--border);
+    }
+
+        .btn-outline-secondary:hover {
+            background: var(--bg-soft);
+        }
+
+    .btn-outline-primary {
+        background: transparent;
+        color: var(--primary);
+        border-color: var(--primary);
+    }
+
+        .btn-outline-primary:hover {
+            background: var(--primary-100);
+        }
+
+    .btn-link {
+        background: transparent;
+        border: none;
+        color: var(--text);
+        padding: 6px;
+        border-radius: 8px;
+    }
+
+        .btn-link:hover {
+            background: var(--bg-soft);
+        }
+
+    .btn-sm {
+        padding: 6px 10px;
+        font-size: 0.9rem;
+    }
+
+    .btn-group {
+        display: inline-flex;
+        gap: 8px;
+        background: var(--bg-soft);
+        padding: 6px;
+        border-radius: 999px;
+    }
+
+        .btn-group .btn {
+            border-radius: 999px;
+        }
+
+            .btn-group .btn.active {
+                background: var(--primary);
+                color: #fff;
+                border-color: var(--primary);
+            }
+
+    /* Badges */
+    .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        font-size: 12px;
+        border-radius: 999px;
+        font-weight: 600;
+    }
+
+    .bg-primary {
+        background: var(--primary-100);
+        color: var(--primary);
+    }
+
+    .bg-success {
+        background: #d1f7d1;
+        color: #267326;
+    }
+
+    .bg-warning {
+        background: #fff3cd;
+        color: #7a6200;
+    }
+
+    .bg-danger {
+        background: #f8d7da;
+        color: #842029;
+    }
+
+    .bg-info {
+        background: #cff4fc;
+        color: #055160;
+    }
+
+    .bg-light {
+        background: #f1f5f9;
+        color: #0f172a;
+    }
+
+    .bg-secondary {
+        background: #e5e7eb;
+        color: #374151;
+    }
+
+    /* Cards and lists */
+    .archive-card {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        background: #fff;
+        overflow: hidden;
+    }
+
+    .archive-card-header {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg-soft);
+    }
+
+    .archive-card-body {
+        padding: 12px 14px;
+    }
+
+    .archive-card-footer {
+        padding: 12px 14px;
+        border-top: 1px solid var(--border);
+        background: #fff;
+    }
+
+    .client-info .client-name {
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .project-details {
+        display: grid;
+        row-gap: 8px;
+    }
+
+    .detail-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text);
+    }
+
+    .list-view-container {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: #fff;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+    }
+
+    .list-header {
+        padding: 10px 14px;
+        background: var(--bg-soft);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .list-body {
+        display: grid;
+    }
+
+    .list-item {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border);
+        transition: background 0.15s ease;
+    }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .list-item:hover {
+            background: #fafafa;
+        }
+
+    .client-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--bg-muted);
+        color: var(--muted);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .project-type-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--bg-soft);
+        color: var(--text);
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        font-size: 0.875rem;
+    }
+
+    /* Pagination */
+    .pagination-container {
+        margin-top: 16px;
+    }
+
+    .pagination {
+        list-style: none;
+        display: inline-flex;
+        gap: 6px;
+        padding: 0;
+        margin: 0;
+    }
+
+    .page-item .page-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        text-decoration: none;
+        color: var(--text);
+        background: #fff;
+        min-width: 40px;
+    }
+
+        .page-item .page-link:hover {
+            background: var(--bg-soft);
+        }
+
+    .page-item.active .page-link {
+        background: var(--primary);
+        color: #fff;
+        border-color: var(--primary);
+    }
+
+    .page-item.disabled .page-link {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        border: 1px dashed var(--border);
+        border-radius: var(--radius);
+        color: var(--muted);
+        background: var(--bg);
+    }
+
+    .empty-state-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        background: var(--bg-soft);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 12px;
+        color: var(--primary);
+        font-size: 28px;
+        box-shadow: var(--shadow);
+    }
+
+    .empty-state-title {
+        margin: 6px 0;
+        color: var(--text);
+    }
+
+    .empty-state-description {
+        margin: 0 0 14px;
+    }
+
+    /* Alerts for modal content */
+    .alert {
+        border-radius: 10px;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        background: var(--bg-soft);
+        color: var(--text);
+    }
+
+    .alert-info {
+        background: #e6f4ff;
+        color: #084d7a;
+        border-color: #cde8ff;
+    }
+
+    .alert-warning {
+        background: #fff7e6;
+        color: #7a5a08;
+        border-color: #ffe8b3;
+    }
+
+    .alert-danger {
+        background: #ffe6e6;
+        color: #7a0b0b;
+        border-color: #ffcaca;
+    }
+
+    /* Tables inside modal */
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .table.table-striped tbody tr:nth-child(odd) {
+            background: #fafafa;
+        }
+
+        .table.table-hover tbody tr:hover {
+            background: #f4f4f4;
+        }
+
+        .table thead.table-dark {
+            background: #0f172a;
+            color: #fff;
+        }
+
+        .table td, .table th {
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
+
+    /* Collapse visual */
+    [data-bs-toggle="collapse"] {
+        cursor: pointer;
+    }
+
+    .collapse {
+        display: block;
+    }
+
+        .collapse.show {
+            display: block;
+        }
+
+    /* Modal visuals */
+    .modal-content {
+        border-radius: 14px;
+        border: 1px solid var(--border);
+    }
+
+    .modal-header {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg-soft);
+    }
+
+    .modal-body {
+        padding: 16px;
+        background: #fff;
+    }
+
+    .modal-footer {
+        padding: 12px 14px;
+        border-top: 1px solid var(--border);
+        background: var(--bg-soft);
+    }
+
+    .btn-close {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 1px solid var(--border);
+        background: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .btn-close::before {
+            content: "×";
+            font-size: 18px;
+            line-height: 1;
+        }
+
+    .btn-close-white {
+        background: #fff;
+        color: #000;
+    }
+
+    .bg-opacity-10 {
+        opacity: 1;
+    }
+
+    .border-0 {
+        border: 0;
+    }
+
+    .border-start {
+        border-left: 1px solid var(--border);
+    }
+
+    .border-4 {
+        border-width: 4px !important;
+    }
+
+    .rounded-3 {
+        border-radius: 12px;
+    }
+
+    .rounded-circle {
+        border-radius: 50%;
+    }
+
+    .opacity-25 {
+        opacity: 0.25;
+    }
+
+    .text-monospace {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    /* Optional type classes (hooks for future styles) */
+    .type-bir {
+    }
+
+    .type-spp {
+    }
+
+    .type-ott {
+    }
+
+    .type-audit {
+    }
+
+    .type-other {
+    }
+</style>
+
+<!-- Hero Section -->
 <div class="archive-hero-section">
     <div class="container-fluid">
         <div class="row align-items-center min-vh-25">
-            <div class="col-12 text-center text-white">
+            <div class="col-12 text-center">
                 <div class="hero-content">
                     <h1 class="display-4 fw-bold mb-3 animate-fade-in">
                         <i class="bi bi-archive-fill me-3"></i>Client Archive
                     </h1>
-                    <p class="lead mb-4 animate-fade-in-delay">Comprehensive repository of completed client projects and historical records</p>
                     <div class="archive-stats animate-fade-in-delay-2">
                         <div class="row justify-content-center">
                             <div class="col-auto">
@@ -64,11 +909,11 @@
                                     <i class="bi bi-person me-1"></i>Client Name
                                 </label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-white border-end-0">
+                                    <span class="input-group-text">
                                         <i class="bi bi-search text-muted"></i>
                                     </span>
                                     <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]"
-                                        class="form-control border-start-0" placeholder="Search by client name...">
+                                           class="form-control border-start-0" placeholder="Search by client name...">
                                 </div>
                             </div>
                             <div class="col-12 col-md-3">
@@ -92,14 +937,14 @@
                                     <i class="bi bi-calendar-event me-1"></i>From Date
                                 </label>
                                 <input type="date" name="CreatedDateFrom" value="@Context.Request.Query["CreatedDateFrom"]"
-                                    class="form-control">
+                                       class="form-control">
                             </div>
                             <div class="col-12 col-md-2">
                                 <label class="form-label fw-semibold">
                                     <i class="bi bi-calendar-check me-1"></i>To Date
                                 </label>
                                 <input type="date" name="CreatedDateTo" value="@Context.Request.Query["CreatedDateTo"]"
-                                    class="form-control">
+                                       class="form-control">
                             </div>
                             <div class="col-12 col-md-1 d-flex align-items-end">
                                 <div class="d-grid gap-2 w-100">
@@ -173,8 +1018,8 @@
                                     </div>
                                 </div>
                                 <div class="archive-card-footer">
-                                    <button type="button" class="btn btn-primary btn-sm w-100" 
-                                        onclick="viewArchiveDetails(@item.Id)">
+                                    <button type="button" class="btn btn-primary btn-sm w-100"
+                                            onclick="viewArchiveDetails('@item.Id')">
                                         <i class="bi bi-eye me-1"></i>View Details
                                     </button>
                                 </div>
@@ -223,8 +1068,8 @@
                                             <span class="badge bg-success">@item.Status</span>
                                         </div>
                                         <div class="col-md-2 text-center">
-                                            <button type="button" class="btn btn-outline-primary btn-sm" 
-                                                onclick="viewArchiveDetails(@item.Id)" title="View Details">
+                                            <button type="button" class="btn btn-outline-primary btn-sm"
+                                                    onclick="viewArchiveDetails('@item.Id')" title="View Details">
                                                 <i class="bi bi-eye"></i>
                                             </button>
                                         </div>
@@ -245,28 +1090,28 @@
                         <ul class="pagination justify-content-center">
                             <li class="page-item @prevDisabled">
                                 <a asp-action="Index" asp-route-sortOrder="@ViewData["CurrentSort"]"
-                                    asp-route-pageNumber="@(Model.PageIndex - 1)"
-                                    asp-route-currentFilter="@ViewData["CurrentFilter"]" 
-                                    class="page-link">
+                                   asp-route-pageNumber="@(Model.PageIndex - 1)"
+                                   asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                                   class="page-link">
                                     <i class="bi bi-chevron-left"></i> Previous
                                 </a>
                             </li>
-                            
+
                             @for (int i = Math.Max(1, Model.PageIndex - 2); i <= Math.Min(Model.TotalPages, Model.PageIndex + 2); i++)
                             {
                                 <li class="page-item @(i == Model.PageIndex ? "active" : "")">
                                     <a asp-action="Index" asp-route-sortOrder="@ViewData["CurrentSort"]"
-                                        asp-route-pageNumber="@i"
-                                        asp-route-currentFilter="@ViewData["CurrentFilter"]" 
-                                        class="page-link">@i</a>
+                                       asp-route-pageNumber="@i"
+                                       asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                                       class="page-link">@i</a>
                                 </li>
                             }
-                            
+
                             <li class="page-item @nextDisabled">
                                 <a asp-action="Index" asp-route-sortOrder="@ViewData["CurrentSort"]"
-                                    asp-route-pageNumber="@(Model.PageIndex + 1)"
-                                    asp-route-currentFilter="@ViewData["CurrentFilter"]" 
-                                    class="page-link">
+                                   asp-route-pageNumber="@(Model.PageIndex + 1)"
+                                   asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                                   class="page-link">
                                     Next <i class="bi bi-chevron-right"></i>
                                 </a>
                             </li>
@@ -307,7 +1152,6 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4" id="archiveDetailsContent">
-                <!-- Content will be loaded here -->
                 <div class="text-center py-4">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading...</span>
@@ -370,25 +1214,33 @@
             const modal = new bootstrap.Modal(document.getElementById('archiveDetailsModal'));
             modal.show();
 
-            // Update modal title
+            // Update placeholders
             document.getElementById('modalClientName').textContent = 'Loading...';
             document.getElementById('modalProjectType').textContent = 'Loading...';
+            document.getElementById('archiveDetailsContent').innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Loading client details...</p>
+                </div>
+            `;
 
             // Fetch client details
-            fetch(`/Archive/GetClientDetails/${clientId}`)
-                .then(response => response.json())
+            fetch(`/Archive/GetClientDetails/${encodeURIComponent(clientId)}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to fetch client details');
+                    return response.json();
+                })
                 .then(client => {
-                    // Update modal title
-                    document.getElementById('modalClientName').textContent = client.clientName;
-                    document.getElementById('modalProjectType').textContent = client.typeOfProject;
+                    document.getElementById('modalClientName').textContent = client.clientName || 'Client Details';
+                    document.getElementById('modalProjectType').textContent = client.typeOfProject || 'N/A';
 
-                    // Create detailed content
                     const content = `
                         <div class="row g-4 mb-4">
                             <div class="col-12">
                                 <div class="d-flex align-items-center mb-3">
-                                    <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3"
-                                        style="width: 40px; height: 40px;">
+                                    <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
                                         <i class="bi bi-info-circle text-primary fs-5"></i>
                                     </div>
                                     <h6 class="fw-bold mb-0 text-primary">Client Information</h6>
@@ -397,13 +1249,13 @@
                             <div class="col-md-6">
                                 <div class="bg-light rounded-3 p-3 h-100 border-start border-4 border-primary">
                                     <small class="text-muted d-block mb-2 fw-medium">Tracking Number</small>
-                                    <span class="text-monospace fw-bold fs-6 text-dark">${client.trackingNumber}</span>
+                                    <span class="text-monospace fw-bold fs-6 text-dark">${client.trackingNumber || 'N/A'}</span>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="bg-light rounded-3 p-3 h-100 border-start border-4 border-success">
                                     <small class="text-muted d-block mb-2 fw-medium">Archived Date</small>
-                                    <span class="fw-bold fs-6 text-dark">${client.createdDate}</span>
+                                    <span class="fw-bold fs-6 text-dark">${client.createdDate || 'N/A'}</span>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -436,16 +1288,14 @@
                                     <small class="text-muted d-block mb-2 fw-medium">Company Name</small>
                                     <span class="fw-bold fs-6 text-dark">${client.registeredCompanyName}</span>
                                 </div>
-                            </div>
-                            ` : ''}
+                            </div>` : ''}
                             ${client.registeredCompanyAddress ? `
                             <div class="col-12">
                                 <div class="bg-light rounded-3 p-3 border-start border-4 border-secondary">
                                     <small class="text-muted d-block mb-2 fw-medium">Company Address</small>
                                     <span class="fw-bold fs-6 text-dark">${client.registeredCompanyAddress}</span>
                                 </div>
-                            </div>
-                            ` : ''}
+                            </div>` : ''}
                         </div>
 
                         <hr class="my-4 opacity-25" />
@@ -453,8 +1303,7 @@
                         <div class="row g-4 mb-4">
                             <div class="col-12">
                                 <div class="d-flex align-items-center mb-3">
-                                    <div class="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3"
-                                        style="width: 40px; height: 40px;">
+                                    <div class="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
                                         <i class="bi bi-project-diagram text-success fs-5"></i>
                                     </div>
                                     <h6 class="fw-bold mb-0 text-success">Project Information</h6>
@@ -463,19 +1312,19 @@
                             <div class="col-md-6">
                                 <div class="bg-light rounded-3 p-3 h-100 border-start border-4 border-primary">
                                     <small class="text-muted d-block mb-2 fw-medium">Project Type</small>
-                                    <span class="fw-bold fs-6 text-dark">${client.typeOfProject}</span>
+                                    <span class="fw-bold fs-6 text-dark">${client.typeOfProject || 'N/A'}</span>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="bg-light rounded-3 p-3 h-100 border-start border-4 border-warning">
                                     <small class="text-muted d-block mb-2 fw-medium">Urgency Level</small>
-                                    <span class="badge ${getUrgencyBadgeClass(client.urgencyLevel)}">${client.urgencyLevel}</span>
+                                    <span class="badge ${getUrgencyBadgeClass(client.urgencyLevel)}">${client.urgencyLevel || 'N/A'}</span>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="bg-light rounded-3 p-3 h-100 border-start border-4 border-info">
                                     <small class="text-muted d-block mb-2 fw-medium">Status</small>
-                                    <span class="badge ${getStatusBadgeClass(client.status)}">${client.status}</span>
+                                    <span class="badge ${getStatusBadgeClass(client.status)}">${client.status || 'N/A'}</span>
                                 </div>
                             </div>
                             ${client.otherTypeOfProject ? `
@@ -484,14 +1333,13 @@
                                     <small class="text-muted d-block mb-2 fw-medium">Other Project Type</small>
                                     <span class="fw-bold fs-6 text-dark">${client.otherTypeOfProject}</span>
                                 </div>
-                            </div>
-                            ` : ''}
+                            </div>` : ''}
                         </div>
 
                         ${getProjectSpecificDetails(client)}
                         ${getRequirementsDetails(client.requirements)}
                     `;
-                    
+
                     document.getElementById('archiveDetailsContent').innerHTML = content;
                 })
                 .catch(error => {
@@ -505,10 +1353,30 @@
                 });
         }
 
-        // Helper functions for modal
+        // Helpers used by modal content
+        function getUrgencyBadgeClass(level) {
+            switch (level) {
+                case 'Urgent': return 'bg-danger';
+                case 'Slightly Urgent': return 'bg-warning';
+                case 'High': return 'bg-danger';
+                case 'Normal': return 'bg-warning';
+                case 'Low': return 'bg-success';
+                default: return 'bg-secondary';
+            }
+        }
+        function getStatusBadgeClass(status) {
+            switch (status) {
+                case 'Active': return 'bg-success';
+                case 'Pending': return 'bg-warning';
+                case 'In Progress': return 'bg-info';
+                case 'Planning': return 'bg-info';
+                case 'Finance': return 'bg-primary';
+                default: return 'bg-secondary';
+            }
+        }
+
         function getProjectSpecificDetails(client) {
             let details = '<hr><div class="row"><div class="col-12"><h6 class="text-primary"><i class="bi bi-file-earmark-text"></i> Project-Specific Details</h6>';
-            
             if (client.retainershipBIR) {
                 details += '<div class="alert alert-info"><strong>Retainership BIR Details:</strong><br>';
                 details += `<strong>Type of Registrant:</strong> ${client.retainershipBIR.typeOfRegistrant || 'N/A'}<br>`;
@@ -539,19 +1407,6 @@
                 details += `<strong>Other Area of Services:</strong> ${client.oneTimeTransaction.otherAreaOfServices || 'N/A'}`;
                 details += '</div>';
             }
-            if (client.externalAudit) {
-                details += '<div class="alert alert-info"><strong>External Audit Details:</strong><br>';
-                details += `<strong>Audit Status:</strong> ${client.externalAudit.externalAuditStatus || 'N/A'}<br>`;
-                details += `<strong>Purposes:</strong> ${client.externalAudit.externalAuditPurposes || 'N/A'}<br>`;
-                details += `<strong>Other Purpose:</strong> ${client.externalAudit.externalAuditOtherPurpose || 'N/A'}<br>`;
-                details += `<strong>Report Date:</strong> ${client.externalAudit.externalAuditReportDate || 'N/A'}`;
-                details += '</div>';
-            }
-            
-            if (!client.retainershipBIR && !client.retainershipSPP && !client.oneTimeTransaction && !client.externalAudit) {
-                details += '<div class="alert alert-warning">No additional project-specific details available</div>';
-            }
-            
             details += '</div></div>';
             return details;
         }
@@ -564,524 +1419,31 @@
             let details = '<hr><div class="row"><div class="col-12"><h6 class="text-primary"><i class="bi bi-list-check"></i> Permit Requirements</h6>';
             details += '<div class="table-responsive"><table class="table table-striped table-hover">';
             details += '<thead class="table-dark"><tr><th>Requirement Name</th><th>Description</th><th>Required</th><th>Completed</th><th>Present</th><th>Created Date</th></tr></thead><tbody>';
-            
+
             requirements.forEach(req => {
-                const requiredBadge = req.isRequired ? '<span class="badge bg-danger">Required</span>' : '<span class="badge bg-secondary">Optional</span>';
-                const completedBadge = req.isCompleted ? '<span class="badge bg-success">Yes</span>' : '<span class="badge bg-warning">No</span>';
-                const presentBadge = req.isPresent ? '<span class="badge bg-success">Yes</span>' : '<span class="badge bg-warning">No</span>';
-                
+                const name = req.requirementName || req.RequirementName || req.name || 'N/A';
+                const description = req.description || req.Description || '';
+                const isRequired = (typeof req.isRequired !== 'undefined') ? req.isRequired : (req.IsRequired || false);
+                const isCompleted = (typeof req.isCompleted !== 'undefined') ? req.isCompleted : (req.IsCompleted || false);
+                const isPresent = (typeof req.isPresent !== 'undefined') ? req.isPresent : (req.IsPresent || false);
+                const createdDate = req.createdDate || req.CreatedDate || '';
+
+                const requiredBadge = isRequired ? '<span class="badge bg-danger">Required</span>' : '<span class="badge bg-secondary">Optional</span>';
+                const completedBadge = isCompleted ? '<span class="badge bg-success">Yes</span>' : '<span class="badge bg-warning">No</span>';
+                const presentBadge = isPresent ? '<span class="badge bg-success">Yes</span>' : '<span class="badge bg-warning">No</span>';
+
                 details += `<tr>
-                    <td><strong>${req.requirementName}</strong></td>
-                    <td>${req.description}</td>
-                    <td>${requiredBadge}</td>
-                    <td>${completedBadge}</td>
-                    <td>${presentBadge}</td>
-                    <td>${req.createdDate}</td>
-                </tr>`;
+                                <td><strong>${name}</strong></td>
+                                <td>${description}</td>
+                                <td>${requiredBadge}</td>
+                                <td>${completedBadge}</td>
+                                <td>${presentBadge}</td>
+                                <td>${createdDate}</td>
+                            </tr>`;
             });
-            
+
             details += '</tbody></table></div></div></div>';
             return details;
         }
-
-        function getStatusBadgeClass(status) {
-            const statusClasses = {
-                'Pending': 'bg-warning',
-                'Finance': 'bg-primary',
-                'Planning': 'bg-info',
-                'Liaison': 'bg-secondary',
-                'Received': 'bg-success',
-                'DocumentOfficer': 'bg-dark',
-                'Clearance': 'bg-success',
-                'Archived': 'bg-secondary'
-            };
-            return statusClasses[status] || 'bg-secondary';
-        }
-
-        function getUrgencyBadgeClass(urgency) {
-            const urgencyClasses = {
-                'High': 'bg-danger',
-                'Normal': 'bg-warning',
-                'Low': 'bg-success'
-            };
-            return urgencyClasses[urgency] || 'bg-secondary';
-        }
-
-        // Store initial client IDs for Archive table
-        let archiveClientIds = Array.from(document.querySelectorAll('.archive-card')).map(card => {
-            const link = card.querySelector('a[href*="/Archive/Details/"]');
-            return link ? link.href.split('/').pop() : null;
-        }).filter(Boolean);
-
-        function playNotifySound() {
-            var audio = document.getElementById('notifySound');
-            if (audio) {
-                audio.currentTime = 0;
-                audio.play();
-            }
-        }
-
-        function renderArchive(data) {
-            let newIds = (data.items || []).map(c => c.id?.toString());
-            let isNew = newIds.some(id => !archiveClientIds.includes(id));
-            if (isNew) {
-                playNotifySound();
-            }
-            location.reload();
-        }
-
-        if (window.connection) {
-            connection.on("ReceiveUpdate", function (message) {
-                fetch('/Archive/GetLatestData')
-                    .then(response => response.json())
-                    .then(data => {
-                        renderArchive(data);
-                    });
-            });
-        }
     </script>
-}
-
-@functions {
-    public string GetProjectTypeClass(string projectType)
-    {
-        return projectType switch
-        {
-            "Retainership - BIR" => "bg-danger",
-            "Retainership - SPP" => "bg-info",
-            "One Time Transaction" => "bg-secondary",
-            "External Audit" => "bg-dark",
-            _ => "bg-light text-dark"
-        };
-    }
-
-    public string GetProjectTypeIcon(string projectType)
-    {
-        return projectType switch
-        {
-            "Retainership - BIR" => "<i class='bi bi-building'></i>",
-            "Retainership - SPP" => "<i class='bi bi-people'></i>",
-            "One Time Transaction" => "<i class='bi bi-arrow-repeat'></i>",
-            "External Audit" => "<i class='bi bi-search'></i>",
-            _ => "<i class='bi bi-file-earmark'></i>"
-        };
-    }
-}
-
-<style>
-    /* Hero Section */
-    .archive-hero-section {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .archive-hero-section::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-        opacity: 0.3;
-    }
-
-    .min-vh-25 {
-        min-height: 25vh;
-    }
-
-    .hero-content {
-        position: relative;
-        z-index: 2;
-    }
-
-    .archive-stats {
-        margin-top: 2rem;
-    }
-
-    .stat-item {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border-radius: 15px;
-        padding: 1.5rem;
-        margin: 0 0.5rem;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        transition: all 0.3s ease;
-    }
-
-    .stat-item:hover {
-        transform: translateY(-5px);
-        background: rgba(255, 255, 255, 0.15);
-    }
-
-    /* Animations */
-    .animate-fade-in {
-        animation: fadeInUp 1s ease-out;
-    }
-
-    .animate-fade-in-delay {
-        animation: fadeInUp 1s ease-out 0.3s both;
-    }
-
-    .animate-fade-in-delay-2 {
-        animation: fadeInUp 1s ease-out 0.6s both;
-    }
-
-        @@keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    /* Container */
-    .archive-container {
-        margin-top: -10px;
-        position: relative;
-        z-index: 3;
-        padding-bottom: 2rem;
-        padding-top: 2rem;
-    }
-
-    /* Filter Card */
-    .filter-card {
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-        border: none;
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
-
-    .filter-card:hover {
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-        transform: translateY(-2px);
-    }
-
-    .filter-header {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        padding: 1.5rem;
-        border-bottom: 1px solid #dee2e6;
-        display: flex;
-        justify-content: between;
-        align-items: center;
-    }
-
-    .filter-body {
-        padding: 2rem;
-    }
-
-    /* Archive Cards */
-    .archive-card {
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-        border: none;
-        overflow: hidden;
-        transition: all 0.3s ease;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .archive-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-    }
-
-    .archive-card-header {
-        padding: 1.5rem 1.5rem 1rem;
-        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-        border-bottom: 1px solid #f1f3f4;
-    }
-
-    .client-name {
-        font-weight: 600;
-        color: #2c3e50;
-        font-size: 1.1rem;
-    }
-
-    .project-type-badge {
-        padding: 0.5rem 1rem;
-        border-radius: 50px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: white;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.3rem;
-    }
-
-    .archive-card-body {
-        padding: 1rem 1.5rem;
-        flex-grow: 1;
-    }
-
-    .project-details {
-        display: flex;
-        flex-direction: column;
-        gap: 0.8rem;
-    }
-
-    .detail-item {
-        display: flex;
-        align-items: center;
-        gap: 0.8rem;
-        font-size: 0.9rem;
-    }
-
-    .detail-item i {
-        width: 20px;
-        text-align: center;
-    }
-
-    .archive-card-footer {
-        padding: 1rem 1.5rem 1.5rem;
-        background: #f8f9fa;
-    }
-
-    /* List View */
-    .list-view-container {
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-        overflow: hidden;
-    }
-
-    .list-header {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        padding: 1.5rem;
-        border-bottom: 2px solid #dee2e6;
-    }
-
-    .list-item {
-        padding: 1.5rem;
-        border-bottom: 1px solid #f1f3f4;
-        transition: all 0.3s ease;
-    }
-
-    .list-item:hover {
-        background: #f8f9fa;
-        transform: translateX(5px);
-    }
-
-    .list-item:last-child {
-        border-bottom: none;
-    }
-
-    .client-avatar {
-        font-size: 2rem;
-        color: #6c757d;
-    }
-
-    /* Pagination */
-    .pagination-container {
-        margin-top: 3rem;
-        padding: 2rem 0;
-    }
-
-    .pagination .page-link {
-        border: none;
-        color: #6c757d;
-        padding: 0.75rem 1rem;
-        margin: 0 0.25rem;
-        border-radius: 10px;
-        transition: all 0.3s ease;
-    }
-
-    .pagination .page-link:hover {
-        background: #667eea;
-        color: white;
-        transform: translateY(-2px);
-    }
-
-    .pagination .page-item.active .page-link {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-    }
-
-    /* Empty State */
-    .empty-state {
-        text-align: center;
-        padding: 4rem 2rem;
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-    }
-
-    .empty-state-icon {
-        font-size: 4rem;
-        color: #6c757d;
-        margin-bottom: 1.5rem;
-    }
-
-    .empty-state-title {
-        color: #2c3e50;
-        font-weight: 600;
-        margin-bottom: 1rem;
-    }
-
-    .empty-state-description {
-        color: #6c757d;
-        margin-bottom: 2rem;
-    }
-
-    /* Button Styles */
-    .btn {
-        border-radius: 10px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-
-    .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
-    }
-
-    .btn-outline-primary {
-        border: 2px solid #667eea;
-        color: #667eea;
-    }
-
-    .btn-outline-primary:hover,
-    .btn-outline-primary.active {
-        background: #667eea;
-        border-color: #667eea;
-        transform: translateY(-2px);
-    }
-
-    /* Form Controls */
-    .form-control,
-    .form-select {
-        border-radius: 10px;
-        border: 2px solid #e9ecef;
-        transition: all 0.3s ease;
-    }
-
-    .form-control:focus,
-    .form-select:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-    }
-
-    .input-group-text {
-        border-radius: 10px 0 0 10px;
-        border: 2px solid #e9ecef;
-        border-right: none;
-    }
-
-    .input-group .form-control {
-        border-left: none;
-        border-radius: 0 10px 10px 0;
-    }
-
-    /* Badge Styles */
-    .badge {
-        border-radius: 50px;
-        font-weight: 500;
-        padding: 0.5rem 1rem;
-    }
-
-    /* Additional spacing and layout fixes */
-    .archive-hero-section {
-        margin-bottom: 0;
-        padding-bottom: 3rem;
-    }
-
-    .filter-card {
-        margin-bottom: 2rem;
-        margin-top: 1rem;
-    }
-
-    .list-view-container {
-        margin-bottom: 2rem;
-    }
-
-    .pagination-container {
-        margin-top: 2rem;
-        margin-bottom: 2rem;
-    }
-
-    /* Modal improvements */
-    .modal-xl {
-        max-width: 95%;
-    }
-
-    .modal-content {
-        border-radius: 20px;
-    }
-
-    /* Responsive Design */
-    @@media (max-width: 768px) {
-        .archive-hero-section {
-            padding: 2rem 0;
-        }
-
-        .hero-content h1 {
-            font-size: 2rem;
-        }
-
-        .stat-item {
-            margin: 0.5rem 0;
-        }
-
-        .filter-body {
-            padding: 1rem;
-        }
-
-        .archive-card {
-            margin-bottom: 1rem;
-        }
-
-        .list-item {
-            padding: 1rem;
-        }
-
-        .archive-container {
-            margin-top: 0px;
-            padding-top: 1rem;
-        }
-
-        .archive-hero-section {
-            padding-bottom: 2rem;
-        }
-
-        .modal-xl {
-            max-width: 98%;
-        }
-    }
-
-    /* Dark mode support */
-    @@media (prefers-color-scheme: dark) {
-        .filter-card,
-        .archive-card,
-        .list-view-container,
-        .empty-state {
-            background: #2c3e50;
-            color: #ecf0f1;
-        }
-
-        .filter-header {
-            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
-        }
-
-        .client-name {
-            color: #ecf0f1;
-        }
-
-        .list-item:hover {
-            background: #34495e;
-        }
-    }
-</style>
+}   

@@ -19,15 +19,15 @@
         <div class="input-group">
             <label for="email">Email:</label>
             <input type="email" id="email" name="email" placeholder="Enter user email" required
-                data-parsley-type="email" data-parsley-trigger="keyup" />
+                   data-parsley-type="email" data-parsley-trigger="keyup" />
             <span id="emailFeedback" class="text-danger small"></span>
         </div>
 
         <div class="input-group">
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" placeholder="Enter user password" required
-                data-parsley-minlength="8" data-parsley-uppercase="1" data-parsley-lowercase="1" data-parsley-number="1"
-                data-parsley-special="1" data-parsley-trigger="keyup" />
+                   data-parsley-minlength="8" data-parsley-uppercase="1" data-parsley-lowercase="1" data-parsley-number="1"
+                   data-parsley-special="1" data-parsley-trigger="keyup" />
             <div id="passwordStrength" class="small mt-1"></div>
             <ul id="passwordRequirements" class="small text-muted mb-0" style="list-style: disc; margin-left: 20px;">
                 <li>At least 8 characters</li>
@@ -88,9 +88,9 @@
         <div class="input-group">
             <label for="contactNumber">Contact Number:</label>
             <input type="tel" id="contactNumber" name="contactNumber" placeholder="+63-9XXXXXXXXX" required
-                pattern="^\+63-9\d{9}$" data-parsley-pattern="^\+63-9\d{9}$"
-                data-parsley-pattern-message="Format: +63-9XXXXXXXXX (must start with 9 and be 10 digits)"
-                maxlength="14" />
+                   pattern="^\+63-9\d{9}$" data-parsley-pattern="^\+63-9\d{9}$"
+                   data-parsley-pattern-message="Format: +63-9XXXXXXXXX (must start with 9 and be 10 digits)"
+                   maxlength="14" />
             <small class="text-muted">Format: +63-9XXXXXXXXX (must start with 9, 10 digits after +63-)</small>
             <span id="contactNumberFeedback" class="text-danger small"></span>
         </div>
@@ -157,10 +157,10 @@
         text-align: left;
     }
 
-    .checkbox-group input {
-        width: auto;
-        margin: 0;
-    }
+        .checkbox-group input {
+            width: auto;
+            margin: 0;
+        }
 
     .button-group {
         display: flex;
@@ -186,9 +186,9 @@
         border: none;
     }
 
-    .btn-submit:hover {
-        background: #0056b3;
-    }
+        .btn-submit:hover {
+            background: #0056b3;
+        }
 
     .btn-view {
         background: #28a745;
@@ -196,9 +196,9 @@
         border: none;
     }
 
-    .btn-view:hover {
-        background: #218838;
-    }
+        .btn-view:hover {
+            background: #218838;
+        }
 
     .error-message {
         color: #dc3545;

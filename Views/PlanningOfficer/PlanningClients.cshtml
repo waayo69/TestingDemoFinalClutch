@@ -18,8 +18,7 @@
                         <i class="bi bi-clipboard-check text-white fs-3"></i>
                     </div>
                     <div>
-                        <h2 class="fw-bold text-dark mb-1">Planning Officer Dashboard</h2>
-                        <p class="text-muted mb-0 fs-6">Manage permit requirements for clients efficiently</p>
+                        <h2 class="planningtext">Planning Officer Dashboard</h2>
                     </div>
                 </div>
             </div>
@@ -29,15 +28,15 @@
                 <div class="card-body p-0">
                     <ul class="nav nav-tabs nav-fill border-0" id="planningTabs" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <a class="nav-link @(ViewData["CurrentAction"]?.ToString() == "PendingClients" ? "active" : "")" 
-                               asp-action="PendingClients" 
+                            <a class="nav-link @(ViewData["CurrentAction"]?.ToString() == "PendingClients" ? "active" : "")"
+                               asp-action="PendingClients"
                                role="tab">
                                 <i class="bi bi-clock me-2"></i>Pending Clients
                             </a>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <a class="nav-link @(ViewData["CurrentAction"]?.ToString() == "CompletedClients" ? "active" : "")" 
-                               asp-action="CompletedClients" 
+                            <a class="nav-link @(ViewData["CurrentAction"]?.ToString() == "CompletedClients" ? "active" : "")"
+                               asp-action="CompletedClients"
                                role="tab">
                                 <i class="bi bi-check-circle me-2"></i>Completed Clients
                             </a>
@@ -140,7 +139,7 @@
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <div class="fw-bold text-dark mb-1">@item.ClientName</div>
+                                                        <div class="planningtext">@item.ClientName</div>
                                                         <div class="text-muted small d-flex align-items-center mb-1">
                                                             <i class="bi bi-telephone me-2"></i>@item.ContactPersonNumber
                                                         </div>
@@ -191,7 +190,7 @@
                                                 {
                                                     <div class="d-flex align-items-center">
                                                         <div class="progress me-3" style="width: 80px; height: 8px; border-radius: 10px;">
-                                                            <div class="progress-bar @(allRequirementsCompleted ? "bg-success" : "bg-warning")" 
+                                                            <div class="progress-bar @(allRequirementsCompleted ? "bg-success" : "bg-warning")"
                                                                  style="width: @((double)completedRequirements / totalRequirements * 100)%"></div>
                                                         </div>
                                                         <div class="text-muted small fw-medium">
@@ -218,13 +217,13 @@
                                                                 data-bs-toggle="modal" data-bs-target="#clientModal-@item.Id">
                                                             <i class="bi bi-eye fs-6"></i> View
                                                         </button>
-                                                        <button type="button" class="btn btn-outline-warning border-0 shadow-sm" 
-                                                                data-bs-toggle="modal" data-bs-target="#backToFinanceModal-@item.Id" 
+                                                        <button type="button" class="btn btn-outline-warning border-0 shadow-sm"
+                                                                data-bs-toggle="modal" data-bs-target="#backToFinanceModal-@item.Id"
                                                                 title="Return to Finance">
                                                             <i class="bi bi-arrow-left-circle fs-6"></i> Return to Finance
                                                         </button>
-                                                        <button type="button" class="btn btn-outline-success border-0 shadow-sm" 
-                                                                data-bs-toggle="modal" data-bs-target="#proceedToLiaisonModal-@item.Id" 
+                                                        <button type="button" class="btn btn-outline-success border-0 shadow-sm"
+                                                                data-bs-toggle="modal" data-bs-target="#proceedToLiaisonModal-@item.Id"
                                                                 title="Send to Liaison">
                                                             <i class="bi bi-check-lg fs-6"></i> Send
                                                         </button>
@@ -233,7 +232,7 @@
                                                 else
                                                 {
                                                     <button type="button" class="btn btn-outline-info btn-sm border-0 shadow-sm" title="View client details"
-                                                        data-bs-toggle="modal" data-bs-target="#clientModal-@item.Id">
+                                                            data-bs-toggle="modal" data-bs-target="#clientModal-@item.Id">
                                                         <i class="bi bi-eye fs-6"></i> View
                                                     </button>
                                                 }
@@ -263,7 +262,7 @@
                         </div>
                     }
                 </div>
-                <div class="card-footer bg-white border-0 py-3">
+                <div class="card-footer customized border-0 py-3">
                     <nav aria-label="Page navigation">
                         <ul class="pagination justify-content-center mb-0">
                             @{
@@ -309,7 +308,7 @@
     <script>
         // Resolve correct base URL (supports virtual directories)
         var requirementsUrlBase = '@Url.Action("Requirements", "PlanningOfficer")/';
-        
+
         // Modal Management Functions
         function openAddRequirementModal(clientId) {
             // Close the client details modal first
@@ -320,7 +319,7 @@
                     bsClientModal.hide();
                 }
             }
-            
+
             // Wait a bit for the modal to close, then open the add requirement modal
             setTimeout(function() {
                 var addReqModal = document.getElementById('addReqModal-' + clientId);
@@ -330,7 +329,7 @@
                 }
             }, 300);
         }
-        
+
         function openEditRequirementModal(requirementId, clientId) {
             // Close any open modals first
             var openModals = document.querySelectorAll('.modal.show');
@@ -340,14 +339,14 @@
                     bsModal.hide();
                 }
             });
-            
+
             // Wait a bit for modals to close, then open the edit requirement modal
             setTimeout(function() {
                 var editReqModal = document.getElementById('editRequirementModal-' + requirementId);
                 if (editReqModal) {
                     var bsEditReqModal = new bootstrap.Modal(editReqModal);
                     bsEditReqModal.show();
-                    
+
                     // Store the client ID for potential refresh after edit
                     editReqModal.setAttribute('data-client-id', clientId);
                 } else {
@@ -355,7 +354,7 @@
                 }
             }, 300);
         }
-        
+
         // Handle modal cleanup when closed
         function handleModalCleanup() {
             // Remove any stuck modal backdrops
@@ -363,21 +362,21 @@
             stuckBackdrops.forEach(function(backdrop) {
                 backdrop.remove();
             });
-            
+
             // Remove modal-open class from body
             document.body.classList.remove('modal-open');
             document.body.style.paddingRight = '';
         }
-        
+
         $(function () {
             // Initialize tooltips
             $('[data-bs-toggle="tooltip"]').tooltip();
-            
+
             // Handle modal cleanup when closed
             $('.modal').on('hidden.bs.modal', function () {
                 handleModalCleanup();
             });
-            
+
             // Handle modal cleanup when shown
             $('.modal').on('shown.bs.modal', function () {
                 // Ensure only one modal backdrop exists
@@ -388,7 +387,7 @@
                     }
                 }
             });
-            
+
             // Auto-dismiss alerts after 5 seconds
             $('.alert-dismissible').each(function() {
                 var alert = this;
@@ -404,27 +403,27 @@
         document.addEventListener('shown.bs.modal', function (event) {
             var trigger = event.target;
             if (!trigger || !trigger.id || !trigger.id.startsWith('clientModal-')) return;
-            
+
             var clientId = trigger.id.replace('clientModal-', '');
             var targetElement = document.getElementById('req-list-' + clientId);
-            
+
             if (targetElement) {
                 var url = requirementsUrlBase + clientId + '?t=' + Date.now();
-                
-                fetch(url, { 
+
+                fetch(url, {
                     cache: 'no-store',
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest'
                     }
                 })
-                .then(function (response) { 
+                .then(function (response) {
                     if (!response.ok) throw new Error('Network response was not ok');
-                    return response.text(); 
+                    return response.text();
                 })
                 .then(function (html) {
                     targetElement.innerHTML = html;
                 })
-                .catch(function (error) { 
+                .catch(function (error) {
                     console.error('[Requirements] Error loading requirements:', error);
                     targetElement.innerHTML = '<div class="alert alert-warning"><i class="bi bi-exclamation-triangle"></i> Failed to load requirements. Please try again.</div>';
                 });
@@ -450,47 +449,47 @@
                 location.reload();
             });
         }
-        
+
         // Refresh requirements list after adding new requirement
         function refreshRequirementsList(clientId) {
             var targetElement = document.getElementById('req-list-' + clientId);
             if (targetElement) {
                 var url = requirementsUrlBase + clientId + '?t=' + Date.now();
-                
-                fetch(url, { 
+
+                fetch(url, {
                     cache: 'no-store',
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest'
                     }
                 })
-                .then(function (response) { 
+                .then(function (response) {
                     if (!response.ok) throw new Error('Network response was not ok');
-                    return response.text(); 
+                    return response.text();
                 })
                 .then(function (html) {
                     targetElement.innerHTML = html;
                 })
-                .catch(function (error) { 
+                .catch(function (error) {
                     console.error('[Requirements] Error refreshing requirements:', error);
                 });
             }
         }
-        
+
         // Handle Add Requirement form submission
         function handleAddRequirementSubmit(clientId) {
             var form = document.getElementById('addRequirementForm-' + clientId);
             var formFields = document.getElementById('formFields-' + clientId);
             var successMessage = document.getElementById('successMessage-' + clientId);
             var submitBtn = document.getElementById('submitBtn-' + clientId);
-            
+
             // Show loading state with shimmer effect
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Adding...';
             submitBtn.classList.add('btn-loading');
-            
+
             // Get form data
             var formData = new FormData(form);
-            
+
             // Submit form via AJAX
             fetch(form.action, {
                 method: 'POST',
@@ -506,22 +505,22 @@
             .then(function(html) {
                 // Remove loading state
                 submitBtn.classList.remove('btn-loading');
-                
+
                 // Animate form fields exit
                 formFields.classList.add('form-fields-exit');
-                
+
                 setTimeout(function() {
                     // Hide form fields and show success message
                     formFields.style.display = 'none';
                     successMessage.style.display = 'block';
                     successMessage.classList.add('success-message-enter');
-                    
+
                     // Update submit button
                     submitBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Requirement Added!';
                     submitBtn.classList.remove('btn-primary');
                     submitBtn.classList.add('btn-success');
                     submitBtn.disabled = true;
-                    
+
                     // Auto-close modal after 3 seconds
                     setTimeout(function() {
                         var addReqModal = document.getElementById('addReqModal-' + clientId);
@@ -531,7 +530,7 @@
                                 bsModal.hide();
                             }
                         }
-                        
+
                         // Refresh the requirements list in the client details modal
                         refreshRequirementsList(clientId);
                     }, 3000);
@@ -539,10 +538,10 @@
             })
             .catch(function(error) {
                 console.error('Error adding requirement:', error);
-                
+
                 // Remove loading state
                 submitBtn.classList.remove('btn-loading');
-                
+
                 // Show error message
                 var errorHtml = '<div class="alert alert-danger border-0 rounded-3 bg-danger bg-opacity-10 mb-4 success-message-enter">' +
                     '<div class="d-flex align-items-center">' +
@@ -555,30 +554,30 @@
                     '</div>' +
                     '</div>' +
                     '</div>';
-                
+
                 formFields.insertAdjacentHTML('beforebegin', errorHtml);
-                
+
                 // Reset button
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="bi bi-plus-lg me-2"></i>Add Requirement';
             });
         }
-        
+
         // Handle Edit Requirement form submission
         function handleEditRequirementSubmit(requirementId) {
             var form = document.getElementById('editRequirementForm-' + requirementId);
             var submitBtn = form.querySelector('button[type="submit"]');
             var modal = form.closest('.modal');
             var clientId = modal.getAttribute('data-client-id');
-            
+
             // Show loading state
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Saving...';
             submitBtn.classList.add('btn-loading');
-            
+
             // Get form data
             var formData = new FormData(form);
-            
+
             // Submit form via AJAX
             fetch(form.action, {
                 method: 'POST',
@@ -594,13 +593,13 @@
             .then(function(html) {
                 // Remove loading state
                 submitBtn.classList.remove('btn-loading');
-                
+
                 // Show success state
                 submitBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Saved!';
                 submitBtn.classList.remove('btn-primary');
                 submitBtn.classList.add('btn-success');
                 submitBtn.disabled = true;
-                
+
                 // Auto-close modal after 2 seconds
                 setTimeout(function() {
                     var editReqModal = document.getElementById('editRequirementModal-' + requirementId);
@@ -610,7 +609,7 @@
                             bsModal.hide();
                         }
                     }
-                    
+
                     // Refresh the requirements list if we have a client ID
                     if (clientId) {
                         refreshRequirementsList(clientId);
@@ -619,10 +618,10 @@
             })
             .catch(function(error) {
                 console.error('Error updating requirement:', error);
-                
+
                 // Remove loading state
                 submitBtn.classList.remove('btn-loading');
-                
+
                 // Show error message
                 var errorHtml = '<div class="alert alert-danger border-0 rounded-3 bg-danger bg-opacity-10 mb-4">' +
                     '<div class="d-flex align-items-center">' +
@@ -635,23 +634,23 @@
                     '</div>' +
                     '</div>' +
                     '</div>';
-                
+
                 // Insert error message before the form
                 form.insertAdjacentHTML('beforebegin', errorHtml);
-                
+
                 // Reset button
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="bi bi-save me-2"></i>Save Changes';
             });
         }
-        
+
         // Delete Requirement Function
         function deleteRequirement(requirementId, clientId) {
             if (confirm('Are you sure you want to delete this requirement? This action cannot be undone.')) {
                 // Create form data
                 var formData = new FormData();
                 formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
-                
+
                 // Submit delete request
                 fetch('@Url.Action("DeleteRequirement", "PlanningOfficer")/' + requirementId, {
                     method: 'POST',
@@ -664,7 +663,7 @@
                     if (response.ok) {
                         // Refresh the requirements list
                         refreshRequirementsList(clientId);
-                        
+
                         // Show success message
                         showToast('Requirement deleted successfully!', 'success');
                     } else {
@@ -677,15 +676,15 @@
                 });
             }
         }
-        
+
         // Show Toast Function
         function showToast(message, type) {
             var toast = document.getElementById('successToast');
             var toastMessage = toast.querySelector('.toast-message');
             var toastBody = toast.querySelector('.toast-body');
-            
+
             toastMessage.textContent = message;
-            
+
             if (type === 'error') {
                 toast.classList.remove('text-bg-success');
                 toast.classList.add('text-bg-danger');
@@ -693,33 +692,33 @@
                 toast.classList.remove('text-bg-danger');
                 toast.classList.add('text-bg-success');
             }
-            
+
             var bsToast = new bootstrap.Toast(toast);
             bsToast.show();
         }
-        
+
         // View Full Image Function
         function viewFullImage(imageSrc, requirementName) {
             var modal = document.getElementById('imageViewerModal');
             var modalLabel = document.getElementById('imageViewerModalLabel');
             var fullSizeImage = document.getElementById('fullSizeImage');
             var downloadLink = document.getElementById('downloadImageLink');
-            
+
             // Update modal title with requirement name
             modalLabel.innerHTML = '<i class="bi bi-image me-2"></i>Proof of Completion: ' + requirementName;
-            
+
             // Set image source
             fullSizeImage.src = imageSrc;
-            
+
             // Set download link
             downloadLink.href = imageSrc;
             downloadLink.download = 'proof_' + requirementName.replace(/[^a-zA-Z0-9]/g, '_') + '.jpg';
-            
+
             // Show modal
             var bsModal = new bootstrap.Modal(modal);
             bsModal.show();
         }
-        
+
         // Delete Photo from Requirements List Function
         function deletePhotoFromList(requirementId, clientId) {
             if (confirm('Are you sure you want to delete this photo? This action cannot be undone.')) {
@@ -729,7 +728,7 @@
                 if (token) {
                     formData.append('__RequestVerificationToken', token.value);
                 }
-                
+
                 // Submit delete photo request
                 fetch('@Url.Action("DeleteRequirementPhoto", "PlanningOfficer")/' + requirementId, {
                     method: 'POST',
@@ -751,7 +750,7 @@
                         if (typeof refreshRequirementsList === 'function') {
                             refreshRequirementsList(clientId);
                         }
-                        
+
                         // Show success message
                         showToast('Photo deleted successfully!', 'success');
                     } else {
@@ -765,7 +764,7 @@
             }
         }
     </script>
-    
+
     <!-- Success Toast -->
     <div class="position-fixed top-0 end-0 p-3" style="z-index: 1080;">
         <div id="successToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">

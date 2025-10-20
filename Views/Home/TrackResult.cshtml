@@ -1,35 +1,97 @@
 @model TestingDemo.Models.ClientModel
 @{
     ViewData["Title"] = "Tracking Result";
+    Layout = "~/Views/Shared/_SpecifiedNav.cshtml";
     // Define the ordered workflow steps
-    var steps = new[] { "Pending", "Finance", "Planning", "Liaison", "Received", "DocumentOfficer", "Clearance",
-"Archived" };
-    var currentStep = steps.ToList().FindIndex(s => s.Equals(Model.Status, System.StringComparison.OrdinalIgnoreCase));
-    var percent = (int)(((currentStep + 1) / (double)steps.Length) * 100);
+    var steps = new[] { "Pending", "Finance", "Planning", "Liaison", "CustomerCareReceived", "DocumentOfficer", "Clearance", "Archived" };
+    var stepDisplayNames = new[] { "Pending", "Finance", "Planning", "Liaison", "Customer Care", "Document Officer", "Clearance", "Archived" };
+    var currentStepIndex = steps.ToList().FindIndex(s => s.Equals(Model.Status, System.StringComparison.OrdinalIgnoreCase));
+    var percent = currentStepIndex >= 0 ? (int)((currentStepIndex / (double)(steps.Length - 1)) * 100) : 0;
 }
 <div class="container py-5" style="max-width: 500px;">
     <h2 class="mb-4 text-center"><i class="bi bi-geo-alt"></i> Request Status</h2>
-    <!-- Progress Bar -->
-    <div class="mb-4">
-        <div class="progress" style="height: 30px;">
-            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar"
-                style="width: @percent%" aria-valuenow="@percent" aria-valuemin="0" aria-valuemax="100">
-                @if (currentStep >= 0)
-                {
-                    <span class="fw-bold">@steps[currentStep] (@percent%)</span>
-                }
-                else
-                {
-                    <span class="fw-bold">Unknown Status</span>
-                }
+    <!-- Progress Section -->
+    <div class="progress-section mb-5">
+        <!-- Current Status Display -->
+        <div class="current-status-card mb-4 p-3 rounded-3 border">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h5 class="mb-1 text-primary">Current Status</h5>
+                    <h4 class="mb-0 fw-bold">@(currentStepIndex >= 0 ? stepDisplayNames[currentStepIndex] : "Unknown")</h4>
+                </div>
+                <div class="text-end">
+                    <div class="progress-circle">
+                        <span class="progress-percentage">@percent%</span>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="d-flex flex-wrap justify-content-between align-items-center mt-3 gap-2 status-steps">
-            @foreach (var step in steps)
-            {
-                <span
-                    class="status-step px-2 py-1 rounded @(Model.Status.Equals(step, System.StringComparison.OrdinalIgnoreCase) ? "fw-bold text-success bg-light status-active" : "text-muted bg-transparent")">@step</span>
-            }
+
+        <!-- Progress Bar -->
+        <div class="progress-container mb-4">
+            <div class="progress">
+                <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                     role="progressbar" style="width: @percent%"
+                     aria-valuenow="@percent" aria-valuemin="0" aria-valuemax="100">
+                </div>
+            </div>
+            <div class="progress-labels">
+                <span class="start-label">Start</span>
+                <span class="end-label">Complete</span>
+            </div>
+        </div>
+
+        <!-- Horizontal Step Process Timeline -->
+        <div class="horizontal-timeline-container">
+            <div class="timeline-header mb-3">
+                <h6 class="text-muted mb-0">Process Timeline</h6>
+            </div>
+            <div class="horizontal-timeline">
+                @for (int i = 0; i < steps.Length; i++)
+                {
+                    var isCompleted = i < currentStepIndex;
+                    var isCurrent = i == currentStepIndex;
+                    var isPending = i > currentStepIndex;
+
+                    <div class="horizontal-step @(isCurrent ? "current" : "") @(isCompleted ? "completed" : "") @(isPending ? "pending" : "")">
+                        <div class="step-marker">
+                            @if (isCompleted)
+                            {
+                                <i class="bi bi-check-circle-fill"></i>
+                            }
+                            else if (isCurrent)
+                            {
+                                <i class="bi bi-arrow-right-circle-fill"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-circle"></i>
+                            }
+                        </div>
+                        <div class="step-content">
+                            <div class="step-title">@stepDisplayNames[i]</div>
+                            <div class="step-status">
+                                @if (isCompleted)
+                                {
+                                    <span class="badge bg-success">Done</span>
+                                }
+                                else if (isCurrent)
+                                {
+                                    <span class="badge bg-primary">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Pending</span>
+                                }
+                            </div>
+                        </div>
+                        @if (i < steps.Length - 1)
+                        {
+                            <div class="step-connector @(i < currentStepIndex ? "completed" : "")"></div>
+                        }
+                    </div>
+                }
+            </div>
         </div>
     </div>
     <div class="card shadow-sm p-4">
@@ -59,50 +121,237 @@
 </div>
 
 <style>
-    (max-width: 600px) {
-        .progress {
-            height: 20px !important;
-        }
-
-        .status-steps {
-            font-size: 12px;
-        }
+    /* Progress Section Styles */
+    .progress-section {
+        max-width: 600px;
+        margin: 0 auto;
     }
 
-    .status-steps {
-        gap: 0.5rem;
-        margin-top: 0.5rem;
+    /* Current Status Card */
+    .current-status-card {
+        background: #ffffff;
+        border: 1px solid #dee2e6;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
 
-    .status-step {
-        min-width: 70px;
+    /* Progress Circle */
+    .progress-circle {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .progress-percentage {
+        color: white;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+
+    /* Progress Bar Container */
+    .progress-container {
+        position: relative;
+    }
+
+    .progress {
+        height: 12px;
+        border-radius: 10px;
+        background-color: #e9ecef;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        border-radius: 10px;
+        transition: width 0.6s ease;
+        background: #0d6efd;
+    }
+
+    .progress-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 8px;
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+
+    /* Horizontal Timeline Styles */
+    .horizontal-timeline-container {
+        margin-top: 2rem;
+    }
+
+    .horizontal-timeline {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        position: relative;
+        overflow-x: auto;
+        padding: 1rem 0;
+    }
+
+    .horizontal-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        flex: 1;
+        min-width: 100px;
         text-align: center;
-        transition: background 0.2s, color 0.2s;
-        font-size: 1rem;
-        background: #f8f9fa;
     }
 
-    .status-active {
-        background: #d1e7dd !important;
-        color: #198754 !important;
-        box-shadow: 0 2px 8px rgba(25, 135, 84, 0.08);
+    .step-marker {
+        width: 2.5rem;
+        height: 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-size: 1.2rem;
+        z-index: 2;
+        margin-bottom: 0.5rem;
+    }
+
+    .horizontal-step.completed .step-marker {
+        color: #ffffff;
+        background: #198754;
+    }
+
+    .horizontal-step.current .step-marker {
+        color: #ffffff;
+        background: #0d6efd;
+        animation: pulse 2s infinite;
+    }
+
+    .horizontal-step.pending .step-marker {
+        color: #6c757d;
+        background: #f8f9fa;
+        border: 2px solid #dee2e6;
+    }
+
+    .step-content {
+        text-align: center;
+    }
+
+    .step-title {
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+        color: #212529;
+        font-size: 0.85rem;
+    }
+
+    .step-status .badge {
+        font-size: 0.65rem;
+        padding: 0.2rem 0.5rem;
+    }
+
+    .step-connector {
+        position: absolute;
+        top: 1.25rem;
+        left: calc(50% + 1.25rem);
+        right: calc(-50% + 1.25rem);
+        height: 2px;
+        background: #dee2e6;
+        z-index: 1;
+    }
+
+        .step-connector.completed {
+            background: #198754;
+        }
+
+    .horizontal-step:last-child .step-connector {
+        display: none;
+    }
+
+    /* Animations */
+    @@keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.4);
+        }
+
+        70% {
+            box-shadow: 0 0 0 10px rgba(13, 110, 253, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(13, 110, 253, 0);
+        }
     }
 
     /* Dark mode support */
-    body.dark-mode .progress,
-    body.dark-mode .progress-bar {
-        background: #23272b !important;
-        color: #e8e6e3 !important;
-        border-color: #444 !important;
+    body.dark-mode .current-status-card {
+        background: #2c2f33;
+        border-color: #444;
+        color: #e8e6e3;
     }
 
-    body.dark-mode .status-step {
-        background: #23272b !important;
-        color: #b5b5b5 !important;
+    body.dark-mode .progress {
+        background-color: #444;
     }
 
-    body.dark-mode .status-active {
-        background: #375a7f !important;
-        color: #fff !important;
+    body.dark-mode .step-title {
+        color: #e8e6e3;
+    }
+
+    body.dark-mode .horizontal-step.completed .step-marker {
+        background: #198754;
+        color: #fff;
+    }
+
+    body.dark-mode .horizontal-step.current .step-marker {
+        background: #0d6efd;
+        color: #fff;
+    }
+
+    body.dark-mode .horizontal-step.pending .step-marker {
+        background: #343a40;
+        color: #adb5bd;
+        border-color: #495057;
+    }
+
+    body.dark-mode .step-connector {
+        background: #495057;
+    }
+
+        body.dark-mode .step-connector.completed {
+            background: #198754;
+        }
+
+    /* Responsive Design */
+    @@media (max-width: 576px) {
+        .container {
+            max-width: 100% !important;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        .progress-circle {
+            width: 50px;
+            height: 50px;
+        }
+
+        .progress-percentage {
+            font-size: 0.8rem;
+        }
+
+        .horizontal-step {
+            min-width: 80px;
+        }
+
+        .step-marker {
+            width: 2rem;
+            height: 2rem;
+            font-size: 1rem;
+        }
+
+        .step-title {
+            font-size: 0.75rem;
+        }
+
+        .step-status .badge {
+            font-size: 0.6rem;
+            padding: 0.15rem 0.4rem;
+        }
     }
 </style>

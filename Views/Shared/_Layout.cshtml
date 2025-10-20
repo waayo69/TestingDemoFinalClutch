@@ -13,7 +13,7 @@
 
 
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
     <!-- Sidebar -->
     <nav class="sidebar" id="sidebarMenu">
         <div class="text-center my-3">
@@ -21,12 +21,6 @@
         </div>
 
         <ul class="nav flex-column">
-            
-            <li class="nav-item">
-                <a class="nav-link" asp-controller="Home" asp-action="Privacy">
-                    <i class="bi bi-shield-lock"></i><span> Privacy</span>
-                </a>
-            </li>
             @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
             {
                 <li class="nav-item">
@@ -98,7 +92,7 @@
                         <i class="bi bi-bar-chart"></i><span> Analytics</span>
                     </a>
                 </li>
-                
+
             }
             else if (User.Identity?.IsAuthenticated == true && User.IsInRole("DocumentOfficer"))
             {
@@ -133,9 +127,11 @@
 
             }
         </ul>
-        
-   
+
+
     </nav>
+
+    <!-- Topbar -->
     <div class="topbar bg-light d-flex justify-content-end align-items-center px-3" style="height:60px;">
         <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle text-dark"
            id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
@@ -151,7 +147,6 @@
                 <li><a class="dropdown-item" asp-controller="Backup" asp-action="Index"><i class="bi bi-shield-check"></i> Backup Management</a></li>
                 <li><hr class="dropdown-divider"></li>
             }
-            
 
 
             <li><a class="dropdown-item" asp-controller="Account" asp-action="Settings"><i class="bi bi-gear"></i> Settings</a></li>
@@ -163,15 +158,17 @@
         </ul>
     </div>
 
-
-    <!-- Main Content -->
-    <main class="content">
-        @RenderBody()
-    </main>
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper flex-grow-1 d-flex flex-column">
+        <!-- Main Content -->
+        <main class="content flex-grow-1">
+            @RenderBody()
+        </main>
+    </div>
 
     <!-- Footer -->
-    <footer class="footer border-top text-muted bg-light text-center py-3">
-        &copy; 2025 - CPCPA - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="footer border-top text-muted bg-light text-center py-3 mt-auto">
+        &copy; 2025 - CPCPA
     </footer>
 
     <!-- Scripts -->
