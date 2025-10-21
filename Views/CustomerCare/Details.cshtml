@@ -10,14 +10,12 @@
 }
 <div class="container">
     <div class="row mb-4">
-        <div class="col">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a asp-action="Index">Clients</a></li>
-                    <li class="breadcrumb-item active">Client Inspection</li>
-                </ol>
-            </nav>
+        <div class="col d-flex justify-content-between align-items-center">
             <h2><i class="bi bi-eye"></i> Client Inspection</h2>
+            <a asp-action="Index" class="btn btn-sm btn-secondary" data-bs-toggle="tooltip"
+               title="Return to the client list.">
+                <i class="bi bi-arrow-left"></i> Back to List
+            </a>
         </div>
     </div>
 
@@ -32,12 +30,7 @@
     <div class="card shadow mb-4">
         <div class="card-header bg-light d-flex justify-content-between align-items-center">
             <h5 class="mb-0"><i class="bi bi-person-badge"></i> Client Information</h5>
-            <div>
-                <a asp-action="Index" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip"
-                    title="Return to the client list.">
-                    <i class="bi bi-arrow-left"></i> Back to List
-                </a>
-            </div>
+
         </div>
         <div class="card-body">
             <div class="row">
@@ -57,16 +50,7 @@
                     <dl class="row">
                         <dt class="col-sm-4">@Html.DisplayNameFor(model => model.TypeOfProject)</dt>
                         <dd class="col-sm-8">
-                            @{
-                                var projectTypes = new[] { "Retainership - BIR", "Retainership - SPP", "One Time Transaction", "External Audit", "Other" };
-                                var optionsString = "";
-                                foreach (var type in projectTypes)
-                                {
-                                    optionsString += $"<option value='{type}'{(Model.TypeOfProject == type ? " selected='selected'" : "")}>{type}</option>";
-                                }
-                                var selectHtml = $"<select class='form-select' disabled='disabled'>{optionsString}</select>";
-                                @Html.Raw(selectHtml);
-                            }
+                            <strong>@Html.DisplayFor(model => model.TypeOfProject)</strong>
                         </dd>
                         <dt class="col-sm-4">@Html.DisplayNameFor(model => model.UrgencyLevel)</dt>
                         <dd class="col-sm-8">
@@ -262,9 +246,14 @@
                                         }
                                         @if (firstPhoto != null)
                                         {
-                                            <a href="@firstPhoto.PhotoPath" target="_blank" rel="noopener" class="btn btn-sm btn-outline-info">
+                                            var fileName = System.IO.Path.GetFileName(firstPhoto.PhotoPath);
+                                            var extension = System.IO.Path.GetExtension(fileName).ToLower();
+                                            <button type="button" class="btn btn-sm btn-outline-info view-file-btn" 
+                                                    data-file-name="@fileName"
+                                                    data-file-url="@firstPhoto.PhotoPath"
+                                                    data-file-type="@extension">
                                                 <i class="bi bi-folder2-open"></i> View
-                                            </a>
+                                            </button>
                                         }
                                         else
                                         {
@@ -278,11 +267,6 @@
                         }
                     </tbody>
                 </table>
-                <div class="mt-3">
-                    <a asp-action="Index" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-left"></i> Back to List
-                    </a>
-                </div>
             </form>
         </div>
     </div>
@@ -328,8 +312,15 @@
                                 <div class="list-group">
                                     @foreach (var photo in req.Photos)
                                     {
+                                        var photoFileName = System.IO.Path.GetFileName(photo.PhotoPath);
+                                        var photoExtension = System.IO.Path.GetExtension(photoFileName).ToLower();
                                         <div class="list-group-item d-flex align-items-center gap-2">
-                                            <a href="@photo.PhotoPath" target="_blank" class="text-decoration-none flex-grow-1">@System.IO.Path.GetFileName(photo.PhotoPath)</a>
+                                            <button type="button" class="btn btn-link text-decoration-none flex-grow-1 text-start p-0 view-file-btn" 
+                                                    data-file-name="@photoFileName"
+                                                    data-file-url="@photo.PhotoPath"
+                                                    data-file-type="@photoExtension">
+                                                @photoFileName
+                                            </button>
                                             <form asp-action="DeleteRequirementPhoto" method="post" class="ms-auto">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="photoId" value="@photo.Id" />
@@ -357,3 +348,78 @@
         </div>
     }
 </div>
+
+<!-- File Viewer Modal -->
+<div class="modal fade" id="fileViewerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-eye me-2"></i><span id="viewerFileName">File Viewer</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0" style="max-height: 80vh; overflow: auto;">
+                <div id="fileViewerContent" class="d-flex align-items-center justify-content-center" style="min-height: 400px;">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <div class="mt-2 text-muted">Loading file...</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a id="downloadFileBtn" href="#" class="btn btn-outline-secondary" download>
+                    <i class="bi bi-download me-1"></i>Download
+                </a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Handle view file button clicks
+document.addEventListener('click', function (e) {
+    if (e.target.closest('.view-file-btn')) {
+        var btn = e.target.closest('.view-file-btn');
+        var fileName = btn.getAttribute('data-file-name');
+        var fileUrl = btn.getAttribute('data-file-url');
+        var fileType = btn.getAttribute('data-file-type').toLowerCase();
+        
+        // Set modal title and download link
+        document.getElementById('viewerFileName').textContent = fileName;
+        document.getElementById('downloadFileBtn').href = fileUrl;
+        document.getElementById('downloadFileBtn').download = fileName;
+        
+        // Show modal
+        var viewerModal = new bootstrap.Modal(document.getElementById('fileViewerModal'));
+        viewerModal.show();
+        
+        // Load file content based on type
+        var contentDiv = document.getElementById('fileViewerContent');
+        contentDiv.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><div class="mt-2 text-muted">Loading file...</div></div>';
+        
+        if (['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'].includes(fileType)) {
+            // Image file
+            contentDiv.innerHTML = `<img src="${fileUrl}" class="img-fluid" style="max-width: 100%; max-height: 70vh;" alt="${fileName}" />`;
+        } else if (fileType === '.pdf') {
+            // PDF file
+            contentDiv.innerHTML = `<iframe src="${fileUrl}" style="width: 100%; height: 70vh; border: none;"></iframe>`;
+        } else {
+            // Other file types - show info and download option
+            contentDiv.innerHTML = `
+                <div class="text-center p-5">
+                    <i class="bi bi-file-earmark fs-1 text-muted mb-3"></i>
+                    <h5>${fileName}</h5>
+                    <p class="text-muted">This file type cannot be previewed directly.</p>
+                    <a href="${fileUrl}" class="btn btn-primary" target="_blank">
+                        <i class="bi bi-download me-1"></i>Download to View
+                    </a>
+                </div>
+            `;
+        }
+    }
+});
+</script>

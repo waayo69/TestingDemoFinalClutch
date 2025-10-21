@@ -114,10 +114,9 @@
                                             </td>
                                             <td class="text-center">
                                                 <div class="btn-group btn-group-sm" role="group">
-                                                    <button type="button" class="btn btn-outline-info" data-bs-toggle="modal"
-                                                        data-bs-target="#ccClientModal-@item.Id" title="Inspect">
+                                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-info" title="Inspect">
                                                         <i class="bi bi-eye"></i>
-                                                    </button>
+                                                    </a>
                                                     <button type="button" class="btn btn-primary" data-bs-toggle="modal"
                                                         data-bs-target="#sendToDocModal" data-client-id="@item.Id"
                                                         data-client-name="@item.ClientName" title="Send to Documentation"><i
@@ -175,11 +174,7 @@
 </div>
 
 <!-- Modals -->
-@* Client Details Modals for both columns *@
-@foreach (var item in liaisonClients)
-{
-    @await Html.PartialAsync("_ClientDetailsModal", item)
-}
+@* Client Details Modals removed - now using direct page navigation *@
 <!-- Send To Documentation Modal -->
 <div class="modal fade" id="sendToDocModal" tabindex="-1">
     <div class="modal-dialog">
@@ -255,50 +250,7 @@
 
 @section Scripts {
     <script>
-        // Load full Customer Care Details view into modal when opened
-        document.addEventListener('shown.bs.modal', function (event) {
-            var modal = event.target;
-            if (!modal || !modal.id || !modal.id.startsWith('ccClientModal-')) return;
-            var clientId = modal.id.replace('ccClientModal-', '');
-            var container = modal.querySelector('#ccDetailsContainer-' + clientId);
-            if (!container) return;
-            var url = '/CustomerCare/Details/' + clientId + '?partial=1&t=' + Date.now();
-            fetch(url, { cache: 'no-store', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                .then(function (response) { if (!response.ok) throw new Error('Network response was not ok'); return response.text(); })
-                .then(function (html) { container.innerHTML = html; })
-                .catch(function () { container.innerHTML = '<div class="p-4 alert alert-warning mb-0">Failed to load details.</div>'; });
-
-            // Delegate AJAX form submits inside Details container
-            function handleAjaxFormSubmit(e) {
-                var form = e.target;
-                if (!(form instanceof HTMLFormElement)) return;
-                var action = (form.getAttribute('action') || '').toLowerCase();
-                var isDetailsForm = action.includes('/customercare/uploadrequirementfiles') || action.includes('/customercare/deleterequirementphoto') || action.includes('/customercare/saverequirements');
-                if (!isDetailsForm) return;
-                e.preventDefault();
-                var fd = new FormData(form);
-                fetch(form.action, { method: form.method || 'post', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                    .then(function (r) { if (!r.ok) throw new Error('net'); return r.text().then(function(txt){ try { return JSON.parse(txt);} catch { return { success: true }; } }); })
-                    .then(function () {
-                        // Re-load details partial to reflect updates
-                        var reloadUrl = '/CustomerCare/Details/' + clientId + '?partial=1&t=' + Date.now();
-                        return fetch(reloadUrl, { cache: 'no-store', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                            .then(function (resp) { if (!resp.ok) throw new Error('reload'); return resp.text(); })
-                            .then(function (html) { container.innerHTML = html; });
-                    })
-                    .catch(function () {
-                        var err = document.createElement('div');
-                        err.className = 'p-3 alert alert-danger';
-                        err.textContent = 'Action failed. Please try again.';
-                        container.prepend(err);
-                    });
-            }
-            // Clean previous listener if any, then attach
-            container.removeEventListener('submit', handleAjaxFormSubmit, true);
-            container.addEventListener('submit', function(e){
-                if (e && e.target && e.target.tagName === 'FORM') handleAjaxFormSubmit(e);
-            }, true);
-        });
+        // Modal-related JavaScript removed - now using direct page navigation
 
         document.addEventListener('DOMContentLoaded', function () {
             // Send to Documentation
@@ -316,16 +268,10 @@
                 alertEl.classList.add('d-none');
                 confirmBtn.disabled = true;
                 form.action = '/CustomerCare/ProceedToDocumentOfficer/' + clientId;
-                // View Files button opens the details modal
+                // View Files button navigates to details page
                 var viewBtn = stdModal.querySelector('#stdViewFilesBtn');
                 viewBtn.onclick = function(){
-                    var targetModal = document.getElementById('ccClientModal-' + clientId);
-                    if (targetModal){
-                        var modalInstance = bootstrap.Modal.getOrCreateInstance(targetModal);
-                        modalInstance.show();
-                    } else {
-                        window.location.href = '/CustomerCare/Details/' + clientId;
-                    }
+                    window.open('/CustomerCare/Details/' + clientId, '_blank');
                 };
                 fetch('/CustomerCare/GetRequirementSummary?id=' + clientId, { cache: 'no-store' })
                     .then(function(r){ if(!r.ok) throw new Error('net'); return r.json(); })
@@ -400,11 +346,7 @@
             if (isNewLiaison) {
                 playNotifySound();
             }
-            // Avoid full page reloads; if a details modal is open, let the modal handle its own refresh
-            var openDetails = document.querySelector('.modal.show[id^="ccClientModal-"]');
-            if (openDetails) {
-                return;
-            }
+            // Modal check removed - now using direct page navigation
             // Optionally: soft refresh could be implemented here if needed
         }
         if (window.connection) {

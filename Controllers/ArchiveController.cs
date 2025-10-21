@@ -113,11 +113,51 @@ namespace TestingDemo.Controllers
             }
 
             ViewBag.Requirements = await _context.PermitRequirements
+                .Include(r => r.Photos)
                 .Where(r => r.ClientId == id)
                 .OrderBy(r => r.CreatedDate)
                 .ToListAsync();
 
             return View(client);
+        }
+
+        // GET: Archive/ViewRequirementFile/5
+        public async Task<IActionResult> ViewRequirementFile(int id)
+        {
+            var photo = await _context.RequirementPhotos.FindAsync(id);
+            if (photo == null)
+            {
+                return NotFound();
+            }
+
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", photo.PhotoPath.TrimStart('/'));
+            if (!System.IO.File.Exists(filePath))
+            {
+                return NotFound();
+            }
+
+            var contentType = GetContentType(filePath);
+            var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
+            var fileName = Path.GetFileName(photo.PhotoPath);
+
+            return File(fileBytes, contentType, fileName);
+        }
+
+        private string GetContentType(string filePath)
+        {
+            var extension = Path.GetExtension(filePath).ToLowerInvariant();
+            return extension switch
+            {
+                ".pdf" => "application/pdf",
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".gif" => "image/gif",
+                ".doc" => "application/msword",
+                ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                ".xls" => "application/vnd.ms-excel",
+                ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                _ => "application/octet-stream"
+            };
         }
 
         [HttpGet]
@@ -133,8 +173,9 @@ namespace TestingDemo.Controllers
             if (client == null)
                 return NotFound();
 
-            // Get requirements for this client
+            // Get requirements for this client with photos
             var requirements = await _context.PermitRequirements
+                .Include(r => r.Photos)
                 .Where(r => r.ClientId == id)
                 .OrderBy(r => r.CreatedDate)
                 .ToListAsync();
@@ -171,7 +212,12 @@ namespace TestingDemo.Controllers
                     isRequired = r.IsRequired,
                     isCompleted = r.IsCompleted,
                     isPresent = r.IsPresent,
-                    createdDate = r.CreatedDate.ToString("yyyy-MM-dd")
+                    createdDate = r.CreatedDate.ToString("yyyy-MM-dd HH:mm"),
+                    photos = r.Photos?.Select(p => new
+                    {
+                        id = p.Id,
+                        photoPath = p.PhotoPath
+                    })
                 })
             });
         }

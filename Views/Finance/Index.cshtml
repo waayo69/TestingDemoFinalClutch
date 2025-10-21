@@ -315,6 +315,7 @@
             if (!modal || !modal.id || !modal.id.startsWith('clientModal-')) return;
             var clientId = modal.id.replace('clientModal-', '');
             var targetElement = modal.querySelector('#req-list-' + clientId);
+            var sectionElement = modal.querySelector('#requirements-section-' + clientId);
             if (!targetElement) return;
             var url = '/PlanningOfficer/Requirements/' + clientId + '?readOnly=true&t=' + Date.now();
             fetch(url, {
@@ -322,8 +323,26 @@
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
                 .then(function (response) { if (!response.ok) throw new Error('Network response was not ok'); return response.text(); })
-                .then(function (html) { targetElement.innerHTML = html; })
-                .catch(function () { targetElement.innerHTML = '<div class="alert alert-warning">Failed to load requirements.</div>'; });
+                .then(function (html) { 
+                    targetElement.innerHTML = html; 
+                    // Check if there are any requirements (look for requirement items)
+                    var hasRequirements = targetElement.querySelector('.requirement-item') || 
+                                         targetElement.querySelector('.list-group-item') ||
+                                         targetElement.querySelector('.form-check');
+                    // Only show the requirements section if there are actual requirements
+                    if (hasRequirements && sectionElement) {
+                        sectionElement.style.display = 'block';
+                    } else if (sectionElement) {
+                        sectionElement.style.display = 'none';
+                    }
+                })
+                .catch(function () { 
+                    targetElement.innerHTML = '<div class="alert alert-warning">Failed to load requirements.</div>'; 
+                    // Hide section on error
+                    if (sectionElement) {
+                        sectionElement.style.display = 'none';
+                    }
+                });
         });
     </script>
 }

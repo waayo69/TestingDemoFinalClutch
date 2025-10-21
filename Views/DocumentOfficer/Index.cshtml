@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Document Officer Dashboard";
 }
+@Html.AntiForgeryToken()
 <div class="container-fluid py-4">
     <div class="row mb-4 align-items-center">
         <div class="col-12 col-md-6 mb-2 mb-md-0">
@@ -32,7 +33,6 @@
                             <th scope="col">Client</th>
                             <th scope="col">Contact</th>
                             <th scope="col">Permit Type</th>
-                            <th scope="col">Status</th>
                             <th scope="col" class="text-center">Actions</th>
                         </tr>
                     </thead>
@@ -43,12 +43,11 @@
                                 <td class="fw-bold">@item.ClientName</td>
                                 <td>@item.ContactPersonNumber</td>
                                 <td>@item.TypeOfProject</td>
-                                <td><span class="badge bg-info">@item.Status</span></td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm" role="group">
                                         <button type="button" class="btn btn-info" data-bs-toggle="modal"
                                             data-bs-target="#docClientModal-@item.Id" title="View Details">
-                                            <i class="bi bi-eye"></i>
+                                            <i class="bi bi-eye"></i> View
                                         </button>
                                         <button type="button" class="btn btn-success done-btn" data-client-id="@item.Id"
                                             data-client-name="@item.ClientName"
@@ -62,7 +61,7 @@
                                             onsubmit="return confirm('Return this client to Customer Care (Liaison)?');">
                                             <button type="submit" class="btn btn-warning"
                                                 title="Return to Customer Care (Liaison)">
-                                                <i class="bi bi-arrow-counterclockwise"></i>
+                                                <i class="bi bi-arrow-counterclockwise"></i> Return
                                             </button>
                                         </form>
                                     </div>
@@ -102,22 +101,220 @@
 <audio id="notifySound" src="/sounds/Notifications.wav" preload="auto"></audio>
 @section Scripts {
     <script>
-        // Load requirements into modal when opened
+        // Load requirement files into modal when opened
         document.addEventListener('shown.bs.modal', function (event) {
             var modal = event.target;
             if (!modal || !modal.id || !modal.id.startsWith('docClientModal-')) return;
             var clientId = modal.id.replace('docClientModal-', '');
-            var targetElement = modal.querySelector('#req-list-' + clientId);
-            if (!targetElement) return;
-            var url = '/PlanningOfficer/Requirements/' + clientId + '?readOnly=true&t=' + Date.now();
-            fetch(url, {
-                cache: 'no-store',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-                .then(function (response) { if (!response.ok) throw new Error('Network response was not ok'); return response.text(); })
-                .then(function (html) { targetElement.innerHTML = html; })
-                .catch(function () { targetElement.innerHTML = '<div class="alert alert-warning">Failed to load requirements.</div>'; });
+            
+            // Load requirement files
+            var filesElement = modal.querySelector('#requirement-files-' + clientId);
+            if (filesElement) {
+                var filesUrl = '/DocumentOfficer/GetRequirementFiles?clientId=' + clientId + '&t=' + Date.now();
+                fetch(filesUrl, {
+                    cache: 'no-store',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                    .then(function (response) { if (!response.ok) throw new Error('Network response was not ok'); return response.text(); })
+                    .then(function (html) { filesElement.innerHTML = html; })
+                    .catch(function () { filesElement.innerHTML = '<div class="alert alert-warning">Failed to load requirement files.</div>'; });
+            }
         });
+
+        // Handle view file button clicks
+        document.addEventListener('click', function (e) {
+            if (e.target.closest('.view-file-btn')) {
+                var btn = e.target.closest('.view-file-btn');
+                var fileName = btn.getAttribute('data-file-name');
+                var fileUrl = btn.getAttribute('data-file-url');
+                var fileType = btn.getAttribute('data-file-type').toLowerCase();
+                
+                // Set modal title and download link
+                document.getElementById('viewerFileName').textContent = fileName;
+                document.getElementById('downloadFileBtn').href = fileUrl;
+                document.getElementById('downloadFileBtn').download = fileName;
+                
+                // Show modal
+                var viewerModal = new bootstrap.Modal(document.getElementById('fileViewerModal'));
+                viewerModal.show();
+                
+                // Load file content based on type
+                var contentDiv = document.getElementById('fileViewerContent');
+                contentDiv.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><div class="mt-2 text-muted">Loading file...</div></div>';
+                
+                if (['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'].includes(fileType)) {
+                    // Image file
+                    contentDiv.innerHTML = `<img src="${fileUrl}" class="img-fluid" style="max-width: 100%; max-height: 70vh;" alt="${fileName}" />`;
+                } else if (fileType === '.pdf') {
+                    // PDF file
+                    contentDiv.innerHTML = `<iframe src="${fileUrl}" style="width: 100%; height: 70vh; border: none;"></iframe>`;
+                } else {
+                    // Other file types - show info and download option
+                    contentDiv.innerHTML = `
+                        <div class="text-center p-5">
+                            <i class="bi bi-file-earmark fs-1 text-muted mb-3"></i>
+                            <h5>${fileName}</h5>
+                            <p class="text-muted">This file type cannot be previewed directly.</p>
+                            <a href="${fileUrl}" class="btn btn-primary" target="_blank">
+                                <i class="bi bi-download me-1"></i>Download to View
+                            </a>
+                        </div>
+                    `;
+                }
+            }
+            
+            // Handle upload files button clicks
+            if (e.target.closest('.upload-files-btn')) {
+                var btn = e.target.closest('.upload-files-btn');
+                var requirementId = btn.getAttribute('data-requirement-id');
+                var requirementName = btn.getAttribute('data-requirement-name');
+                
+                document.getElementById('uploadRequirementId').value = requirementId;
+                document.getElementById('uploadRequirementName').textContent = requirementName;
+                
+                var uploadModal = new bootstrap.Modal(document.getElementById('uploadFilesModal'));
+                uploadModal.show();
+            }
+            
+            // Handle delete file button clicks
+            if (e.target.closest('.delete-file-btn')) {
+                var btn = e.target.closest('.delete-file-btn');
+                var photoId = btn.getAttribute('data-photo-id');
+                var fileName = btn.getAttribute('data-file-name');
+                
+                if (confirm('Are you sure you want to delete "' + fileName + '"? This action cannot be undone.')) {
+                    var formData = new FormData();
+                    formData.append('photoId', photoId);
+                    
+                    // Add anti-forgery token
+                    var token = document.querySelector('input[name="__RequestVerificationToken"]');
+                    if (token) {
+                        formData.append('__RequestVerificationToken', token.value);
+                    }
+                    
+                    // Disable button during deletion
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Deleting...';
+                    
+                    fetch('/DocumentOfficer/DeleteRequirementFile', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Refresh the requirement files section
+                            var clientModal = document.querySelector('.modal.show[id^="docClientModal-"]');
+                            if (clientModal) {
+                                var clientId = clientModal.id.replace('docClientModal-', '');
+                                var filesElement = clientModal.querySelector('#requirement-files-' + clientId);
+                                if (filesElement) {
+                                    var filesUrl = '/DocumentOfficer/GetRequirementFiles?clientId=' + clientId + '&t=' + Date.now();
+                                    fetch(filesUrl, {
+                                        cache: 'no-store',
+                                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                                    })
+                                    .then(response => response.text())
+                                    .then(html => { filesElement.innerHTML = html; });
+                                }
+                            }
+                            alert('File deleted successfully!');
+                        } else {
+                            alert('Error deleting file: ' + (data.message || 'Please try again.'));
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="bi bi-trash me-1"></i> Delete';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error deleting file. Please try again.');
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="bi bi-trash me-1"></i> Delete';
+                    });
+                }
+            }
+        });
+
+        // Handle file upload
+        document.getElementById('uploadFilesBtn').addEventListener('click', function () {
+            var form = document.getElementById('uploadFilesForm');
+            var formData = new FormData();
+            var requirementId = document.getElementById('uploadRequirementId').value;
+            var files = document.getElementById('uploadFiles').files;
+            
+            if (files.length === 0) {
+                alert('Please select at least one file to upload.');
+                return;
+            }
+            
+            formData.append('requirementId', requirementId);
+            for (var i = 0; i < files.length; i++) {
+                formData.append('files', files[i]);
+            }
+            
+            // Add anti-forgery token
+            var token = document.querySelector('input[name="__RequestVerificationToken"]');
+            if (token) {
+                formData.append('__RequestVerificationToken', token.value);
+            }
+            
+            // Show progress
+            document.getElementById('uploadProgress').classList.remove('d-none');
+            document.getElementById('uploadFilesBtn').disabled = true;
+            
+            fetch('/DocumentOfficer/UploadOptionalFiles', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Close modal
+                    var uploadModal = bootstrap.Modal.getInstance(document.getElementById('uploadFilesModal'));
+                    uploadModal.hide();
+                    
+                    // Reset form
+                    form.reset();
+                    document.getElementById('uploadProgress').classList.add('d-none');
+                    document.getElementById('uploadFilesBtn').disabled = false;
+                    
+                    // Refresh the requirement files section
+                    var clientModal = document.querySelector('.modal.show[id^="docClientModal-"]');
+                    if (clientModal) {
+                        var clientId = clientModal.id.replace('docClientModal-', '');
+                        var filesElement = clientModal.querySelector('#requirement-files-' + clientId);
+                        if (filesElement) {
+                            var filesUrl = '/DocumentOfficer/GetRequirementFiles?clientId=' + clientId + '&t=' + Date.now();
+                            fetch(filesUrl, {
+                                cache: 'no-store',
+                                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                            })
+                            .then(response => response.text())
+                            .then(html => { filesElement.innerHTML = html; });
+                        }
+                    }
+                    
+                    alert('Files uploaded successfully!');
+                } else {
+                    alert('Error uploading files. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error uploading files. Please try again.');
+            })
+            .finally(() => {
+                document.getElementById('uploadProgress').classList.add('d-none');
+                document.getElementById('uploadFilesBtn').disabled = false;
+            });
+        });
+
         document.addEventListener('DOMContentLoaded', function () {
             var doneModal = new bootstrap.Modal(document.getElementById('doneModal'));
             var clientIdToSubmit = null;

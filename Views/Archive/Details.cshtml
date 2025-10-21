@@ -20,7 +20,7 @@
                 </div>
                 <div class="card-body">
                     <dl class="row">
-                        <dt class="col-sm-4">Client Name</dt>
+                        <dt class="col-sm-4">Client Nameaaaaaaaaaaaa</dt>
                         <dd class="col-sm-8">@Model.ClientName</dd>
 
                         <dt class="col-sm-4">Contact Number</dt>
@@ -34,16 +34,7 @@
 
                         <dt class="col-sm-4">Permit Type</dt>
                         <dd class="col-sm-8">
-                            @{
-                                var projectTypes = new[] { "Retainership - BIR", "Retainership - SPP", "One Time Transaction", "External Audit", "Other" };
-                                var optionsString = "";
-                                foreach (var type in projectTypes)
-                                {
-                                    optionsString += $"<option value='{type}'{(Model.TypeOfProject == type ? " selected='selected'" : "")}>{type}</option>";
-                                }
-                                var selectHtml = $"<select class='form-select' disabled='disabled'>{optionsString}</select>";
-                                @Html.Raw(selectHtml);
-                            }
+                            <strong>@Model.TypeOfProject</strong>
                         </dd>
 
                         <dt class="col-sm-4">Urgency Level</dt>
@@ -188,15 +179,98 @@
                 <div class="card-body">
                     @if (requirements.Any())
                     {
-                        <ul class="list-group list-group-flush">
+                        <div class="accordion" id="requirementsAccordion">
                             @foreach (var req in requirements)
                             {
-                                <li class="list-group-item">
-                                    <strong>@req.RequirementName</strong><br>
-                                    <small class="text-muted">@req.Description</small>
-                                </li>
+                                <div class="accordion-item border-0 mb-3">
+                                    <h2 class="accordion-header" id="heading-@req.Id">
+                                        <button class="accordion-button collapsed bg-white border rounded-3 shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-@req.Id" aria-expanded="false" aria-controls="collapse-@req.Id">
+                                            <div class="d-flex justify-content-between align-items-center w-100 me-3">
+                                                <span class="fw-bold"><i class="bi bi-file-text text-primary me-2"></i> @req.RequirementName</span>
+                                                <div>
+                                                    @if (req.IsCompleted)
+                                                    {
+                                                        <span class="badge bg-success me-2">Completed</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-warning me-2">Pending</span>
+                                                    }
+                                                    @if (req.Photos != null && req.Photos.Any())
+                                                    {
+                                                        <span class="badge bg-info">@req.Photos.Count file(s)</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </button>
+                                    </h2>
+                                    <div id="collapse-@req.Id" class="accordion-collapse collapse" aria-labelledby="heading-@req.Id" data-bs-parent="#requirementsAccordion">
+                                        <div class="accordion-body bg-white border rounded-3 mt-2 shadow-sm">
+                                            <div class="mb-3">
+                                                <p class="mb-2"><strong>Description:</strong> @req.Description</p>
+                                                <small class="text-muted">Date Created: @req.CreatedDate.ToString("g")</small>
+                                            </div>
+                                            
+                                            @if (req.Photos != null && req.Photos.Any())
+                                            {
+                                                <hr class="my-3" />
+                                                <h6 class="mb-3"><i class="bi bi-paperclip text-primary me-2"></i> Archived Files:</h6>
+                                                <div class="row g-3">
+                                                    @foreach (var photo in req.Photos)
+                                                    {
+                                                        <div class="col-md-6 col-lg-4">
+                                                            <div class="card border h-100">
+                                                                <div class="card-body p-3">
+                                                                    <div class="d-flex align-items-center mb-3">
+                                                                        @{
+                                                                            var fileName = System.IO.Path.GetFileName(photo.PhotoPath);
+                                                                            var extension = System.IO.Path.GetExtension(fileName).ToLower();
+                                                                            var iconClass = extension switch
+                                                                            {
+                                                                                ".pdf" => "bi-file-earmark-pdf text-danger",
+                                                                                ".doc" or ".docx" => "bi-file-earmark-word text-primary",
+                                                                                ".xls" or ".xlsx" => "bi-file-earmark-excel text-success",
+                                                                                ".jpg" or ".jpeg" or ".png" or ".gif" => "bi-file-earmark-image text-info",
+                                                                                _ => "bi-file-earmark text-secondary"
+                                                                            };
+                                                                        }
+                                                                        <i class="bi @iconClass fs-2 me-3"></i>
+                                                                        <div class="flex-grow-1" style="min-width: 0;">
+                                                                            <div class="fw-bold text-truncate" title="@fileName" style="max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@fileName</div>
+                                                                            <small class="text-muted">@extension.ToUpper() File</small>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="d-flex gap-1 flex-wrap">
+                                                                        <button type="button" class="btn btn-sm btn-outline-primary view-file-btn" 
+                                                                                data-photo-id="@photo.Id" 
+                                                                                data-file-name="@fileName"
+                                                                                data-file-url="@Url.Action("ViewRequirementFile", "Archive", new { id = photo.Id })"
+                                                                                data-file-type="@extension">
+                                                                            <i class="bi bi-eye me-1"></i> View
+                                                                        </button>
+                                                                        <a href="@Url.Action("ViewRequirementFile", "Archive", new { id = photo.Id })" 
+                                                                           class="btn btn-sm btn-outline-secondary" 
+                                                                           download="@fileName">
+                                                                            <i class="bi bi-download me-1"></i> Download
+                                                                        </a>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="alert alert-info border-0 bg-info bg-opacity-10">
+                                                    <i class="bi bi-info-circle text-info me-2"></i> No files were archived for this requirement.
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
                             }
-                        </ul>
+                        </div>
                     }
                     else
                     {
@@ -213,3 +287,78 @@
         </a>
     </div>
 </div>
+
+<!-- File Viewer Modal -->
+<div class="modal fade" id="fileViewerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-eye me-2"></i><span id="viewerFileName">File Viewer</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0" style="max-height: 80vh; overflow: auto;">
+                <div id="fileViewerContent" class="d-flex align-items-center justify-content-center" style="min-height: 400px;">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <div class="mt-2 text-muted">Loading file...</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a id="downloadFileBtn" href="#" class="btn btn-outline-secondary" download>
+                    <i class="bi bi-download me-1"></i>Download
+                </a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Handle view file button clicks
+document.addEventListener('click', function (e) {
+    if (e.target.closest('.view-file-btn')) {
+        var btn = e.target.closest('.view-file-btn');
+        var fileName = btn.getAttribute('data-file-name');
+        var fileUrl = btn.getAttribute('data-file-url');
+        var fileType = btn.getAttribute('data-file-type').toLowerCase();
+        
+        // Set modal title and download link
+        document.getElementById('viewerFileName').textContent = fileName;
+        document.getElementById('downloadFileBtn').href = fileUrl;
+        document.getElementById('downloadFileBtn').download = fileName;
+        
+        // Show modal
+        var viewerModal = new bootstrap.Modal(document.getElementById('fileViewerModal'));
+        viewerModal.show();
+        
+        // Load file content based on type
+        var contentDiv = document.getElementById('fileViewerContent');
+        contentDiv.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><div class="mt-2 text-muted">Loading file...</div></div>';
+        
+        if (['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'].includes(fileType)) {
+            // Image file
+            contentDiv.innerHTML = `<img src="${fileUrl}" class="img-fluid" style="max-width: 100%; max-height: 70vh;" alt="${fileName}" />`;
+        } else if (fileType === '.pdf') {
+            // PDF file
+            contentDiv.innerHTML = `<iframe src="${fileUrl}" style="width: 100%; height: 70vh; border: none;"></iframe>`;
+        } else {
+            // Other file types - show info and download option
+            contentDiv.innerHTML = `
+                <div class="text-center p-5">
+                    <i class="bi bi-file-earmark fs-1 text-muted mb-3"></i>
+                    <h5>${fileName}</h5>
+                    <p class="text-muted">This file type cannot be previewed directly.</p>
+                    <a href="${fileUrl}" class="btn btn-primary" target="_blank">
+                        <i class="bi bi-download me-1"></i>Download to View
+                    </a>
+                </div>
+            `;
+        }
+    }
+});
+</script>
