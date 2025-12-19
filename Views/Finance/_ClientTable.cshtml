@@ -36,6 +36,11 @@
                             </button>
                             <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-secondary flex-fill"
                                 title="Edit"><i class="bi bi-pencil"></i></a>
+                            <button type="button" class="btn btn-outline-danger flex-fill" data-bs-toggle="modal"
+                                data-bs-target="#deleteModal" data-client-id="@item.Id" data-client-name="@item.ClientName"
+                                title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </button>
                             @if (item.Status == "Pending" || item.Status == "Finance")
                             {
                                 <button type="button" class="btn btn-outline-success flex-fill" data-bs-toggle="modal"
@@ -178,6 +183,10 @@
                                 <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-secondary">
                                     <i class="bi bi-pencil-square"></i> Edit
                                 </a>
+                                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" data-bs-toggle="modal"
+                                        data-bs-target="#deleteModal" data-client-id="@item.Id" data-client-name="@item.ClientName">
+                                    <i class="bi bi-trash"></i> Delete
+                                </button>
                                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
                             </div>
                         </div>

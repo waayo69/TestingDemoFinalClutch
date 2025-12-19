@@ -214,6 +214,42 @@
     </div>
 </div>
 
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="bi bi-trash"></i> Confirm Delete
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 2rem;"></i>
+                    </div>
+                    <div>
+                        <p class="mb-1">Are you sure you want to delete client <strong
+                                id="deleteClientName"></strong>?</p>
+                        <small class="text-muted">This action cannot be undone and will permanently remove the client and all associated data.</small>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </button>
+                <form id="deleteForm" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Delete Client
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <audio id="notifySound" src="/sounds/Notifications.wav" preload="auto"></audio>
 
 @section Scripts {
@@ -264,6 +300,28 @@
                         var form = archiveModal.querySelector('#archiveForm');
                         if (form) {
                             form.action = '/Finance/ArchiveClient/' + clientId;
+                        }
+                    }
+                });
+            }
+
+            // Delete Modal
+            var deleteModal = document.getElementById('deleteModal');
+            if (deleteModal) {
+                deleteModal.addEventListener('show.bs.modal', function (event) {
+                    var button = event.relatedTarget;
+                    var clientId = button.getAttribute('data-client-id');
+                    var clientName = button.getAttribute('data-client-name');
+
+                    if (clientId && clientName) {
+                        var modalText = deleteModal.querySelector('#deleteClientName');
+                        if (modalText) {
+                            modalText.textContent = clientName;
+                        }
+
+                        var form = deleteModal.querySelector('#deleteForm');
+                        if (form) {
+                            form.action = '/Finance/Delete/' + clientId;
                         }
                     }
                 });
