@@ -34,9 +34,9 @@ namespace TestingDemo.Controllers
 
             int pageSize = 5;
 
-            // Query for Liaison Clients
+            // Query for Customer Care Clients
             var liaisonQuery = _context.Clients
-                .Where(c => c.Status == "Liaison")
+                .Where(c => c.Status == "CustomerCare")
                 .Include(c => c.RetainershipBIR)
                 .Include(c => c.RetainershipSPP)
                 .Include(c => c.OneTimeTransaction)
@@ -175,7 +175,7 @@ namespace TestingDemo.Controllers
         {
             int pageSize = 5;
             var liaisonQuery = _context.Clients
-                .Where(c => c.Status == "Liaison")
+                .Where(c => c.Status == "CustomerCare")
                 .Include(c => c.RetainershipBIR)
                 .Include(c => c.RetainershipSPP)
                 .Include(c => c.OneTimeTransaction)

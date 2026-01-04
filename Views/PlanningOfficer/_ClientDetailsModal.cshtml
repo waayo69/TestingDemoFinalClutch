@@ -320,6 +320,14 @@
                 </div>
             </div>
             <div class="modal-footer bg-light">
+                <form asp-action="BackToFinance" asp-route-id="@Model.Id" method="post" class="d-inline">
+                    <div class="input-group">
+                        <input type="text" name="note" class="form-control" placeholder="Reason for return to Finance..." required style="max-width: 300px;">
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-arrow-left-circle me-1"></i>Return to Finance
+                        </button>
+                    </div>
+                </form>
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                     <i class="bi bi-x-circle me-1"></i>Close
                 </button>

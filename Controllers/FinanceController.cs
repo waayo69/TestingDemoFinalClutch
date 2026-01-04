@@ -26,7 +26,7 @@ namespace TestingDemo.Controllers
         }
 
         // GET: Finance/Index
-        public async Task<IActionResult> Index(string sortOrder, string searchString, int? pendingPageNumber, int? clearancePageNumber)
+        public async Task<IActionResult> Index(string sortOrder, string searchString, int? pendingPageNumber, int? clearancePageNumber, int? planningPageNumber)
         {
             ViewData["CurrentSort"] = sortOrder;
             ViewData["NameSortParm"] = string.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
@@ -36,7 +36,7 @@ namespace TestingDemo.Controllers
             int pageSize = 5;
 
             var pendingQuery = _context.Clients
-                .Where(c => c.Status == "Pending" || c.Status == "Finance")
+                .Where(c => c.Status == "Pending" || c.Status == "Finance" || c.Status == "For Review")
                 .Include(c => c.RetainershipBIR)
                 .Include(c => c.RetainershipSPP)
                 .Include(c => c.OneTimeTransaction)
@@ -49,11 +49,19 @@ namespace TestingDemo.Controllers
                 .Include(c => c.OneTimeTransaction)
                 .Include(c => c.ExternalAudit)
                 .AsNoTracking();
+            var planningQuery = _context.Clients
+                .Where(c => c.Status == "Planning" || c.Status == "CustomerCare")
+                .Include(c => c.RetainershipBIR)
+                .Include(c => c.RetainershipSPP)
+                .Include(c => c.OneTimeTransaction)
+                .Include(c => c.ExternalAudit)
+                .AsNoTracking();
 
             if (!string.IsNullOrEmpty(searchString))
             {
                 pendingQuery = pendingQuery.Where(s => s.ClientName.Contains(searchString) || s.TypeOfProject.Contains(searchString));
                 clearanceQuery = clearanceQuery.Where(s => s.ClientName.Contains(searchString) || s.TypeOfProject.Contains(searchString));
+                planningQuery = planningQuery.Where(s => s.ClientName.Contains(searchString) || s.TypeOfProject.Contains(searchString));
             }
 
             switch (sortOrder)
@@ -61,25 +69,30 @@ namespace TestingDemo.Controllers
                 case "name_desc":
                     pendingQuery = pendingQuery.OrderByDescending(s => s.ClientName);
                     clearanceQuery = clearanceQuery.OrderByDescending(s => s.ClientName);
+                    planningQuery = planningQuery.OrderByDescending(s => s.ClientName);
                     break;
                 case "Date":
                     pendingQuery = pendingQuery.OrderBy(s => s.CreatedDate);
                     clearanceQuery = clearanceQuery.OrderBy(s => s.CreatedDate);
+                    planningQuery = planningQuery.OrderBy(s => s.CreatedDate);
                     break;
                 case "date_desc":
                     pendingQuery = pendingQuery.OrderByDescending(s => s.CreatedDate);
                     clearanceQuery = clearanceQuery.OrderByDescending(s => s.CreatedDate);
+                    planningQuery = planningQuery.OrderByDescending(s => s.CreatedDate);
                     break;
                 default:
                     pendingQuery = pendingQuery.OrderBy(s => s.CreatedDate);
                     clearanceQuery = clearanceQuery.OrderBy(s => s.CreatedDate);
+                    planningQuery = planningQuery.OrderBy(s => s.CreatedDate);
                     break;
             }
 
             var viewModel = new FinanceDashboardViewModel
             {
                 PendingClients = await PaginatedList<ClientModel>.CreateAsync(pendingQuery, pendingPageNumber ?? 1, pageSize),
-                ClearanceClients = await PaginatedList<ClientModel>.CreateAsync(clearanceQuery, clearancePageNumber ?? 1, pageSize)
+                ClearanceClients = await PaginatedList<ClientModel>.CreateAsync(clearanceQuery, clearancePageNumber ?? 1, pageSize),
+                PlanningClients = await PaginatedList<ClientModel>.CreateAsync(planningQuery, planningPageNumber ?? 1, pageSize)
             };
 
             return View(viewModel);
@@ -386,7 +399,7 @@ namespace TestingDemo.Controllers
 
             if (client != null)
             {
-                // Update status to indicate it's ready for planning
+                // Update status to indicate it's ready for Planning
                 client.Status = "Planning";
                 await _context.SaveChangesAsync();
                 await _hubContext.Clients.All.SendAsync("ReceiveUpdate", "Finance data changed");
@@ -396,7 +409,7 @@ namespace TestingDemo.Controllers
                 // Redirect to Planning Officer controller if user has permission
                 if (User.IsInRole("PlanningOfficer") || User.IsInRole("Admin"))
                 {
-                    return RedirectToAction("PlanRequirements", "PlanningOfficer", new { id = client.Id });
+                    return RedirectToAction("Index", "PlanningOfficer");
                 }
             }
 
@@ -437,11 +450,11 @@ namespace TestingDemo.Controllers
 
         // GET: Finance/GetLatestData
         [HttpGet]
-        public async Task<IActionResult> GetLatestData(string sortOrder, string searchString, int? pendingPageNumber, int? clearancePageNumber)
+        public async Task<IActionResult> GetLatestData(string sortOrder, string searchString, int? pendingPageNumber, int? clearancePageNumber, int? planningPageNumber)
         {
             int pageSize = 5;
             var pendingQuery = _context.Clients
-                .Where(c => c.Status == "Pending" || c.Status == "Finance")
+                .Where(c => c.Status == "Pending" || c.Status == "Finance" || c.Status == "For Review")
                 .Include(c => c.RetainershipBIR)
                 .Include(c => c.RetainershipSPP)
                 .Include(c => c.OneTimeTransaction)
@@ -454,34 +467,47 @@ namespace TestingDemo.Controllers
                 .Include(c => c.OneTimeTransaction)
                 .Include(c => c.ExternalAudit)
                 .AsNoTracking();
+            var planningQuery = _context.Clients
+                .Where(c => c.Status == "Planning" || c.Status == "CustomerCare")
+                .Include(c => c.RetainershipBIR)
+                .Include(c => c.RetainershipSPP)
+                .Include(c => c.OneTimeTransaction)
+                .Include(c => c.ExternalAudit)
+                .AsNoTracking();
             if (!string.IsNullOrEmpty(searchString))
             {
                 pendingQuery = pendingQuery.Where(s => s.ClientName.Contains(searchString) || s.TypeOfProject.Contains(searchString));
                 clearanceQuery = clearanceQuery.Where(s => s.ClientName.Contains(searchString) || s.TypeOfProject.Contains(searchString));
+                planningQuery = planningQuery.Where(s => s.ClientName.Contains(searchString) || s.TypeOfProject.Contains(searchString));
             }
             switch (sortOrder)
             {
                 case "name_desc":
                     pendingQuery = pendingQuery.OrderByDescending(s => s.ClientName);
                     clearanceQuery = clearanceQuery.OrderByDescending(s => s.ClientName);
+                    planningQuery = planningQuery.OrderByDescending(s => s.ClientName);
                     break;
                 case "Date":
                     pendingQuery = pendingQuery.OrderBy(s => s.CreatedDate);
                     clearanceQuery = clearanceQuery.OrderBy(s => s.CreatedDate);
+                    planningQuery = planningQuery.OrderBy(s => s.CreatedDate);
                     break;
                 case "date_desc":
                     pendingQuery = pendingQuery.OrderByDescending(s => s.CreatedDate);
                     clearanceQuery = clearanceQuery.OrderByDescending(s => s.CreatedDate);
+                    planningQuery = planningQuery.OrderByDescending(s => s.CreatedDate);
                     break;
                 default:
                     pendingQuery = pendingQuery.OrderBy(s => s.CreatedDate);
                     clearanceQuery = clearanceQuery.OrderBy(s => s.CreatedDate);
+                    planningQuery = planningQuery.OrderBy(s => s.CreatedDate);
                     break;
             }
             var viewModel = new TestingDemo.ViewModels.FinanceDashboardViewModel
             {
                 PendingClients = await TestingDemo.Models.PaginatedList<TestingDemo.Models.ClientModel>.CreateAsync(pendingQuery, pendingPageNumber ?? 1, pageSize),
-                ClearanceClients = await TestingDemo.Models.PaginatedList<TestingDemo.Models.ClientModel>.CreateAsync(clearanceQuery, clearancePageNumber ?? 1, pageSize)
+                ClearanceClients = await TestingDemo.Models.PaginatedList<TestingDemo.Models.ClientModel>.CreateAsync(clearanceQuery, clearancePageNumber ?? 1, pageSize),
+                PlanningClients = await TestingDemo.Models.PaginatedList<TestingDemo.Models.ClientModel>.CreateAsync(planningQuery, planningPageNumber ?? 1, pageSize)
             };
             return Json(viewModel);
         }

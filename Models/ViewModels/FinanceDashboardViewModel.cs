@@ -6,5 +6,6 @@ namespace TestingDemo.ViewModels
     {
         public PaginatedList<ClientModel> PendingClients { get; set; }
         public PaginatedList<ClientModel> ClearanceClients { get; set; }
+        public PaginatedList<ClientModel> PlanningClients { get; set; }
     }
 }

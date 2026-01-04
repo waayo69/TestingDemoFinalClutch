@@ -19,18 +19,18 @@
                     </td>
                     <td>
                         @{
-                            var displayStatus = !string.IsNullOrWhiteSpace(item.PlanningReturnNote) ? "For Review" : item.Status;
-                            var statusBadgeClass = displayStatus switch
+                            var statusBadgeClass = item.Status switch
                             {
                                 "Clearance" => "bg-warning text-dark",
                                 "Finance" => "bg-primary",
                                 "Planning" => "bg-info",
                                 "CustomerCare" => "bg-success",
+                                "For Review" => "bg-warning",
                                 _ => "bg-secondary"
                             };
                         }
                         <span class="badge @statusBadgeClass">
-                            @displayStatus
+                            @item.Status
                         </span>
                     </td>
                     <td class="text-center align-middle">
@@ -443,31 +443,6 @@
                                 </div>
                             </div>
                             <div class="modal-footer d-flex flex-wrap gap-2">
-                                @if (item.Status == "Pending" || item.Status == "Finance")
-                                {
-                                    <button type="button" class="btn btn-success" data-bs-dismiss="modal" data-bs-toggle="modal"
-                                            data-bs-target="#sendToPlanningModal" data-client-id="@item.Id" data-client-name="@item.ClientName">
-                                        <i class="bi bi-send-check"></i> Send to Planning
-                                    </button>
-                                }
-                                else if (item.Status == "Planning")
-                                {
-                                    <button type="button" class="btn btn-info" disabled>
-                                        <i class="bi bi-send-check"></i> In Planning
-                                    </button>
-                                }
-                                else if (item.Status == "CustomerCare")
-                                {
-                                    <button type="button" class="btn btn-success" disabled>
-                                        <i class="bi bi-people"></i> In Customer Care
-                                    </button>
-                                }
-                                else if (item.Status == "For Review")
-                                {
-                                    <button type="button" class="btn btn-warning" disabled>
-                                        <i class="bi bi-eye"></i> Under Review
-                                    </button>
-                                }
                                 <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-secondary">
                                     <i class="bi bi-pencil-square"></i> Edit
                                 </a>

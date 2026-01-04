@@ -213,14 +213,10 @@
                                                 @if (item.Status == "Planning")
                                                 {
                                                     <div class="btn-group btn-group-sm" role="group">
-                                                        <button type="button" class="btn btn-outline-info border-0 shadow-sm" title="View complete client information"
-                                                                data-bs-toggle="modal" data-bs-target="#clientModal-@item.Id">
+                                                        <button type="button" class="btn btn-outline-info border-0 shadow-sm"
+                                                                data-bs-toggle="modal" data-bs-target="#clientModal-@item.Id"
+                                                                title="View Details">
                                                             <i class="bi bi-eye fs-6"></i> View
-                                                        </button>
-                                                        <button type="button" class="btn btn-outline-warning border-0 shadow-sm"
-                                                                data-bs-toggle="modal" data-bs-target="#backToFinanceModal-@item.Id"
-                                                                title="Return to Finance">
-                                                            <i class="bi bi-arrow-left-circle fs-6"></i> Return to Finance
                                                         </button>
                                                         <button type="button" class="btn btn-outline-success border-0 shadow-sm"
                                                                 data-bs-toggle="modal" data-bs-target="#proceedToLiaisonModal-@item.Id"
@@ -240,8 +236,6 @@
                                         </tr>
 
                                         @await Html.PartialAsync("_ClientProceedToLiaisonModal", item)
-
-                                        @await Html.PartialAsync("_ClientBackToFinanceModal", item)
 
                                         @await Html.PartialAsync("_ClientDetailsModal", item)
                                     }

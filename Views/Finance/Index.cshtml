@@ -67,7 +67,12 @@
     <!-- Pending Applications -->
     <div class="card shadow-sm mb-4">
         <div class="card-header bg-light d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> Pending Applications</h5>
+            @{
+                var hasReturnedClients = Model.PendingClients.Any(c => c.Status == "For Review");
+                var sectionTitle = hasReturnedClients ? "Applications for Review" : "Pending Applications";
+                var sectionIcon = hasReturnedClients ? "bi bi-eye" : "bi bi-file-earmark-text";
+            }
+            <h5 class="mb-0"><i class="@sectionIcon"></i> @sectionTitle</h5>
             <span class="badge bg-secondary rounded-pill">@Model.PendingClients.TotalCount</span>
         </div>
         <div class="card-body p-0">
@@ -102,7 +107,7 @@
     </div>
 
     <!-- Clients for Finance Clearance -->
-    <div class="card shadow-sm">
+    <div class="card shadow-sm mb-4">
         <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
             <h5 class="mb-0"><i class="bi bi-cash-coin"></i> Clients for Finance Clearance</h5>
             <span class="badge bg-dark rounded-pill">@Model.ClearanceClients.TotalCount</span>
@@ -131,6 +136,42 @@
             ["pageModel"] = Model.ClearanceClients,
                         ["pageAction"] = "Index",
                         ["pageNumberParam"] = "clearancePageNumber",
+                        ["otherPageNumberParam"] = "pendingPageNumber",
+                        ["otherPageNumber"] = Model.PendingClients.PageIndex
+                        })
+        </div>
+                }
+    </div>
+
+    <!-- Client List -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-send-check"></i> Client List</h5>
+            <span class="badge bg-light text-dark rounded-pill">@Model.PlanningClients.TotalCount</span>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.PlanningClients.Any())
+            {
+            @await Html.PartialAsync("_PlanningClientTable", Model.PlanningClients)
+                        }
+                        else
+            {
+                <div class="text-center p-4">
+                    <div class="mb-3">
+                        <i class="bi bi-send" style="font-size: 3rem; color: #6c757d;"></i>
+                    </div>
+                    <p class="text-muted mb-0">No clients have been sent to planning yet.</p>
+                    <small class="text-muted">Clients sent to planning will appear here.</small>
+                </div>
+            }
+        </div>
+        @if (Model.PlanningClients.TotalPages > 1)
+        {
+        <div class="card-footer">
+            @await Html.PartialAsync("_Pagination", null, new ViewDataDictionary(ViewData) {
+            ["pageModel"] = Model.PlanningClients,
+                        ["pageAction"] = "Index",
+                        ["pageNumberParam"] = "planningPageNumber",
                         ["otherPageNumberParam"] = "pendingPageNumber",
                         ["otherPageNumber"] = Model.PendingClients.PageIndex
                         })

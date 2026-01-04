@@ -495,11 +495,11 @@ namespace TestingDemo.Controllers
                 return NotFound();
             }
 
-            client.Status = "Liaison"; // Status updated to Liaison
+            client.Status = "CustomerCare"; // Status updated to CustomerCare
             await _context.SaveChangesAsync();
             await _hubContext.Clients.All.SendAsync("ReceiveUpdate", "PlanningOfficer data changed");
 
-            TempData["SuccessMessage"] = $"Client {client.ClientName} has been proceeded to Liaison.";
+            TempData["SuccessMessage"] = $"Client {client.ClientName} has been proceeded to Customer Care.";
             return RedirectToAction("Index");
         }
 
@@ -511,11 +511,11 @@ namespace TestingDemo.Controllers
             var client = await _context.Clients.FindAsync(id);
             if (client != null)
             {
-                client.Status = "Pending"; // Changed from "Finance" to "Pending"
+                client.Status = "For Review"; // Changed to "For Review" status
                 client.PlanningReturnNote = note; // Save the note for Finance to see
                 await _context.SaveChangesAsync();
                 await _hubContext.Clients.All.SendAsync("ReceiveUpdate", "PlanningOfficer data changed");
-                TempData["SuccessMessage"] = $"Client returned to Finance's pending list. Note: {note}";
+                TempData["SuccessMessage"] = $"Client returned to Finance for review. Note: {note}";
             }
             return RedirectToAction("Index");
         }
