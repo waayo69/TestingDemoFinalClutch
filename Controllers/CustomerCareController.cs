@@ -123,6 +123,7 @@ namespace TestingDemo.Controllers
             }
 
             client.Status = "DocumentOfficer";
+            client.SubStatus = "New";
             await _context.SaveChangesAsync();
             await _hubContext.Clients.All.SendAsync("ReceiveUpdate", "CustomerCare data changed");
             TempData["SuccessMessage"] = "Client moved to Document Officer.";
@@ -138,6 +139,7 @@ namespace TestingDemo.Controllers
             if (client != null)
             {
                 client.Status = "Planning";
+                client.SubStatus = "For Review";
                 await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = "Client returned to Planning Officer.";
             }

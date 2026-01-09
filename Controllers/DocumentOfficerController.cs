@@ -73,6 +73,7 @@ namespace TestingDemo.Controllers
             if (client != null)
             {
                 client.Status = "Clearance";
+                client.Status = "New";
                 await _context.SaveChangesAsync();
                 await _hubContext.Clients.All.SendAsync("ReceiveUpdate", "DocumentOfficer data changed");
                 TempData["SuccessMessage"] = "Client has been sent to Finance for clearance.";
@@ -88,7 +89,8 @@ namespace TestingDemo.Controllers
             var client = await _context.Clients.FindAsync(id);
             if (client != null)
             {
-                client.Status = "Liaison";
+                client.Status = "CustomerCare";
+                client.SubStatus = "Returned for Review";
                 await _context.SaveChangesAsync();
                 await _hubContext.Clients.All.SendAsync("ReceiveUpdate", "DocumentOfficer data changed");
                 TempData["SuccessMessage"] = "Client returned to Customer Care (Liaison).";

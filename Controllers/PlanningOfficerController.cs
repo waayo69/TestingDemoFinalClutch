@@ -496,6 +496,7 @@ namespace TestingDemo.Controllers
             }
 
             client.Status = "CustomerCare"; // Status updated to CustomerCare
+            client.SubStatus = "New";
             await _context.SaveChangesAsync();
             await _hubContext.Clients.All.SendAsync("ReceiveUpdate", "PlanningOfficer data changed");
 
@@ -511,7 +512,8 @@ namespace TestingDemo.Controllers
             var client = await _context.Clients.FindAsync(id);
             if (client != null)
             {
-                client.Status = "For Review"; // Changed to "For Review" status
+                client.Status = "Finance"; 
+                client.SubStatus = "For Review"; // Changed to "For Review" status
                 client.PlanningReturnNote = note; // Save the note for Finance to see
                 await _context.SaveChangesAsync();
                 await _hubContext.Clients.All.SendAsync("ReceiveUpdate", "PlanningOfficer data changed");

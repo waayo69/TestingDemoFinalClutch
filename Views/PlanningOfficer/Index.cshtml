@@ -64,13 +64,7 @@
                                     </td>
                                     <td class="align-middle">@item.ContactPersonNumber</td>
                                     <td class="align-middle">@item.TypeOfProject</td>
-                                    <td class="align-middle">
-                                        <span class="badge @(item.Status == "Finance" ? "bg-primary" : "bg-secondary")">@item.Status</span>
-                                        @if (!string.IsNullOrEmpty(item.PlanningReturnNote))
-                                        {
-                                            <i class="bi bi-info-circle-fill text-warning" data-bs-toggle="tooltip" title="Returned from Planning: @item.PlanningReturnNote"></i>
-                                        }
-                                    </td>
+                                    <td class="align-middle">@item.SubStatus</td>
                                     <td class="align-middle">@item.CreatedDate.ToString("MMM dd, yyyy")</td>
                                     <td class="text-center align-middle">
                                         <div class="btn-group btn-group-sm" role="group">

@@ -201,6 +201,7 @@ namespace TestingDemo.Controllers
             {
                 client.CreatedDate = DateTime.Now;
                 client.Status = "Pending";
+                client.SubStatus = "New";
                 // Generate unique tracking number
                 client.TrackingNumber = await GenerateUniqueTrackingNumber();
                 _context.Add(client);
@@ -401,6 +402,7 @@ namespace TestingDemo.Controllers
             {
                 // Update status to indicate it's ready for Planning
                 client.Status = "Planning";
+                client.SubStatus = "New";
                 await _context.SaveChangesAsync();
                 await _hubContext.Clients.All.SendAsync("ReceiveUpdate", "Finance data changed");
 
@@ -441,6 +443,7 @@ namespace TestingDemo.Controllers
             if (client != null)
             {
                 client.Status = "DocumentOfficer";
+                client.SubStatus = "Returned from Finance";
                 await _context.SaveChangesAsync();
                 await _hubContext.Clients.All.SendAsync("ReceiveUpdate", "Finance data changed");
                 TempData["SuccessMessage"] = "Client returned to Document Officer.";

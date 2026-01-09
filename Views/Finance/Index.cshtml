@@ -69,7 +69,7 @@
         <div class="card-header bg-light d-flex justify-content-between align-items-center">
             @{
                 var hasReturnedClients = Model.PendingClients.Any(c => c.Status == "For Review");
-                var sectionTitle = hasReturnedClients ? "Applications for Review" : "Pending Applications";
+                var sectionTitle = hasReturnedClients ? "Applications for Review" : "New Applications";
                 var sectionIcon = hasReturnedClients ? "bi bi-eye" : "bi bi-file-earmark-text";
             }
             <h5 class="mb-0"><i class="@sectionIcon"></i> @sectionTitle</h5>
