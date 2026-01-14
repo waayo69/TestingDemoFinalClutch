@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.SignalR;
 using TestingDemo.Data;
 using System.Collections.Generic;
 using System.IO;
+using TestingDemo.Models.ViewModels;
 
 namespace TestingDemo.Controllers
 {
@@ -25,79 +26,87 @@ namespace TestingDemo.Controllers
         }
 
         // GET: PlanningOfficer/Index
-        public IActionResult Index(int? pageNumber)
+        public async Task<IActionResult> Index(string sortOrder, string searchString, int? pendingPageNumber, int? completedPageNumber)
         {
-            return RedirectToAction(nameof(PendingClients), new { pageNumber });
-        }
-
-        // GET: PlanningOfficer/PlanningClients (deprecated) -> Redirect to Index (Planning)
-        public IActionResult PlanningClients(int? pageNumber)
-        {
-            return RedirectToAction(nameof(Index), new { pageNumber });
-        }
-
-        // GET: PlanningOfficer/PendingClients
-        public async Task<IActionResult> PendingClients(int? pageNumber)
-        {
-            ViewData["Title"] = "Pending Clients";
-            ViewData["ListTitle"] = "Pending Clients";
-            ViewData["CurrentAction"] = "PendingClients";
+            ViewData["CurrentSort"] = sortOrder;
+            ViewData["NameSortParm"] = string.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
+            ViewData["DateSortParm"] = sortOrder == "Date" ? "date_desc" : "Date";
+            ViewData["CurrentFilter"] = searchString;
 
             int pageSize = 10;
-            var clientsQuery = _context.Clients
+
+            var pendingQuery = _context.Clients
                 .Where(c => c.Status == "Planning")
                 .Include(c => c.RetainershipBIR)
                 .Include(c => c.RetainershipSPP)
                 .Include(c => c.OneTimeTransaction)
                 .Include(c => c.ExternalAudit)
-                .OrderBy(c => c.CreatedDate)
                 .AsNoTracking();
 
-            var paginatedClients = await PaginatedList<ClientModel>.CreateAsync(clientsQuery, pageNumber ?? 1, pageSize);
-
-            var clientIds = paginatedClients.Select(c => c.Id).ToList();
-            var requirements = await _context.PermitRequirements
-                .Where(r => clientIds.Contains(r.ClientId))
-                .Include(r => r.Photos)
-                .ToListAsync();
-
-            ViewBag.Requirements = requirements
-                .GroupBy(r => r.ClientId)
-                .ToDictionary(g => g.Key, g => g.ToList());
-
-            return View("PlanningClients", paginatedClients);
-        }
-
-        // GET: PlanningOfficer/CompletedClients
-        public async Task<IActionResult> CompletedClients(int? pageNumber)
-        {
-            ViewData["Title"] = "Completed Clients";
-            ViewData["ListTitle"] = "Completed Clients";
-            ViewData["CurrentAction"] = "CompletedClients";
-
-            int pageSize = 10;
-            var clientsQuery = _context.Clients
-                .Where(c => c.Status == "Liaison" || c.Status == "CustomerCareReceived" || c.Status == "DocumentOfficer")
+            var completedQuery = _context.Clients
+                .Where(c => c.Status == "Liaison" || c.Status == "CustomerCareReceived" || c.Status == "DocumentOfficer" || c.Status == "Completed")
                 .Include(c => c.RetainershipBIR)
                 .Include(c => c.RetainershipSPP)
                 .Include(c => c.OneTimeTransaction)
                 .Include(c => c.ExternalAudit)
-                .OrderBy(c => c.CreatedDate)
                 .AsNoTracking();
 
-            var paginatedClients = await PaginatedList<ClientModel>.CreateAsync(clientsQuery, pageNumber ?? 1, pageSize);
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                pendingQuery = pendingQuery.Where(s => s.ClientName.Contains(searchString) || s.TypeOfProject.Contains(searchString) || s.TrackingNumber.Contains(searchString));
+                completedQuery = completedQuery.Where(s => s.ClientName.Contains(searchString) || s.TypeOfProject.Contains(searchString) || s.TrackingNumber.Contains(searchString));
+            }
 
-            var clientIds = paginatedClients.Select(c => c.Id).ToList();
+            switch (sortOrder)
+            {
+                case "name_desc":
+                    pendingQuery = pendingQuery.OrderByDescending(s => s.ClientName);
+                    completedQuery = completedQuery.OrderByDescending(s => s.ClientName);
+                    break;
+                case "Date":
+                    pendingQuery = pendingQuery.OrderBy(s => s.CreatedDate);
+                    completedQuery = completedQuery.OrderBy(s => s.CreatedDate);
+                    break;
+                case "date_desc":
+                    pendingQuery = pendingQuery.OrderByDescending(s => s.CreatedDate);
+                    completedQuery = completedQuery.OrderByDescending(s => s.CreatedDate);
+                    break;
+                default:
+                    pendingQuery = pendingQuery.OrderByDescending(s => s.CreatedDate);
+                    completedQuery = completedQuery.OrderByDescending(s => s.CreatedDate);
+                    break;
+            }
+
+            var pendingPaginated = await PaginatedList<ClientModel>.CreateAsync(pendingQuery, pendingPageNumber ?? 1, pageSize);
+            var completedPaginated = await PaginatedList<ClientModel>.CreateAsync(completedQuery, completedPageNumber ?? 1, pageSize);
+
+            // Get requirements for all clients in both lists
+            var allClientIds = pendingPaginated.Select(c => c.Id).Concat(completedPaginated.Select(c => c.Id)).ToList();
             var requirements = await _context.PermitRequirements
-                .Where(r => clientIds.Contains(r.ClientId))
+                .Where(r => allClientIds.Contains(r.ClientId))
+                .Include(r => r.Photos)
                 .ToListAsync();
 
-            ViewBag.Requirements = requirements
+            var requirementsByClient = requirements
                 .GroupBy(r => r.ClientId)
                 .ToDictionary(g => g.Key, g => g.ToList());
 
-            return View("PlanningClients", paginatedClients);
+            var viewModel = new PlanningDashboardViewModel
+            {
+                PendingClients = pendingPaginated,
+                CompletedClients = completedPaginated,
+                RequirementsByClient = requirementsByClient
+            };
+
+            ViewBag.Requirements = requirementsByClient;
+
+            return View("PlanningClients", viewModel);
         }
+
+        // Redirects for backward compatibility
+        public IActionResult PendingClients(int? pageNumber) => RedirectToAction(nameof(Index), new { pendingPageNumber = pageNumber });
+        public IActionResult CompletedClients(int? pageNumber) => RedirectToAction(nameof(Index), new { completedPageNumber = pageNumber });
+        public IActionResult PlanningClients(int? pageNumber) => RedirectToAction(nameof(Index), new { pendingPageNumber = pageNumber });
 
         // Details action removed - details now handled via modal in the Planning Officer views
 

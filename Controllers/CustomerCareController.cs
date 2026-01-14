@@ -25,16 +25,16 @@ namespace TestingDemo.Controllers
         }
 
         // GET: CustomerCare/Index
-        public async Task<IActionResult> Index(string sortOrder, string searchString, int? liaisonPageNumber)
+        public async Task<IActionResult> Index(string sortOrder, string searchString, int? liaisonPageNumber, int? completedPageNumber)
         {
             ViewData["CurrentSort"] = sortOrder;
             ViewData["NameSortParm"] = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
             ViewData["DateSortParm"] = sortOrder == "Date" ? "date_desc" : "Date";
             ViewData["CurrentFilter"] = searchString;
 
-            int pageSize = 5;
+            int pageSize = 10;
 
-            // Query for Customer Care Clients
+            // Query for Liaison Clients
             var liaisonQuery = _context.Clients
                 .Where(c => c.Status == "CustomerCare")
                 .Include(c => c.RetainershipBIR)
@@ -43,32 +43,48 @@ namespace TestingDemo.Controllers
                 .Include(c => c.ExternalAudit)
                 .AsNoTracking();
 
-            // Apply searching
+            // Query for Sent/Completed Clients
+            var completedQuery = _context.Clients
+                .Where(c => c.Status == "DocumentOfficer" || c.Status == "Completed" || c.Status == "FinanceProgress")
+                .Include(c => c.RetainershipBIR)
+                .Include(c => c.RetainershipSPP)
+                .Include(c => c.OneTimeTransaction)
+                .Include(c => c.ExternalAudit)
+                .AsNoTracking();
+
             if (!String.IsNullOrEmpty(searchString))
             {
-                liaisonQuery = liaisonQuery.Where(s => s.ClientName.Contains(searchString) || s.TypeOfProject.Contains(searchString));
+                liaisonQuery = liaisonQuery.Where(s => s.ClientName.Contains(searchString) || s.TypeOfProject.Contains(searchString) || s.TrackingNumber.Contains(searchString));
+                completedQuery = completedQuery.Where(s => s.ClientName.Contains(searchString) || s.TypeOfProject.Contains(searchString) || s.TrackingNumber.Contains(searchString));
             }
 
-            // Apply sorting
             switch (sortOrder)
             {
                 case "name_desc":
                     liaisonQuery = liaisonQuery.OrderByDescending(s => s.ClientName);
+                    completedQuery = completedQuery.OrderByDescending(s => s.ClientName);
                     break;
                 case "Date":
                     liaisonQuery = liaisonQuery.OrderBy(s => s.CreatedDate);
+                    completedQuery = completedQuery.OrderBy(s => s.CreatedDate);
                     break;
                 case "date_desc":
                     liaisonQuery = liaisonQuery.OrderByDescending(s => s.CreatedDate);
+                    completedQuery = completedQuery.OrderByDescending(s => s.CreatedDate);
                     break;
                 default:
-                    liaisonQuery = liaisonQuery.OrderBy(s => s.CreatedDate);
+                    liaisonQuery = liaisonQuery.OrderByDescending(s => s.CreatedDate);
+                    completedQuery = completedQuery.OrderByDescending(s => s.CreatedDate);
                     break;
             }
 
             var viewModel = new CustomerCareDashboardViewModel
             {
-                LiaisonClients = await PaginatedList<ClientModel>.CreateAsync(liaisonQuery, liaisonPageNumber ?? 1, pageSize)
+                LiaisonClients = await PaginatedList<ClientModel>.CreateAsync(liaisonQuery, liaisonPageNumber ?? 1, pageSize),
+                CompletedClients = await PaginatedList<ClientModel>.CreateAsync(completedQuery, completedPageNumber ?? 1, pageSize),
+                CurrentSort = sortOrder,
+                NameSortParm = ViewData["NameSortParm"]?.ToString(),
+                DateSortParm = ViewData["DateSortParm"]?.ToString()
             };
 
             return View(viewModel);
@@ -98,8 +114,6 @@ namespace TestingDemo.Controllers
             }
             return View(client);
         }
-
-        // Removed MarkAsReceived logic as 'Received' status is deprecated
 
         // POST: CustomerCare/ProceedToDocumentOfficer/5
         [HttpPost]
@@ -172,40 +186,36 @@ namespace TestingDemo.Controllers
             return RedirectToAction("Index");
         }
 
+        // GET: CustomerCare/GetLatestData
         [HttpGet]
-        public async Task<IActionResult> GetLatestData(string sortOrder, string searchString, int? liaisonPageNumber)
+        public async Task<IActionResult> GetLatestData(string sortOrder, string searchString, int? liaisonPageNumber, int? completedPageNumber)
         {
-            int pageSize = 5;
+            int pageSize = 10;
+
             var liaisonQuery = _context.Clients
                 .Where(c => c.Status == "CustomerCare")
-                .Include(c => c.RetainershipBIR)
-                .Include(c => c.RetainershipSPP)
-                .Include(c => c.OneTimeTransaction)
-                .Include(c => c.ExternalAudit)
                 .AsNoTracking();
+
+            var completedQuery = _context.Clients
+                .Where(c => c.Status == "DocumentOfficer" || c.Status == "Completed" || c.Status == "FinanceProgress")
+                .AsNoTracking();
+
             if (!string.IsNullOrEmpty(searchString))
             {
-                liaisonQuery = liaisonQuery.Where(s => s.ClientName.Contains(searchString) || s.TypeOfProject.Contains(searchString));
+                liaisonQuery = liaisonQuery.Where(s => s.ClientName.Contains(searchString) || s.TypeOfProject.Contains(searchString) || s.TrackingNumber.Contains(searchString));
+                completedQuery = completedQuery.Where(s => s.ClientName.Contains(searchString) || s.TypeOfProject.Contains(searchString) || s.TrackingNumber.Contains(searchString));
             }
-            switch (sortOrder)
+
+            // Simplified sorting for AJAX
+            liaisonQuery = liaisonQuery.OrderByDescending(c => c.CreatedDate);
+            completedQuery = completedQuery.OrderByDescending(c => c.CreatedDate);
+
+            var viewModel = new CustomerCareDashboardViewModel
             {
-                case "name_desc":
-                    liaisonQuery = liaisonQuery.OrderByDescending(s => s.ClientName);
-                    break;
-                case "Date":
-                    liaisonQuery = liaisonQuery.OrderBy(s => s.CreatedDate);
-                    break;
-                case "date_desc":
-                    liaisonQuery = liaisonQuery.OrderByDescending(s => s.CreatedDate);
-                    break;
-                default:
-                    liaisonQuery = liaisonQuery.OrderBy(s => s.CreatedDate);
-                    break;
-            }
-            var viewModel = new TestingDemo.ViewModels.CustomerCareDashboardViewModel
-            {
-                LiaisonClients = await TestingDemo.Models.PaginatedList<TestingDemo.Models.ClientModel>.CreateAsync(liaisonQuery, liaisonPageNumber ?? 1, pageSize)
+                LiaisonClients = await PaginatedList<ClientModel>.CreateAsync(liaisonQuery, liaisonPageNumber ?? 1, pageSize),
+                CompletedClients = await PaginatedList<ClientModel>.CreateAsync(completedQuery, completedPageNumber ?? 1, pageSize)
             };
+
             return Json(viewModel);
         }
 

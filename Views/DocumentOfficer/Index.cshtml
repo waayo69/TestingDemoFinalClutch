@@ -1,363 +1,312 @@
-@model IEnumerable<TestingDemo.Models.ClientModel>
+@model TestingDemo.ViewModels.DocumentOfficerDashboardViewModel
 @{
     ViewData["Title"] = "Document Officer Dashboard";
 }
-@Html.AntiForgeryToken()
+
 <div class="container-fluid py-4">
-    <div class="row mb-4 align-items-center">
-        <div class="col-12 col-md-6 mb-2 mb-md-0">
-            <h2 class="fw-bold mb-0"><i class="bi bi-folder-check"></i> Document Officer Dashboard</h2>
-        </div>
-        <div class="col-12 col-md-6 d-flex flex-wrap justify-content-md-end align-items-center gap-2">
-            <a asp-controller="Archive" asp-action="Index" class="btn btn-outline-secondary">
-                <i class="bi bi-archive-fill"></i> View Client Archive
-            </a>
+    <!-- Premium Header -->
+    <div class="dashboard-header mb-4 p-4 rounded-4 shadow-sm bg-white border-0">
+        <div class="row align-items-center g-3">
+            <div class="col-12 col-lg-6">
+                <div class="d-flex align-items-center">
+                    <div class="header-icon-box bg-secondary bg-opacity-10 text-secondary p-3 rounded-3 me-3">
+                        <i class="bi bi-folder-check fs-3"></i>
+                    </div>
+                    <div>
+                        <h2 class="fw-bold mb-0 text-dark">@ViewData["Title"]</h2>
+                        <p class="text-muted mb-0">Verify requirements and prepare documents for clearance</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-lg-6">
+                <div class="d-flex flex-wrap justify-content-lg-end align-items-center gap-3">
+                    <form asp-action="Index" method="get" class="search-group">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0 border-0 shadow-sm ps-3">
+                                <i class="bi bi-search text-muted"></i>
+                            </span>
+                            <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" 
+                                   class="form-control border-start-0 border-0 shadow-sm ps-2 py-2 rounded-end" 
+                                   placeholder="Search tracking #, name..." style="width: 250px;" />
+                            @if (!String.IsNullOrEmpty(ViewData["CurrentFilter"] as string))
+                            {
+                                <a asp-action="Index" class="btn btn-light border-0 shadow-sm ms-2 rounded-circle" title="Clear search">
+                                    <i class="bi bi-x-lg"></i>
+                                </a>
+                            }
+                        </div>
+                    </form>
+
+                    <div class="dropdown">
+                        <button class="btn btn-white shadow-sm border-0 px-3 py-2 dropdown-toggle d-flex align-items-center gap-2 rounded-3" 
+                                type="button" id="sortDropdown" data-bs-toggle="dropdown">
+                            <i class="bi bi-sort-down text-secondary"></i>
+                            <span class="fw-semibold">Sort By</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-2 p-2 rounded-3">
+                            <li><a class="dropdown-item rounded-2 py-2" asp-action="Index" asp-route-sortOrder="" asp-route-searchString="@ViewData["CurrentFilter"]">
+                                <i class="bi bi-alphabet me-2"></i>Name (A-Z)</a></li>
+                            <li><a class="dropdown-item rounded-2 py-2" asp-action="Index" asp-route-sortOrder="@ViewData["NameSortParm"]" asp-route-searchString="@ViewData["CurrentFilter"]">
+                                <i class="bi bi-alphabet-reverse me-2"></i>Name (Z-A)</a></li>
+                            <li><a class="dropdown-item rounded-2 py-2" asp-action="Index" asp-route-sortOrder="Date" asp-route-searchString="@ViewData["CurrentFilter"]">
+                                <i class="bi bi-calendar-check me-2"></i>Date (Oldest)</a></li>
+                            <li><a class="dropdown-item rounded-2 py-2" asp-action="Index" asp-route-sortOrder="@ViewData["DateSortParm"]" asp-route-searchString="@ViewData["CurrentFilter"]">
+                                <i class="bi bi-calendar-event me-2"></i>Date (Newest)</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+        <div class="alert alert-success alert-dismissible border-0 shadow-sm fade show mb-4 rounded-3 d-flex align-items-center" role="alert">
+            <div class="bg-success text-white p-2 rounded-circle me-3">
+                <i class="bi bi-check-lg"></i>
+            </div>
+            <div>@TempData["SuccessMessage"]</div>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
-    <div class="card shadow">
-        <div class="card-header bg-light py-2">
-            <h5 class="mb-0"><i class="bi bi-list-ul"></i> Clients for Document Officer</h5>
+
+    <!-- Tabbed Dashboard -->
+    <div class="dashboard-card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+        <div class="card-header bg-white border-bottom-0 pt-4 px-4">
+            <ul class="nav nav-pills custom-tabs mb-0" id="docDashboardTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active px-4 py-3 fw-bold d-flex align-items-center gap-2" 
+                            id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">
+                        <i class="bi bi-file-earmark-medical fs-5"></i>
+                        <span>Pending Documents</span>
+                        <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary ms-2">@Model.PendingClients.TotalCount</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link px-4 py-3 fw-bold d-flex align-items-center gap-2" 
+                            id="archive-tab" data-bs-toggle="tab" data-bs-target="#archive" type="button" role="tab">
+                        <i class="bi bi-archive fs-5"></i>
+                        <span>Unified Archive</span>
+                        <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary ms-2">@Model.ArchivedClients.TotalCount</span>
+                    </button>
+                </li>
+            </ul>
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover table-striped align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th scope="col">Client</th>
-                            <th scope="col">Contact</th>
-                            <th scope="col">Permit Type</th>
-                            <th scope="col" class="text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model)
-                        {
-                            <tr>
-                                <td class="fw-bold">@item.ClientName</td>
-                                <td>@item.ContactPersonNumber</td>
-                                <td>@item.TypeOfProject</td>
-                                <td class="text-center">
-                                    <div class="btn-group btn-group-sm" role="group">
-                                        <button type="button" class="btn btn-info" data-bs-toggle="modal"
-                                            data-bs-target="#docClientModal-@item.Id" title="View Details">
-                                            <i class="bi bi-eye"></i> View
-                                        </button>
-                                        <button type="button" class="btn btn-success done-btn" data-client-id="@item.Id"
-                                            data-client-name="@item.ClientName"
-                                            title="Done Documenting (Proceed to Finance)">
-                                            <i class="bi bi-check-circle"></i> Done
-                                        </button>
-                                        <form asp-action="ProceedToFinance" asp-route-id="@item.Id" method="post"
-                                            class="d-none done-form" id="doneForm-@item.Id"></form>
-                                        <form asp-action="ReturnToCustomerCare" asp-route-id="@item.Id" method="post"
-                                            style="display:inline;"
-                                            onsubmit="return confirm('Return this client to Customer Care (Liaison)?');">
-                                            <button type="submit" class="btn btn-warning"
-                                                title="Return to Customer Care (Liaison)">
-                                                <i class="bi bi-arrow-counterclockwise"></i> Return
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+
+        <div class="tab-content p-0" id="docDashboardTabsContent">
+            <!-- Pending Documents Tab -->
+            <div class="tab-pane fade show active" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+                @{ ViewData["IsArchived"] = false; }
+                @await Html.PartialAsync("_DocumentOfficerTable", Model.PendingClients)
+            </div>
+
+            <!-- Unified Archive Tab -->
+            <div class="tab-pane fade" id="archive" role="tabpanel" aria-labelledby="archive-tab">
+                @{ ViewData["IsArchived"] = true; }
+                @await Html.PartialAsync("_DocumentOfficerTable", Model.ArchivedClients)
             </div>
         </div>
     </div>
 </div>
-@* Client Details Modals *@
-@foreach (var item in Model)
+
+@* Client Details Modals (Looped for both lists) *@
+@foreach (var item in Model.PendingClients)
 {
     @await Html.PartialAsync("_ClientDetailsModal", item)
 }
+@foreach (var item in Model.ArchivedClients)
+{
+    @await Html.PartialAsync("_ClientDetailsModal", item)
+}
+
 <!-- Done Confirmation Modal -->
 <div class="modal fade" id="doneModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirm Adjustment Notification</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0 ps-4 pt-4 text-success">
+                <h5 class="modal-title fw-bold"><i class="bi bi-check-circle-fill me-2"></i> Mark as Done</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <p>Are you sure you want to mark <strong id="doneClientName"></strong> as done? This will notify the
-                    adjustment and proceed to Finance.</p>
+            <div class="modal-body p-4 text-center">
+                <div class="mb-4 text-success bg-success bg-opacity-10 d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 80px; height: 80px;">
+                    <i class="bi bi-send-check fs-1"></i>
+                </div>
+                <h5 class="fw-bold text-dark">Proceed to Finance?</h5>
+                <p class="text-muted px-3">Are you sure you want to mark <strong id="doneClientName"></strong> as done? This will proceed the client to Finance for clearance.</p>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" id="confirmDoneBtn">Yes, Proceed</button>
+            <div class="modal-footer border-0 p-4 pt-0 justify-content-center">
+                <button type="button" class="btn btn-light rounded-pill px-4 m-1" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success rounded-pill px-4 shadow-sm fw-bold m-1" id="confirmDoneBtn">
+                    Yes, Proceed
+                </button>
             </div>
         </div>
     </div>
 </div>
+
 <audio id="notifySound" src="/sounds/Notifications.wav" preload="auto"></audio>
+
+
 @section Scripts {
     <script>
-        // Load requirement files into modal when opened
-        document.addEventListener('shown.bs.modal', function (event) {
-            var modal = event.target;
-            if (!modal || !modal.id || !modal.id.startsWith('docClientModal-')) return;
-            var clientId = modal.id.replace('docClientModal-', '');
-            
-            // Load requirement files
-            var filesElement = modal.querySelector('#requirement-files-' + clientId);
-            if (filesElement) {
-                var filesUrl = '/DocumentOfficer/GetRequirementFiles?clientId=' + clientId + '&t=' + Date.now();
-                fetch(filesUrl, {
-                    cache: 'no-store',
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                })
-                    .then(function (response) { if (!response.ok) throw new Error('Network response was not ok'); return response.text(); })
-                    .then(function (html) { filesElement.innerHTML = html; })
-                    .catch(function () { filesElement.innerHTML = '<div class="alert alert-warning">Failed to load requirement files.</div>'; });
-            }
-        });
-
-        // Handle view file button clicks
-        document.addEventListener('click', function (e) {
-            if (e.target.closest('.view-file-btn')) {
-                var btn = e.target.closest('.view-file-btn');
-                var fileName = btn.getAttribute('data-file-name');
-                var fileUrl = btn.getAttribute('data-file-url');
-                var fileType = btn.getAttribute('data-file-type').toLowerCase();
-                
-                // Set modal title and download link
-                document.getElementById('viewerFileName').textContent = fileName;
-                document.getElementById('downloadFileBtn').href = fileUrl;
-                document.getElementById('downloadFileBtn').download = fileName;
-                
-                // Show modal
-                var viewerModal = new bootstrap.Modal(document.getElementById('fileViewerModal'));
-                viewerModal.show();
-                
-                // Load file content based on type
-                var contentDiv = document.getElementById('fileViewerContent');
-                contentDiv.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><div class="mt-2 text-muted">Loading file...</div></div>';
-                
-                if (['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'].includes(fileType)) {
-                    // Image file
-                    contentDiv.innerHTML = `<img src="${fileUrl}" class="img-fluid" style="max-width: 100%; max-height: 70vh;" alt="${fileName}" />`;
-                } else if (fileType === '.pdf') {
-                    // PDF file
-                    contentDiv.innerHTML = `<iframe src="${fileUrl}" style="width: 100%; height: 70vh; border: none;"></iframe>`;
-                } else {
-                    // Other file types - show info and download option
-                    contentDiv.innerHTML = `
-                        <div class="text-center p-5">
-                            <i class="bi bi-file-earmark fs-1 text-muted mb-3"></i>
-                            <h5>${fileName}</h5>
-                            <p class="text-muted">This file type cannot be previewed directly.</p>
-                            <a href="${fileUrl}" class="btn btn-primary" target="_blank">
-                                <i class="bi bi-download me-1"></i>Download to View
-                            </a>
-                        </div>
-                    `;
-                }
-            }
-            
-            // Handle upload files button clicks
-            if (e.target.closest('.upload-files-btn')) {
-                var btn = e.target.closest('.upload-files-btn');
-                var requirementId = btn.getAttribute('data-requirement-id');
-                var requirementName = btn.getAttribute('data-requirement-name');
-                
-                document.getElementById('uploadRequirementId').value = requirementId;
-                document.getElementById('uploadRequirementName').textContent = requirementName;
-                
-                var uploadModal = new bootstrap.Modal(document.getElementById('uploadFilesModal'));
-                uploadModal.show();
-            }
-            
-            // Handle delete file button clicks
-            if (e.target.closest('.delete-file-btn')) {
-                var btn = e.target.closest('.delete-file-btn');
-                var photoId = btn.getAttribute('data-photo-id');
-                var fileName = btn.getAttribute('data-file-name');
-                
-                if (confirm('Are you sure you want to delete "' + fileName + '"? This action cannot be undone.')) {
-                    var formData = new FormData();
-                    formData.append('photoId', photoId);
-                    
-                    // Add anti-forgery token
-                    var token = document.querySelector('input[name="__RequestVerificationToken"]');
-                    if (token) {
-                        formData.append('__RequestVerificationToken', token.value);
-                    }
-                    
-                    // Disable button during deletion
-                    btn.disabled = true;
-                    btn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Deleting...';
-                    
-                    fetch('/DocumentOfficer/DeleteRequirementFile', {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Refresh the requirement files section
-                            var clientModal = document.querySelector('.modal.show[id^="docClientModal-"]');
-                            if (clientModal) {
-                                var clientId = clientModal.id.replace('docClientModal-', '');
-                                var filesElement = clientModal.querySelector('#requirement-files-' + clientId);
-                                if (filesElement) {
-                                    var filesUrl = '/DocumentOfficer/GetRequirementFiles?clientId=' + clientId + '&t=' + Date.now();
-                                    fetch(filesUrl, {
-                                        cache: 'no-store',
-                                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                                    })
-                                    .then(response => response.text())
-                                    .then(html => { filesElement.innerHTML = html; });
-                                }
-                            }
-                            alert('File deleted successfully!');
-                        } else {
-                            alert('Error deleting file: ' + (data.message || 'Please try again.'));
-                            btn.disabled = false;
-                            btn.innerHTML = '<i class="bi bi-trash me-1"></i> Delete';
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Error deleting file. Please try again.');
-                        btn.disabled = false;
-                        btn.innerHTML = '<i class="bi bi-trash me-1"></i> Delete';
-                    });
-                }
-            }
-        });
-
-        // Handle file upload
-        document.getElementById('uploadFilesBtn').addEventListener('click', function () {
-            var form = document.getElementById('uploadFilesForm');
-            var formData = new FormData();
-            var requirementId = document.getElementById('uploadRequirementId').value;
-            var files = document.getElementById('uploadFiles').files;
-            
-            if (files.length === 0) {
-                alert('Please select at least one file to upload.');
-                return;
-            }
-            
-            formData.append('requirementId', requirementId);
-            for (var i = 0; i < files.length; i++) {
-                formData.append('files', files[i]);
-            }
-            
-            // Add anti-forgery token
-            var token = document.querySelector('input[name="__RequestVerificationToken"]');
-            if (token) {
-                formData.append('__RequestVerificationToken', token.value);
-            }
-            
-            // Show progress
-            document.getElementById('uploadProgress').classList.remove('d-none');
-            document.getElementById('uploadFilesBtn').disabled = true;
-            
-            fetch('/DocumentOfficer/UploadOptionalFiles', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Close modal
-                    var uploadModal = bootstrap.Modal.getInstance(document.getElementById('uploadFilesModal'));
-                    uploadModal.hide();
-                    
-                    // Reset form
-                    form.reset();
-                    document.getElementById('uploadProgress').classList.add('d-none');
-                    document.getElementById('uploadFilesBtn').disabled = false;
-                    
-                    // Refresh the requirement files section
-                    var clientModal = document.querySelector('.modal.show[id^="docClientModal-"]');
-                    if (clientModal) {
-                        var clientId = clientModal.id.replace('docClientModal-', '');
-                        var filesElement = clientModal.querySelector('#requirement-files-' + clientId);
-                        if (filesElement) {
-                            var filesUrl = '/DocumentOfficer/GetRequirementFiles?clientId=' + clientId + '&t=' + Date.now();
-                            fetch(filesUrl, {
-                                cache: 'no-store',
-                                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                            })
-                            .then(response => response.text())
-                            .then(html => { filesElement.innerHTML = html; });
-                        }
-                    }
-                    
-                    alert('Files uploaded successfully!');
-                } else {
-                    alert('Error uploading files. Please try again.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error uploading files. Please try again.');
-            })
-            .finally(() => {
-                document.getElementById('uploadProgress').classList.add('d-none');
-                document.getElementById('uploadFilesBtn').disabled = false;
-            });
-        });
-
         document.addEventListener('DOMContentLoaded', function () {
-            var doneModal = new bootstrap.Modal(document.getElementById('doneModal'));
-            var clientIdToSubmit = null;
-            document.querySelectorAll('.done-btn').forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    clientIdToSubmit = btn.getAttribute('data-client-id');
-                    var clientName = btn.getAttribute('data-client-name');
-                    document.getElementById('doneClientName').textContent = clientName;
-                    doneModal.show();
+            // Tab persistence
+            const activeTabKey = 'doc_active_tab';
+            const tabs = document.querySelectorAll('#docDashboardTabs button');
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('archivedPageNumber')) {
+                const tab = document.querySelector('#archive-tab');
+                if (tab) bootstrap.Tab.getOrCreateInstance(tab).show();
+            } else if (urlParams.has('pendingPageNumber')) {
+                const tab = document.querySelector('#pending-tab');
+                if (tab) bootstrap.Tab.getOrCreateInstance(tab).show();
+            } else {
+                const lastTab = localStorage.getItem(activeTabKey);
+                if (lastTab) {
+                    const tab = document.getElementById(lastTab);
+                    if (tab) bootstrap.Tab.getOrCreateInstance(tab).show();
+                }
+            }
+
+            tabs.forEach(tab => {
+                tab.addEventListener('shown.bs.tab', (e) => {
+                    localStorage.setItem(activeTabKey, e.target.id);
                 });
             });
+
+            // Done Confirmation Logic
+            const doneModal = new bootstrap.Modal(document.getElementById('doneModal'));
+            let clientIdToSubmit = null;
+
+            document.addEventListener('click', function(e) {
+                const btn = e.target.closest('.done-btn');
+                if (btn) {
+                    clientIdToSubmit = btn.getAttribute('data-client-id');
+                    document.getElementById('doneClientName').textContent = btn.getAttribute('data-client-name');
+                    doneModal.show();
+                }
+            });
+
             document.getElementById('confirmDoneBtn').addEventListener('click', function () {
                 if (clientIdToSubmit) {
                     document.getElementById('doneForm-' + clientIdToSubmit).submit();
                     doneModal.hide();
                 }
             });
-        });
-        // Store initial client IDs for Document Officer table
-        let docOfficerClientIds = Array.from(document.querySelectorAll('tbody tr')).map(row => row.querySelector('.done-btn')?.getAttribute('data-client-id')).filter(Boolean);
-        function playNotifySound() {
-            var audio = document.getElementById('notifySound');
-            if (audio) {
-                audio.currentTime = 0;
-                audio.play();
-            }
-        }
-        function renderDocumentOfficer(data) {
-            let newIds = (data || []).map(c => c.id?.toString());
-            let isNew = newIds.some(id => !docOfficerClientIds.includes(id));
-            if (isNew) {
-                playNotifySound();
-            }
-            location.reload();
-        }
-        if (window.connection) {
-            connection.on("ReceiveUpdate", function (message) {
-                fetch('/DocumentOfficer/GetLatestData')
-                    .then(response => response.json())
-                    .then(data => {
-                        renderDocumentOfficer(data);
-                    });
+
+            // Details Modal Logic (Load files on show)
+            document.addEventListener('shown.bs.modal', function (event) {
+                var modal = event.target;
+                if (!modal.id || !modal.id.startsWith('docClientModal-')) return;
+                var clientId = modal.id.replace('docClientModal-', '');
+                
+                var filesElement = modal.querySelector('#requirement-files-' + clientId);
+                if (filesElement) {
+                    fetch('/DocumentOfficer/GetRequirementFiles?clientId=' + clientId + '&t=' + Date.now(), {
+                        cache: 'no-store',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(r => r.text())
+                    .then(html => { filesElement.innerHTML = html; })
+                    .catch(() => { filesElement.innerHTML = '<div class="alert alert-warning">Failed to load requirement files.</div>'; });
+                }
             });
-        }
+
+            // SignalR Update Handling
+            if (window.connection) {
+                connection.on("ReceiveUpdate", function (message) {
+                    location.reload();
+                });
+            }
+        });
+
+        // Global file viewer and upload handlers (same as original original)
+        document.addEventListener('click', function (e) {
+            // View file logic
+            if (e.target.closest('.view-file-btn')) {
+                const btn = e.target.closest('.view-file-btn');
+                const fileUrl = btn.getAttribute('data-file-url');
+                const fileName = btn.getAttribute('data-file-name');
+                const fileType = btn.getAttribute('data-file-type').toLowerCase();
+                
+                document.getElementById('viewerFileName').textContent = fileName;
+                document.getElementById('downloadFileBtn').href = fileUrl;
+                
+                const contentDiv = document.getElementById('fileViewerContent');
+                if (['.jpg', '.jpeg', '.png', '.gif', '.wbep'].some(ext => fileType.includes(ext))) {
+                    contentDiv.innerHTML = `<img src="${fileUrl}" class="img-fluid rounded shadow-sm" style="max-height: 70vh;" />`;
+                } else if (fileType.includes('.pdf')) {
+                    contentDiv.innerHTML = `<iframe src="${fileUrl}" style="width: 100%; height: 70vh; border: none;"></iframe>`;
+                } else {
+                    contentDiv.innerHTML = `<div class="text-center p-5"><i class="bi bi-file-earmark fs-1 text-muted mb-3"></i><h5>${fileName}</h5><p>Cannot preview this type.</p></div>`;
+                }
+                new bootstrap.Modal(document.getElementById('fileViewerModal')).show();
+            }
+
+            // Upload modal logic
+            if (e.target.closest('.upload-files-btn')) {
+                const btn = e.target.closest('.upload-files-btn');
+                document.getElementById('uploadRequirementId').value = btn.getAttribute('data-requirement-id');
+                document.getElementById('uploadRequirementName').textContent = btn.getAttribute('data-requirement-name');
+                new bootstrap.Modal(document.getElementById('uploadFilesModal')).show();
+            }
+
+            // Delete file logic
+            if (e.target.closest('.delete-file-btn')) {
+                const btn = e.target.closest('.delete-file-btn');
+                const photoId = btn.getAttribute('data-photo-id');
+                const fileName = btn.getAttribute('data-file-name');
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+                if (confirm('Delete ' + fileName + '?')) {
+                    const formData = new FormData();
+                    formData.append('photoId', photoId);
+                    if (token) formData.append('__RequestVerificationToken', token);
+
+                    fetch('/DocumentOfficer/DeleteRequirementFile', { method: 'POST', body: formData, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                             // Find active modal to refresh files
+                             const modal = document.querySelector('.modal.show[id^="docClientModal-"]');
+                             if (modal) {
+                                  const id = modal.id.replace('docClientModal-', '');
+                                  fetch('/DocumentOfficer/GetRequirementFiles?clientId=' + id).then(r=>r.text()).then(h => {
+                                      modal.querySelector('#requirement-files-' + id).innerHTML = h;
+                                  });
+                             }
+                        }
+                    });
+                }
+            }
+        });
+
+        // File upload handler
+        document.getElementById('uploadFilesBtn')?.addEventListener('click', function() {
+             const form = document.getElementById('uploadFilesForm');
+             const files = document.getElementById('uploadFiles').files;
+             if (!files.length) return alert('Select files');
+
+             const formData = new FormData(form);
+             const progress = document.getElementById('uploadProgress');
+             progress.classList.remove('d-none');
+
+             fetch('/DocumentOfficer/UploadOptionalFiles', { method: 'POST', body: formData, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+             .then(r => r.json())
+             .then(data => {
+                 if (data.success) {
+                     bootstrap.Modal.getInstance(document.getElementById('uploadFilesModal')).hide();
+                     const modal = document.querySelector('.modal.show[id^="docClientModal-"]');
+                     if (modal) {
+                         const id = modal.id.replace('docClientModal-', '');
+                         fetch('/DocumentOfficer/GetRequirementFiles?clientId=' + id).then(r=>r.text()).then(h => {
+                             modal.querySelector('#requirement-files-' + id).innerHTML = h;
+                         });
+                     }
+                 }
+                 progress.classList.add('d-none');
+             });
+        });
     </script>
 }

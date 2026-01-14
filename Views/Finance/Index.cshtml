@@ -1,290 +1,278 @@
 @model TestingDemo.ViewModels.FinanceDashboardViewModel
 @{
     ViewData["Title"] = "Finance Dashboard";
+    
+    var hasReturnedClients = Model.PendingClients.Any(c => c.Status == "For Review");
+    var pendingSectionTitle = hasReturnedClients ? "Review Items" : "New Applications";
+    var pendingSectionIcon = hasReturnedClients ? "bi bi-eye" : "bi bi-file-earmark-text";
 }
 
-<div class="container-fluid">
+
+<div class="container-fluid py-4">
     <!-- Header -->
-    <div class="row mb-4 g-2 align-items-center">
-        <div class="col-12 col-md-auto flex-grow-1">
-            <h2 class="mb-2 mb-md-0"><i class="bi bi-wallet2"></i> @ViewData["Title"]</h2>
-        </div>
-        <div class="col-12 col-md-auto">
-            <form asp-action="Index" method="get" class="d-flex flex-wrap gap-2 mb-2 mb-md-0">
-                <div class="input-group input-group-sm flex-nowrap">
-                    <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" class="form-control"
-                        placeholder="Find client...">
-                    @if (!string.IsNullOrEmpty(ViewData["CurrentFilter"] as string))
-                    {
-                        <a asp-action="Index" asp-route-sortOrder="@ViewData["CurrentSort"]"
-                            class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
-                    }
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
+    <div class="dashboard-header mb-4 p-4 rounded-4 shadow-sm bg-white border-0">
+        <div class="row align-items-center g-3">
+            <div class="col-12 col-lg-6">
+                <div class="d-flex align-items-center">
+                    <div class="header-icon-box bg-primary bg-opacity-10 text-primary p-3 rounded-3 me-3">
+                        <i class="bi bi-wallet2 fs-3"></i>
+                    </div>
+                    <div>
+                        <h2 class="fw-bold mb-0 text-dark">@ViewData["Title"]</h2>
+                        <p class="text-muted mb-0">Track client applications and financial clearances</p>
+                    </div>
                 </div>
-            </form>
-        </div>
-        <div class="col-6 col-md-auto">
-            <div class="dropdown w-100">
-                <a class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-truncate" href="#" role="button"
-                    data-bs-toggle="dropdown">
-                    <i class="bi bi-funnel"></i> Sort
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" asp-action="Index" asp-route-sortOrder=""
-                            asp-route-searchString="@ViewData["CurrentFilter"]">Default</a></li>
-                    <li><a class="dropdown-item" asp-action="Index" asp-route-sortOrder="name_desc"
-                            asp-route-searchString="@ViewData["CurrentFilter"]">Name (Z-A)</a></li>
-                    <li><a class="dropdown-item" asp-action="Index" asp-route-sortOrder="Date"
-                            asp-route-searchString="@ViewData["CurrentFilter"]">Date (Oldest)</a></li>
-                    <li><a class="dropdown-item" asp-action="Index" asp-route-sortOrder="date_desc"
-                            asp-route-searchString="@ViewData["CurrentFilter"]">Date (Newest)</a></li>
-                </ul>
+            </div>
+            <div class="col-12 col-lg-6">
+                <div class="d-flex flex-wrap justify-content-lg-end align-items-center gap-2">
+                    <form asp-action="Index" method="get" class="search-group">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0 border-0 shadow-sm ps-3">
+                                <i class="bi bi-search text-muted"></i>
+                            </span>
+                            <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" 
+                                   class="form-control border-start-0 border-0 shadow-sm ps-2 py-2 rounded-end" 
+                                   placeholder="Search tracking #, name..." style="width: 250px;" />
+                            @if (!String.IsNullOrEmpty(ViewData["CurrentFilter"] as string))
+                            {
+                                <a asp-action="Index" class="btn btn-light border-0 shadow-sm ms-2 rounded-circle" title="Clear search">
+                                    <i class="bi bi-x-lg"></i>
+                                </a>
+                            }
+                        </div>
+                    </form>
+
+                    <div class="dropdown">
+                        <button class="btn btn-white shadow-sm border-0 px-3 py-2 dropdown-toggle d-flex align-items-center gap-2 rounded-3" 
+                                type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-sort-down text-primary"></i>
+                            <span class="fw-semibold">Sort</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-2 p-2 rounded-3">
+                            <li><a class="dropdown-item rounded-2" asp-action="Index" asp-route-sortOrder="" asp-route-searchString="@ViewData["CurrentFilter"]">Default</a></li>
+                            <li><a class="dropdown-item rounded-2" asp-action="Index" asp-route-sortOrder="name_desc" asp-route-searchString="@ViewData["CurrentFilter"]">Name (Z-A)</a></li>
+                            <li><a class="dropdown-item rounded-2" asp-action="Index" asp-route-sortOrder="Date" asp-route-searchString="@ViewData["CurrentFilter"]">Date (Oldest)</a></li>
+                            <li><a class="dropdown-item rounded-2" asp-action="Index" asp-route-sortOrder="date_desc" asp-route-searchString="@ViewData["CurrentFilter"]">Date (Newest)</a></li>
+                        </ul>
+                    </div>
+
+                    <a asp-action="Create" class="btn btn-primary shadow-sm px-4 py-2 rounded-3 fw-bold">
+                        <i class="bi bi-plus-lg me-1"></i> New
+                    </a>
+                </div>
             </div>
         </div>
-        <div class="col-6 col-md-auto">
-            <a asp-action="Create" class="btn btn-success btn-sm w-100">
-                <i class="bi bi-plus-circle"></i> <span class="d-none d-sm-inline">New Application</span>
-            </a>
-        </div>
     </div>
 
-    @if (TempData["SuccessMessage"] != null)
+    @if (TempData["SuccessMessage"] != null || TempData["ErrorMessage"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["SuccessMessage"]
+        <div class="alert @(TempData["SuccessMessage"] != null ? "alert-success border-success" : "alert-danger border-danger") alert-dismissible fade show mb-4 shadow-sm border-0 border-start border-4" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="bi @(TempData["SuccessMessage"] != null ? "bi-check-circle-fill text-success" : "bi-exclamation-triangle-fill text-danger") fs-4 me-3"></i>
+                <div>
+                    <strong class="d-block mb-1">@(TempData["SuccessMessage"] != null ? "Success!" : "Action Required")</strong>
+                    <span>@(TempData["SuccessMessage"] ?? TempData["ErrorMessage"])</span>
+                </div>
+            </div>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
 
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <!-- Tabbed Navigation -->
+    <div class="dashboard-card border-0 shadow-sm rounded-4 bg-white overflow-hidden mb-5">
+        <div class="card-header bg-white border-bottom-0 pt-4 px-4">
+            <ul class="nav nav-pills custom-tabs mb-0" id="financeTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active fw-bold px-4 py-3" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending-pane" type="button" role="tab">
+                        <i class="@pendingSectionIcon me-2"></i> @pendingSectionTitle
+                        <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary ms-2">@Model.PendingClients.TotalCount</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link fw-bold px-4 py-3" id="clearance-tab" data-bs-toggle="tab" data-bs-target="#clearance-pane" type="button" role="tab">
+                        <i class="bi bi-cash-coin me-2"></i> Clearance Queue
+                        <span class="badge rounded-pill bg-warning bg-opacity-10 text-warning ms-2">@Model.ClearanceClients.TotalCount</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link fw-bold px-4 py-3" id="planning-tab" data-bs-toggle="tab" data-bs-target="#planning-pane" type="button" role="tab">
+                        <i class="bi bi-card-checklist me-2"></i> Project List
+                        <span class="badge rounded-pill bg-info bg-opacity-10 text-info ms-2">@Model.PlanningClients.TotalCount</span>
+                    </button>
+                </li>
+            </ul>
         </div>
-    }
-
-    <!-- Pending Applications -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-light d-flex justify-content-between align-items-center">
-            @{
-                var hasReturnedClients = Model.PendingClients.Any(c => c.Status == "For Review");
-                var sectionTitle = hasReturnedClients ? "Applications for Review" : "New Applications";
-                var sectionIcon = hasReturnedClients ? "bi bi-eye" : "bi bi-file-earmark-text";
-            }
-            <h5 class="mb-0"><i class="@sectionIcon"></i> @sectionTitle</h5>
-            <span class="badge bg-secondary rounded-pill">@Model.PendingClients.TotalCount</span>
-        </div>
-        <div class="card-body p-0">
-            @if (Model.PendingClients.Any())
-            {
-            @await Html.PartialAsync("_ClientTable", Model.PendingClients, new ViewDataDictionary(ViewData) {
-            ["IsClearanceTable"] = false })
-                        }
-                        else
-            {
-                <div class="text-center p-4">
-                    <div class="mb-3">
-                        <i class="bi bi-inbox" style="font-size: 3rem; color: #6c757d;"></i>
-                    </div>
-                    <p class="text-muted mb-0">No pending applications found.</p>
-                    <small class="text-muted">New applications will appear here once submitted.</small>
+        
+        <div class="tab-content" id="financeTabsContent">
+            <!-- New Applications Pane -->
+            <div class="tab-pane fade show active" id="pending-pane" role="tabpanel" aria-labelledby="pending-tab">
+                <div class="p-0">
+                    @if (Model.PendingClients.Any())
+                    {
+                        <div class="table-responsive">
+                            @await Html.PartialAsync("_ClientTable", Model.PendingClients, new ViewDataDictionary(ViewData) { ["IsClearanceTable"] = false })
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="empty-state">
+                            <i class="bi bi-mailbox2 text-secondary"></i>
+                            <h4 class="text-secondary fw-bold">Queue is empty</h4>
+                            <p class="text-muted">New applications will appear here once they are submitted.</p>
+                        </div>
+                    }
+                    
+                    @if (Model.PendingClients.TotalPages > 1)
+                    {
+                        <div class="pagination-container">
+                            @await Html.PartialAsync("_Pagination", null, new ViewDataDictionary(ViewData) {
+                                ["pageModel"] = Model.PendingClients,
+                                ["pageAction"] = "Index",
+                                ["pageNumberParam"] = "pendingPageNumber",
+                                ["otherPageNumberParam"] = "clearancePageNumber",
+                                ["otherPageNumber"] = Model.ClearanceClients.PageIndex
+                            })
+                        </div>
+                    }
                 </div>
-            }
-        </div>
-        @if (Model.PendingClients.TotalPages > 1)
-        {
-        <div class="card-footer">
-            @await Html.PartialAsync("_Pagination", null, new ViewDataDictionary(ViewData) {
-            ["pageModel"] = Model.PendingClients,
-                        ["pageAction"] = "Index",
-                        ["pageNumberParam"] = "pendingPageNumber",
-                        ["otherPageNumberParam"] = "clearancePageNumber",
-                        ["otherPageNumber"] = Model.ClearanceClients.PageIndex
-                        })
-        </div>
-                }
-    </div>
+            </div>
 
-    <!-- Clients for Finance Clearance -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><i class="bi bi-cash-coin"></i> Clients for Finance Clearance</h5>
-            <span class="badge bg-dark rounded-pill">@Model.ClearanceClients.TotalCount</span>
-        </div>
-        <div class="card-body p-0">
-            @if (Model.ClearanceClients.Any())
-            {
-            @await Html.PartialAsync("_ClientTable", Model.ClearanceClients, new ViewDataDictionary(ViewData) {
-            ["IsClearanceTable"] = true })
-                        }
-                        else
-            {
-                <div class="text-center p-4">
-                    <div class="mb-3">
-                        <i class="bi bi-check-circle" style="font-size: 3rem; color: #28a745;"></i>
-                    </div>
-                    <p class="text-muted mb-0">No clients currently need finance clearance.</p>
-                    <small class="text-muted">Clients requiring financial review will appear here.</small>
+            <!-- Finance Clearance Pane -->
+            <div class="tab-pane fade" id="clearance-pane" role="tabpanel" aria-labelledby="clearance-tab">
+                <div class="p-0">
+                    @if (Model.ClearanceClients.Any())
+                    {
+                        <div class="table-responsive">
+                            @await Html.PartialAsync("_ClientTable", Model.ClearanceClients, new ViewDataDictionary(ViewData) { ["IsClearanceTable"] = true })
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="empty-state">
+                            <i class="bi bi-shield-check text-success"></i>
+                            <h4 class="text-success fw-bold">All caught up!</h4>
+                            <p class="text-muted">No clients are currently awaiting financial clearance.</p>
+                        </div>
+                    }
+                    
+                    @if (Model.ClearanceClients.TotalPages > 1)
+                    {
+                        <div class="pagination-container">
+                            @await Html.PartialAsync("_Pagination", null, new ViewDataDictionary(ViewData) {
+                                ["pageModel"] = Model.ClearanceClients,
+                                ["pageAction"] = "Index",
+                                ["pageNumberParam"] = "clearancePageNumber",
+                                ["otherPageNumberParam"] = "pendingPageNumber",
+                                ["otherPageNumber"] = Model.PendingClients.PageIndex
+                            })
+                        </div>
+                    }
                 </div>
-            }
-        </div>
-        @if (Model.ClearanceClients.TotalPages > 1)
-        {
-        <div class="card-footer">
-            @await Html.PartialAsync("_Pagination", null, new ViewDataDictionary(ViewData) {
-            ["pageModel"] = Model.ClearanceClients,
-                        ["pageAction"] = "Index",
-                        ["pageNumberParam"] = "clearancePageNumber",
-                        ["otherPageNumberParam"] = "pendingPageNumber",
-                        ["otherPageNumber"] = Model.PendingClients.PageIndex
-                        })
-        </div>
-                }
-    </div>
+            </div>
 
-    <!-- Client List -->
-    <div class="card shadow-sm">
-        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><i class="bi bi-send-check"></i> Client List</h5>
-            <span class="badge bg-light text-dark rounded-pill">@Model.PlanningClients.TotalCount</span>
-        </div>
-        <div class="card-body p-0">
-            @if (Model.PlanningClients.Any())
-            {
-            @await Html.PartialAsync("_PlanningClientTable", Model.PlanningClients)
-                        }
-                        else
-            {
-                <div class="text-center p-4">
-                    <div class="mb-3">
-                        <i class="bi bi-send" style="font-size: 3rem; color: #6c757d;"></i>
-                    </div>
-                    <p class="text-muted mb-0">No clients have been sent to planning yet.</p>
-                    <small class="text-muted">Clients sent to planning will appear here.</small>
+            <!-- Client List Pane -->
+            <div class="tab-pane fade" id="planning-pane" role="tabpanel" aria-labelledby="planning-tab">
+                <div class="p-0">
+                    @if (Model.PlanningClients.Any())
+                    {
+                        <div class="table-responsive">
+                            @await Html.PartialAsync("_PlanningClientTable", Model.PlanningClients)
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="empty-state">
+                            <i class="bi bi-people text-info"></i>
+                            <h4 class="text-info fw-bold">No active projects</h4>
+                            <p class="text-muted">Projects will appear here once they move to the planning stage.</p>
+                        </div>
+                    }
+                    
+                    @if (Model.PlanningClients.TotalPages > 1)
+                    {
+                        <div class="pagination-container">
+                            @await Html.PartialAsync("_Pagination", null, new ViewDataDictionary(ViewData) {
+                                ["pageModel"] = Model.PlanningClients,
+                                ["pageAction"] = "Index",
+                                ["pageNumberParam"] = "planningPageNumber",
+                                ["otherPageNumberParam"] = "pendingPageNumber",
+                                ["otherPageNumber"] = Model.PendingClients.PageIndex
+                            })
+                        </div>
+                    }
                 </div>
-            }
+            </div>
         </div>
-        @if (Model.PlanningClients.TotalPages > 1)
-        {
-        <div class="card-footer">
-            @await Html.PartialAsync("_Pagination", null, new ViewDataDictionary(ViewData) {
-            ["pageModel"] = Model.PlanningClients,
-                        ["pageAction"] = "Index",
-                        ["pageNumberParam"] = "planningPageNumber",
-                        ["otherPageNumberParam"] = "pendingPageNumber",
-                        ["otherPageNumber"] = Model.PendingClients.PageIndex
-                        })
-        </div>
-                }
     </div>
 </div>
 
 <!-- Modals -->
-<div class="modal fade" id="sendToPlanningModal" tabindex="-1" aria-labelledby="sendToPlanningModalLabel"
-    aria-hidden="true">
+<div class="modal fade" id="sendToPlanningModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="sendToPlanningModalLabel">
-                    <i class="bi bi-send-check"></i> Confirm Action
-                </h5>
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div class="d-flex align-items-center">
-                    <div class="me-3">
-                        <i class="bi bi-question-circle-fill text-primary" style="font-size: 2rem;"></i>
-                    </div>
-                    <div>
-                        <p class="mb-1">Are you sure you want to send client <strong
-                                id="clientNamePlaceholder"></strong> to the Planning Officer?</p>
-                        <small class="text-muted">This action will move the client to the planning stage.</small>
-                    </div>
+            <div class="modal-body text-center py-4">
+                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
+                    <i class="bi bi-send fs-1"></i>
                 </div>
+                <h4 class="modal-title fw-bold mb-2">Send to Planning</h4>
+                <p class="text-muted mb-0 mx-3">Are you sure you want to move <strong id="clientNamePlaceholder" class="text-dark"></strong> to the Planning stage?</p>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle"></i> Cancel
-                </button>
+            <div class="modal-footer border-0 justify-content-center pb-4">
+                <button type="button" class="btn btn-light px-4 rounded-3" data-bs-dismiss="modal">Cancel</button>
                 <form id="sendToPlanningForm" method="post" class="d-inline">
                     @Html.AntiForgeryToken()
-                    <button type="submit" class="btn btn-success">
-                        <i class="bi bi-send-check"></i> Confirm & Send
-                    </button>
+                    <button type="submit" class="btn btn-primary px-4 rounded-3 fw-bold">Confirm & Send</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="archiveModal" tabindex="-1" aria-labelledby="archiveModalLabel" aria-hidden="true">
+<div class="modal fade" id="archiveModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="archiveModalLabel">
-                    <i class="bi bi-archive"></i> Confirm Archive
-                </h5>
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div class="d-flex align-items-center">
-                    <div class="me-3">
-                        <i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 2rem;"></i>
-                    </div>
-                    <div>
-                        <p class="mb-1">Are you sure you want to archive client <strong
-                                id="archiveClientName"></strong>?</p>
-                        <small class="text-muted">This action cannot be easily undone and will remove the client from
-                            active lists.</small>
-                    </div>
+            <div class="modal-body text-center py-4">
+                <div class="bg-warning bg-opacity-10 text-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
+                    <i class="bi bi-archive fs-1"></i>
                 </div>
+                <h4 class="modal-title fw-bold mb-2">Archive Client</h4>
+                <p class="text-muted mb-0 mx-3">This will move <strong id="archiveClientName" class="text-dark"></strong> to the archive. Active progress will be suspended.</p>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle"></i> Cancel
-                </button>
+            <div class="modal-footer border-0 justify-content-center pb-4">
+                <button type="button" class="btn btn-light px-4 rounded-3" data-bs-dismiss="modal">Cancel</button>
                 <form id="archiveForm" method="post" class="d-inline">
                     @Html.AntiForgeryToken()
-                    <button type="submit" class="btn btn-danger">
-                        <i class="bi bi-archive"></i> Archive Client
-                    </button>
+                    <button type="submit" class="btn btn-warning px-4 rounded-3 fw-bold">Archive Now</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel">
-                    <i class="bi bi-trash"></i> Confirm Delete
-                </h5>
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div class="d-flex align-items-center">
-                    <div class="me-3">
-                        <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 2rem;"></i>
-                    </div>
-                    <div>
-                        <p class="mb-1">Are you sure you want to delete client <strong
-                                id="deleteClientName"></strong>?</p>
-                        <small class="text-muted">This action cannot be undone and will permanently remove the client and all associated data.</small>
-                    </div>
+            <div class="modal-body text-center py-4">
+                <div class="bg-danger bg-opacity-10 text-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
+                    <i class="bi bi-trash fs-1"></i>
                 </div>
+                <h4 class="modal-title fw-bold mb-2 text-danger">Delete Permanent</h4>
+                <p class="text-muted mb-0 mx-3">Warning: Deleting <strong id="deleteClientName" class="text-dark"></strong> status is permanent and cannot be undone.</p>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle"></i> Cancel
-                </button>
+            <div class="modal-footer border-0 justify-content-center pb-4">
+                <button type="button" class="btn btn-light px-4 rounded-3" data-bs-dismiss="modal">Cancel</button>
                 <form id="deleteForm" method="post" class="d-inline">
                     @Html.AntiForgeryToken()
-                    <button type="submit" class="btn btn-danger">
-                        <i class="bi bi-trash"></i> Delete Client
-                    </button>
+                    <button type="submit" class="btn btn-danger px-4 rounded-3 fw-bold">Delete Client</button>
                 </form>
             </div>
         </div>
@@ -296,154 +284,117 @@
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Tab Persistence & Activation
+            const activeTabId = localStorage.getItem('activeFinanceTab');
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            let tabToActivate = null;
+            
+            if (urlParams.has('pendingPageNumber')) {
+                tabToActivate = document.querySelector('#pending-tab');
+            } else if (urlParams.has('clearancePageNumber')) {
+                tabToActivate = document.querySelector('#clearance-tab');
+            } else if (urlParams.has('planningPageNumber')) {
+                tabToActivate = document.querySelector('#planning-tab');
+            } else if (activeTabId) {
+                tabToActivate = document.querySelector('#' + activeTabId);
+            }
+            
+            if (tabToActivate) {
+                bootstrap.Tab.getOrCreateInstance(tabToActivate).show();
+            }
+            
+            // Log tab changes to storage
+            document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(el => {
+                el.addEventListener('shown.bs.tab', event => {
+                    localStorage.setItem('activeFinanceTab', event.target.id);
+                });
+            });
+
             // Initialize tooltips
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });
 
-            // Send to Planning Modal
-            var sendModal = document.getElementById('sendToPlanningModal');
-            if (sendModal) {
-                sendModal.addEventListener('show.bs.modal', function (event) {
-                    var button = event.relatedTarget;
-                    var clientId = button.getAttribute('data-client-id');
-                    var clientName = button.getAttribute('data-client-name');
-
-                    if (clientId && clientName) {
-                        var modalText = sendModal.querySelector('#clientNamePlaceholder');
-                        if (modalText) {
-                            modalText.textContent = clientName;
+            // Generic Modal Setup Function
+            function setupModal(modalId, placeholderSelector, actionUrlBase) {
+                var modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.addEventListener('show.bs.modal', function (event) {
+                        var button = event.relatedTarget;
+                        var clientId = button.getAttribute('data-client-id');
+                        var clientName = button.getAttribute('data-client-name');
+                        
+                        if (clientId && clientName) {
+                            var text = modal.querySelector(placeholderSelector);
+                            if (text) text.textContent = clientName;
+                            
+                            var form = modal.querySelector('form');
+                            if (form) form.action = actionUrlBase + clientId;
                         }
-
-                        var form = sendModal.querySelector('#sendToPlanningForm');
-                        if (form) {
-                            form.action = '/Finance/SendToPlanningOfficer/' + clientId;
-                        }
-                    }
-                });
+                    });
+                }
             }
 
-            // Archive Modal
-            var archiveModal = document.getElementById('archiveModal');
-            if (archiveModal) {
-                archiveModal.addEventListener('show.bs.modal', function (event) {
-                    var button = event.relatedTarget;
-                    var clientId = button.getAttribute('data-client-id');
-                    var clientName = button.getAttribute('data-client-name');
+            setupModal('sendToPlanningModal', '#clientNamePlaceholder', '/Finance/SendToPlanningOfficer/');
+            setupModal('archiveModal', '#archiveClientName', '/Finance/ArchiveClient/');
+            setupModal('deleteModal', '#deleteClientName', '/Finance/Delete/');
 
-                    if (clientId && clientName) {
-                        var modalText = archiveModal.querySelector('#archiveClientName');
-                        if (modalText) {
-                            modalText.textContent = clientName;
-                        }
-
-                        var form = archiveModal.querySelector('#archiveForm');
-                        if (form) {
-                            form.action = '/Finance/ArchiveClient/' + clientId;
-                        }
-                    }
-                });
-            }
-
-            // Delete Modal
-            var deleteModal = document.getElementById('deleteModal');
-            if (deleteModal) {
-                deleteModal.addEventListener('show.bs.modal', function (event) {
-                    var button = event.relatedTarget;
-                    var clientId = button.getAttribute('data-client-id');
-                    var clientName = button.getAttribute('data-client-name');
-
-                    if (clientId && clientName) {
-                        var modalText = deleteModal.querySelector('#deleteClientName');
-                        if (modalText) {
-                            modalText.textContent = clientName;
-                        }
-
-                        var form = deleteModal.querySelector('#deleteForm');
-                        if (form) {
-                            form.action = '/Finance/Delete/' + clientId;
-                        }
-                    }
-                });
-            }
-
-            // Auto-dismiss alerts after 5 seconds
-            setTimeout(function () {
-                var alerts = document.querySelectorAll('.alert-dismissible');
-                alerts.forEach(function (alert) {
-                    var bsAlert = new bootstrap.Alert(alert);
-                    bsAlert.close();
+            // Auto-dismiss alerts
+            setTimeout(() => {
+                document.querySelectorAll('.alert-dismissible').forEach(alert => {
+                    bootstrap.Alert.getOrCreateInstance(alert).close();
                 });
             }, 5000);
         });
 
-        // Store initial client IDs for Pending and Clearance tables
-        let pendingClientIds = Array.from(document.querySelectorAll('.card:has(.bg-secondary) tbody tr')).map(row => row.querySelector('[data-client-id]')?.getAttribute('data-client-id')).filter(Boolean);
-        let clearanceClientIds = Array.from(document.querySelectorAll('.card:has(.bg-warning) tbody tr')).map(row => row.querySelector('[data-client-id]')?.getAttribute('data-client-id')).filter(Boolean);
+        // Hub & Sound Logic
+        let pendingClientIds = Array.from(document.querySelectorAll('#pending-pane tbody tr [data-client-id]')).map(el => el.getAttribute('data-client-id'));
+        let clearanceClientIds = Array.from(document.querySelectorAll('#clearance-pane tbody tr [data-client-id]')).map(el => el.getAttribute('data-client-id'));
+        
         function playNotifySound() {
             var audio = document.getElementById('notifySound');
-            if (audio) {
-                audio.currentTime = 0;
-                audio.play();
-            }
+            if (audio) { audio.currentTime = 0; audio.play().catch(e => console.log("Sound play failed", e)); }
         }
+
         function renderFinance(data) {
             let newPendingIds = (data.PendingClients.items || []).map(c => c.id?.toString());
             let isNewPending = newPendingIds.some(id => !pendingClientIds.includes(id));
             let newClearanceIds = (data.ClearanceClients.items || []).map(c => c.id?.toString());
             let isNewClearance = newClearanceIds.some(id => !clearanceClientIds.includes(id));
-            if (isNewPending || isNewClearance) {
-                playNotifySound();
-            }
+            if (isNewPending || isNewClearance) { playNotifySound(); }
             location.reload();
         }
+
         if (window.connection) {
             connection.on("ReceiveUpdate", function (message) {
-                fetch('/Finance/GetLatestData')
-                    .then(response => response.json())
-                    .then(data => {
-                        renderFinance(data);
-                    });
+                fetch('/Finance/GetLatestData').then(res => res.json()).then(data => renderFinance(data));
             });
         }
 
-        // Load requirements into Finance modal when opened
+        // Lazy load requirements section
         document.addEventListener('shown.bs.modal', function (event) {
             var modal = event.target;
-            if (!modal || !modal.id || !modal.id.startsWith('clientModal-')) return;
+            if (!modal?.id?.startsWith('clientModal-')) return;
             var clientId = modal.id.replace('clientModal-', '');
-            var targetElement = modal.querySelector('#req-list-' + clientId);
-            var sectionElement = modal.querySelector('#requirements-section-' + clientId);
-            if (!targetElement) return;
-            var url = '/PlanningOfficer/Requirements/' + clientId + '?readOnly=true&t=' + Date.now();
-            fetch(url, {
-                cache: 'no-store',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            var target = modal.querySelector('#req-list-' + clientId);
+            var section = modal.querySelector('#requirements-section-' + clientId);
+            if (!target) return;
+            
+            fetch('/PlanningOfficer/Requirements/' + clientId + '?readOnly=true&t=' + Date.now(), {
+                cache: 'no-store', headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
-                .then(function (response) { if (!response.ok) throw new Error('Network response was not ok'); return response.text(); })
-                .then(function (html) { 
-                    targetElement.innerHTML = html; 
-                    // Check if there are any requirements (look for requirement items)
-                    var hasRequirements = targetElement.querySelector('.requirement-item') || 
-                                         targetElement.querySelector('.list-group-item') ||
-                                         targetElement.querySelector('.form-check');
-                    // Only show the requirements section if there are actual requirements
-                    if (hasRequirements && sectionElement) {
-                        sectionElement.style.display = 'block';
-                    } else if (sectionElement) {
-                        sectionElement.style.display = 'none';
-                    }
-                })
-                .catch(function () { 
-                    targetElement.innerHTML = '<div class="alert alert-warning">Failed to load requirements.</div>'; 
-                    // Hide section on error
-                    if (sectionElement) {
-                        sectionElement.style.display = 'none';
-                    }
-                });
+            .then(res => res.ok ? res.text() : Promise.reject())
+            .then(html => {
+                target.innerHTML = html;
+                var hasReq = target.querySelector('.requirement-item, .list-group-item, .form-check');
+                if (section) section.style.display = hasReq ? 'block' : 'none';
+            })
+            .catch(() => {
+                target.innerHTML = '<div class="alert alert-warning py-2 mb-0">Unabled to load requirements list.</div>';
+                if (section) section.style.display = 'none';
+            });
         });
     </script>
 }
-
-@* The _ClientTable partial view should be created separately to handle the client data display *@

@@ -1,799 +1,410 @@
-@model TestingDemo.Models.PaginatedList<TestingDemo.Models.ClientModel>
+@model TestingDemo.Models.ViewModels.PlanningDashboardViewModel
 @using TestingDemo.Models
 @using System.Linq
 
 @{
-    ViewData["Title"] = "Planning Officer Dashboard";
-    var requirementCounts = ViewBag.RequirementCounts as Dictionary<int, int> ?? new Dictionary<int, int>();
-    var requirementsByClient = ViewBag.Requirements as IDictionary<int, List<PermitRequirementModel>> ?? new Dictionary<int, List<PermitRequirementModel>>();
+    ViewData["Title"] = "Planning Dashboard";
 }
 
-<div class="container-fluid px-4 py-3">
-    <div class="row">
-        <div class="col-12">
-            <!-- Modern Header Section -->
-            <div class="d-flex align-items-center justify-content-between mb-4">
+
+<div class="container-fluid pt-2 pb-4">
+    <!-- Header -->
+    <div class="dashboard-header mb-4 p-4 rounded-4 shadow-sm bg-white border-0">
+        <div class="row align-items-center g-3">
+            <div class="col-12 col-lg-6">
                 <div class="d-flex align-items-center">
-                    <div class="bg-gradient-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
-                        <i class="bi bi-clipboard-check text-white fs-3"></i>
+                    <div class="header-icon-box bg-primary bg-opacity-10 text-primary p-3 rounded-3 me-3">
+                        <i class="bi bi-clipboard-check fs-3"></i>
                     </div>
                     <div>
-                        <h2 class="planningtext">Planning Officer Dashboard</h2>
+                        <h2 class="fw-bold mb-0 text-dark">@ViewData["Title"]</h2>
+                        <p class="text-muted mb-0">Track project progress and plan requirements</p>
                     </div>
                 </div>
             </div>
-
-            <!-- Navigation Tabs -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body p-0">
-                    <ul class="nav nav-tabs nav-fill border-0" id="planningTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <a class="nav-link @(ViewData["CurrentAction"]?.ToString() == "PendingClients" ? "active" : "")"
-                               asp-action="PendingClients"
-                               role="tab">
-                                <i class="bi bi-clock me-2"></i>Pending Clients
-                            </a>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <a class="nav-link @(ViewData["CurrentAction"]?.ToString() == "CompletedClients" ? "active" : "")"
-                               asp-action="CompletedClients"
-                               role="tab">
-                                <i class="bi bi-check-circle me-2"></i>Completed Clients
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Modern Alert Messages -->
-            @if (TempData["SuccessMessage"] != null)
-            {
-                <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-check-circle-fill text-success me-2 fs-5"></i>
-                        <span class="fw-medium">@TempData["SuccessMessage"]</span>
-                    </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            }
-            @if (TempData["ErrorMessage"] != null)
-            {
-                <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-exclamation-triangle-fill text-danger me-2 fs-5"></i>
-                        <span class="fw-medium">@TempData["ErrorMessage"]</span>
-                    </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            }
-            @if (TempData["ValidationErrors"] != null)
-            {
-                <div class="alert alert-warning alert-dismissible fade show border-0 shadow-sm" role="alert">
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-bug-fill text-warning me-2 fs-5"></i>
-                        <span class="fw-medium">@TempData["ValidationErrors"]</span>
-                    </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            }
-
-            <!-- Modern Card Design -->
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-0 py-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-list-ul text-primary me-2 fs-4"></i>
-                            <h5 class="mb-0 fw-bold text-dark">@ViewData["ListTitle"]</h5>
+            <div class="col-12 col-lg-6">
+                <div class="d-flex flex-wrap justify-content-lg-end align-items-center gap-2">
+                    <form asp-action="Index" method="get" class="search-group">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0 border-0 shadow-sm ps-3">
+                                <i class="bi bi-search text-muted"></i>
+                            </span>
+                            <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" 
+                                   class="form-control border-start-0 border-0 shadow-sm ps-2 py-2 rounded-end" 
+                                   placeholder="Search tracking #, name..." style="width: 250px;" />
+                            @if (!String.IsNullOrEmpty(ViewData["CurrentFilter"] as string))
+                            {
+                                <a asp-action="Index" class="btn btn-light border-0 shadow-sm ms-2 rounded-circle" title="Clear search">
+                                    <i class="bi bi-x-lg"></i>
+                                </a>
+                            }
                         </div>
-                        <span class="badge bg-primary rounded-pill fs-6 px-3 py-2">@Model.Count() Clients</span>
+                    </form>
+
+                    <div class="dropdown">
+                        <button class="btn btn-white shadow-sm border-0 px-3 py-2 dropdown-toggle d-flex align-items-center gap-2 rounded-3" 
+                                type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-sort-down text-primary"></i>
+                            <span class="fw-semibold">Sort</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-2 p-2 rounded-3">
+                            <li><a class="dropdown-item rounded-2" asp-action="Index" asp-route-sortOrder="" asp-route-searchString="@ViewData["CurrentFilter"]">Default</a></li>
+                            <li><a class="dropdown-item rounded-2" asp-action="Index" asp-route-sortOrder="name_desc" asp-route-searchString="@ViewData["CurrentFilter"]">Name (Z-A)</a></li>
+                            <li><a class="dropdown-item rounded-2" asp-action="Index" asp-route-sortOrder="Date" asp-route-searchString="@ViewData["CurrentFilter"]">Date (Oldest)</a></li>
+                            <li><a class="dropdown-item rounded-2" asp-action="Index" asp-route-sortOrder="date_desc" asp-route-searchString="@ViewData["CurrentFilter"]">Date (Newest)</a></li>
+                        </ul>
                     </div>
                 </div>
-                <div class="card-body p-0">
-                    @if (Model.Any())
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null || TempData["ErrorMessage"] != null)
+    {
+        <div class="alert @(TempData["SuccessMessage"] != null ? "alert-success border-success" : "alert-danger border-danger") alert-dismissible fade show mb-4 shadow-sm border-0 border-start border-4" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="bi @(TempData["SuccessMessage"] != null ? "bi-check-circle-fill text-success" : "bi-exclamation-triangle-fill text-danger") fs-4 me-3"></i>
+                <div>
+                    <strong class="d-block mb-1">@(TempData["SuccessMessage"] != null ? "Success!" : "Action Required")</strong>
+                    <span>@(TempData["SuccessMessage"] ?? TempData["ErrorMessage"])</span>
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Tabbed Navigation -->
+    <div class="dashboard-card border-0 shadow-sm rounded-4 bg-white overflow-hidden mb-5">
+        <div class="card-header bg-white border-bottom-0 pt-4 px-4">
+            <ul class="nav nav-pills custom-tabs mb-0" id="planningTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active fw-bold px-4 py-3" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending-pane" type="button" role="tab">
+                        <i class="bi bi-clock-history me-2"></i> Pending Clients
+                        <span class="badge rounded-pill bg-warning bg-opacity-10 text-warning ms-2">@Model.PendingClients.TotalCount</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link fw-bold px-4 py-3" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed-pane" type="button" role="tab">
+                        <i class="bi bi-check2-all me-2"></i> Completed/Progressing
+                        <span class="badge rounded-pill bg-success bg-opacity-10 text-success ms-2">@Model.CompletedClients.TotalCount</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="tab-content" id="planningTabsContent">
+            <!-- Pending Clients Pane -->
+            <div class="tab-pane fade show active" id="pending-pane" role="tabpanel" aria-labelledby="pending-tab">
+                <div class="p-0">
+                    @if (Model.PendingClients.Any())
                     {
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0 align-middle">
-                                <thead class="bg-light">
-                                    <tr>
-                                        <th class="border-0 ps-4 py-3 fw-semibold text-muted small text-uppercase">Client Information</th>
-                                        <th class="border-0 py-3 fw-semibold text-muted small text-uppercase">Permit Type</th>
-                                        <th class="border-0 py-3 fw-semibold text-muted small text-uppercase">Status</th>
-                                        <th class="border-0 py-3 fw-semibold text-muted small text-uppercase">Priority</th>
-                                        <th class="border-0 py-3 fw-semibold text-muted small text-uppercase">Requirements</th>
-                                        <th class="border-0 text-center py-3 fw-semibold text-muted small text-uppercase" style="width:180px">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var item in Model)
-                                    {
-                                        var hasRequirements = requirementsByClient.ContainsKey(item.Id);
-                                        var allRequirementsCompleted = false;
-                                        var totalRequirements = 0;
-                                        var completedRequirements = 0;
-
-                                        if (hasRequirements)
-                                        {
-                                            var reqList = requirementsByClient[item.Id];
-                                            if (reqList != null && reqList.Any())
-                                            {
-                                                totalRequirements = reqList.Count;
-                                                completedRequirements = reqList.Count(r => r.IsCompleted);
-                                                allRequirementsCompleted = totalRequirements > 0 && totalRequirements == completedRequirements;
-                                            }
-                                            else
-                                            {
-                                                allRequirementsCompleted = true;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            allRequirementsCompleted = true;
-                                        }
-
-                                        <tr class="border-bottom @(item.UrgencyLevel == "Urgent" ? "border-danger border-opacity-25" : item.UrgencyLevel == "Slightly Urgent" ? "border-warning border-opacity-25" : "")">
-                                            <td class="ps-4 py-3">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="me-3">
-                                                        <div class="bg-gradient-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
-                                                            <i class="bi bi-person-fill text-white fs-5"></i>
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <div class="planningtext">@item.ClientName</div>
-                                                        <div class="text-muted small d-flex align-items-center mb-1">
-                                                            <i class="bi bi-telephone me-2"></i>@item.ContactPersonNumber
-                                                        </div>
-                                                        <div class="text-muted small d-flex align-items-center">
-                                                            <i class="bi bi-calendar3 me-2"></i>@item.CreatedDate.ToString("MMM dd, yyyy")
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="py-3">
-                                                @{
-                                                    var typeBadgeClass = item.TypeOfProject switch
-                                                    {
-                                                        "Retainership - BIR" => "bg-danger",
-                                                        "Retainership - SPP" => "bg-info",
-                                                        "One Time Transaction" => "bg-secondary",
-                                                        "External Audit" => "bg-dark",
-                                                        _ => "bg-secondary"
-                                                    };
-                                                }
-                                                <span class="badge @typeBadgeClass rounded-pill px-3 py-2 fw-medium">@item.TypeOfProject</span>
-                                            </td>
-                                            <td class="py-3">
-                                                <span class="badge bg-info rounded-pill px-3 py-2 fw-medium">@item.SubStatus</span>
-                                            </td>
-                                            <td class="py-3">
-                                                @if (item.UrgencyLevel == "Urgent")
-                                                {
-                                                    <span class="badge bg-danger rounded-pill px-3 py-2 fw-medium">
-                                                        <i class="bi bi-exclamation-triangle-fill me-1"></i>Urgent
-                                                    </span>
-                                                }
-                                                else if (item.UrgencyLevel == "Slightly Urgent")
-                                                {
-                                                    <span class="badge bg-warning text-dark rounded-pill px-3 py-2 fw-medium">
-                                                        <i class="bi bi-exclamation-circle me-1"></i>Slightly Urgent
-                                                    </span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge bg-success rounded-pill px-3 py-2 fw-medium">
-                                                        <i class="bi bi-check-circle me-1"></i>Normal
-                                                    </span>
-                                                }
-                                            </td>
-                                            <td class="py-3">
-                                                @if (totalRequirements > 0)
-                                                {
-                                                    <div class="d-flex align-items-center">
-                                                        <div class="progress me-3" style="width: 80px; height: 8px; border-radius: 10px;">
-                                                            <div class="progress-bar @(allRequirementsCompleted ? "bg-success" : "bg-warning")"
-                                                                 style="width: @((double)completedRequirements / totalRequirements * 100)%"></div>
-                                                        </div>
-                                                        <div class="text-muted small fw-medium">
-                                                            @completedRequirements/@totalRequirements
-                                                        </div>
-                                                        @if (allRequirementsCompleted)
-                                                        {
-                                                            <i class="bi bi-check-circle-fill text-success ms-2 fs-6"></i>
-                                                        }
-                                                    </div>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge bg-light text-dark rounded-pill px-3 py-2">
-                                                        <i class="bi bi-plus-circle me-1"></i>No Requirements
-                                                    </span>
-                                                }
-                                            </td>
-                                            <td class="text-center py-3">
-                                                @if (item.Status == "Planning")
-                                                {
-                                                    <div class="btn-group btn-group-sm" role="group">
-                                                        <button type="button" class="btn btn-outline-info border-0 shadow-sm"
-                                                                data-bs-toggle="modal" data-bs-target="#clientModal-@item.Id"
-                                                                title="View Details">
-                                                            <i class="bi bi-eye fs-6"></i> View
-                                                        </button>
-                                                        <button type="button" class="btn btn-outline-success border-0 shadow-sm"
-                                                                data-bs-toggle="modal" data-bs-target="#proceedToLiaisonModal-@item.Id"
-                                                                title="Send to Liaison">
-                                                            <i class="bi bi-check-lg fs-6"></i> Send
-                                                        </button>
-                                                    </div>
-                                                }
-                                                else
-                                                {
-                                                    <button type="button" class="btn btn-outline-info btn-sm border-0 shadow-sm" title="View client details"
-                                                            data-bs-toggle="modal" data-bs-target="#clientModal-@item.Id">
-                                                        <i class="bi bi-eye fs-6"></i> View
-                                                    </button>
-                                                }
-                                            </td>
-                                        </tr>
-
-                                        @await Html.PartialAsync("_ClientProceedToLiaisonModal", item)
-
-                                        @await Html.PartialAsync("_ClientDetailsModal", item)
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
+                        @await Html.PartialAsync("_PendingClientTable", Model.PendingClients)
                     }
                     else
                     {
-                        <div class="text-center py-5">
-                            <div class="mb-4">
-                                <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto" style="width: 120px; height: 120px;">
-                                    <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
-                                </div>
-                            </div>
-                            <h5 class="text-muted mb-2 fw-bold">No Clients Found</h5>
-                            <p class="text-muted mb-0">There are no pending clients available at the moment.</p>
+                        <div class="empty-state">
+                            <i class="bi bi-mailbox text-secondary"></i>
+                            <h4 class="text-secondary fw-bold">No Pending Clients</h4>
+                            <p class="text-muted">New clients will appear here once they are assigned to planning.</p>
+                        </div>
+                    }
+                    
+                    @if (Model.PendingClients.TotalPages > 1)
+                    {
+                        <div class="pagination-container">
+                            @await Html.PartialAsync("_Pagination", null, new ViewDataDictionary(ViewData) {
+                                ["pageModel"] = Model.PendingClients,
+                                ["pageAction"] = "Index",
+                                ["pageNumberParam"] = "pendingPageNumber",
+                                ["otherPageNumberParam"] = "completedPageNumber",
+                                ["otherPageNumber"] = Model.CompletedClients.PageIndex
+                            })
                         </div>
                     }
                 </div>
-                <div class="card-footer customized border-0 py-3">
-                    <nav aria-label="Page navigation">
-                        <ul class="pagination justify-content-center mb-0">
-                            @{
-                                var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
-                                var nextDisabled = !Model.HasNextPage ? "disabled" : "";
-                                var currentAction = ViewData["CurrentAction"] as string;
-                            }
-                            <li class="page-item @prevDisabled">
-                                <a asp-action="@currentAction" asp-route-pageNumber="@(Model.PageIndex - 1)" class="page-link border-0 shadow-sm rounded me-2">
-                                    <i class="bi bi-chevron-left me-1"></i> Previous
-                                </a>
-                            </li>
-                            <li class="page-item active" aria-current="page">
-                                <span class="page-link bg-primary border-0 shadow-sm rounded fw-bold">Page @Model.PageIndex of @Model.TotalPages</span>
-                            </li>
-                            <li class="page-item @nextDisabled">
-                                <a asp-action="@currentAction" asp-route-pageNumber="@(Model.PageIndex + 1)" class="page-link border-0 shadow-sm rounded ms-2">
-                                    Next <i class="bi bi-chevron-right ms-1"></i>
-                                </a>
-                            </li>
-                        </ul>
-                    </nav>
+            </div>
+
+            <!-- Completed Clients Pane -->
+            <div class="tab-pane fade" id="completed-pane" role="tabpanel" aria-labelledby="completed-tab">
+                <div class="p-0">
+                    @if (Model.CompletedClients.Any())
+                    {
+                        @await Html.PartialAsync("_PendingClientTable", Model.CompletedClients)
+                    }
+                    else
+                    {
+                        <div class="empty-state">
+                            <i class="bi bi-journal-check text-success"></i>
+                            <h4 class="text-success fw-bold">No Completed Clients</h4>
+                            <p class="text-muted">Clients that have finished the planning stage will appear here.</p>
+                        </div>
+                    }
+                    
+                    @if (Model.CompletedClients.TotalPages > 1)
+                    {
+                        <div class="pagination-container">
+                            @await Html.PartialAsync("_Pagination", null, new ViewDataDictionary(ViewData) {
+                                ["pageModel"] = Model.CompletedClients,
+                                ["pageAction"] = "Index",
+                                ["pageNumberParam"] = "completedPageNumber",
+                                ["otherPageNumberParam"] = "pendingPageNumber",
+                                ["otherPageNumber"] = Model.PendingClients.PageIndex
+                            })
+                        </div>
+                    }
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Edit Requirement Modals -->
-@foreach (var item in Model)
-{
-    @if (ViewBag.Requirements != null && ((IDictionary<int, List<TestingDemo.Models.PermitRequirementModel>>)ViewBag.Requirements).ContainsKey(item.Id))
-    {
-        var requirements = ((IDictionary<int, List<TestingDemo.Models.PermitRequirementModel>>)ViewBag.Requirements)[item.Id];
-        foreach (var req in requirements)
-        {
-            @await Html.PartialAsync("EditRequirement", req)
-        }
-    }
-}
+<!-- Media Viewer Modal (Shared) -->
+<div class="modal fade" id="mediaViewerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-dark text-white border-0 py-3">
+                <h5 class="modal-title fw-bold mb-0" id="mediaViewerModalLabel">
+                    <i class="bi bi-file-earmark-medical me-2"></i>Proof Document
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0 text-center bg-dark">
+                <div id="mediaViewerContent" class="d-flex align-items-center justify-content-center" style="min-height: 200px;">
+                    <img id="fullSizeImage" src="" alt="Proof" class="img-fluid" style="max-height: 80vh; object-fit: contain; display: none;" />
+                    <iframe id="docViewer" src="" class="w-100" style="height: 80vh; border: none; display: none;"></iframe>
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-0 py-3">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4 py-2" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-2"></i>Close
+                </button>
+                <a id="downloadMediaLink" href="" download class="btn btn-primary rounded-pill px-4 py-2">
+                    <i class="bi bi-download me-2"></i>Download
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1080;">
+    <div id="successToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <span class="toast-message">Success</span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
     <script>
-        // Resolve correct base URL (supports virtual directories)
-        var requirementsUrlBase = '@Url.Action("Requirements", "PlanningOfficer")/';
+        document.addEventListener('DOMContentLoaded', function () {
+            // Tab Persistence & Activation
+            const activeTabId = localStorage.getItem('activePlanningTab');
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            let tabToActivate = null;
+            
+            if (urlParams.has('pendingPageNumber')) {
+                tabToActivate = document.querySelector('#pending-tab');
+            } else if (urlParams.has('completedPageNumber')) {
+                tabToActivate = document.querySelector('#completed-tab');
+            } else if (activeTabId) {
+                tabToActivate = document.querySelector('#' + activeTabId);
+            }
+            
+            if (tabToActivate) {
+                bootstrap.Tab.getOrCreateInstance(tabToActivate).show();
+            }
+            
+            // Log tab changes to storage
+            document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(el => {
+                el.addEventListener('shown.bs.tab', event => {
+                    localStorage.setItem('activePlanningTab', event.target.id);
+                });
+            });
 
-        // Modal Management Functions
-        function openAddRequirementModal(clientId) {
-            // Close the client details modal first
-            var clientModal = document.getElementById('clientModal-' + clientId);
-            if (clientModal) {
-                var bsClientModal = bootstrap.Modal.getInstance(clientModal);
-                if (bsClientModal) {
-                    bsClientModal.hide();
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            // Auto-dismiss alerts
+            setTimeout(() => {
+                document.querySelectorAll('.alert-dismissible').forEach(alert => {
+                    bootstrap.Alert.getOrCreateInstance(alert).close();
+                });
+            }, 5000);
+
+            // Re-open client modal if flagged
+            var openClientId = '@(TempData["OpenClientId"] ?? "")';
+            if (openClientId) {
+                var modal = document.getElementById('clientModal-' + openClientId);
+                if (modal) {
+                    new bootstrap.Modal(modal).show();
                 }
             }
+        });
 
-            // Wait a bit for the modal to close, then open the add requirement modal
-            setTimeout(function() {
-                var addReqModal = document.getElementById('addReqModal-' + clientId);
-                if (addReqModal) {
-                    var bsAddReqModal = new bootstrap.Modal(addReqModal);
-                    bsAddReqModal.show();
-                }
+        // Resolve correct base URL
+        var requirementsUrlBase = '@Url.Action("Requirements", "PlanningOfficer")/';
+
+        // Requirement Management Functions
+        function openAddRequirementModal(clientId) {
+            var clientModal = bootstrap.Modal.getInstance(document.getElementById('clientModal-' + clientId));
+            if (clientModal) clientModal.hide();
+            setTimeout(() => {
+                new bootstrap.Modal(document.getElementById('addReqModal-' + clientId)).show();
             }, 300);
         }
 
         function openEditRequirementModal(requirementId, clientId) {
-            // Close any open modals first
-            var openModals = document.querySelectorAll('.modal.show');
-            openModals.forEach(function(modal) {
-                var bsModal = bootstrap.Modal.getInstance(modal);
-                if (bsModal) {
-                    bsModal.hide();
-                }
+            document.querySelectorAll('.modal.show').forEach(m => {
+                var instance = bootstrap.Modal.getInstance(m);
+                if (instance) instance.hide();
             });
-
-            // Wait a bit for modals to close, then open the edit requirement modal
-            setTimeout(function() {
-                var editReqModal = document.getElementById('editRequirementModal-' + requirementId);
-                if (editReqModal) {
-                    var bsEditReqModal = new bootstrap.Modal(editReqModal);
-                    bsEditReqModal.show();
-
-                    // Store the client ID for potential refresh after edit
-                    editReqModal.setAttribute('data-client-id', clientId);
-                } else {
-                    console.error('Edit requirement modal not found for ID:', requirementId);
+            setTimeout(() => {
+                var modal = document.getElementById('editRequirementModal-' + requirementId);
+                if (modal) {
+                    modal.setAttribute('data-client-id', clientId);
+                    new bootstrap.Modal(modal).show();
                 }
             }, 300);
         }
 
-        // Handle modal cleanup when closed
-        function handleModalCleanup() {
-            // Remove any stuck modal backdrops
-            var stuckBackdrops = document.querySelectorAll('.modal-backdrop');
-            stuckBackdrops.forEach(function(backdrop) {
-                backdrop.remove();
-            });
-
-            // Remove modal-open class from body
-            document.body.classList.remove('modal-open');
-            document.body.style.paddingRight = '';
-        }
-
-        $(function () {
-            // Initialize tooltips
-            $('[data-bs-toggle="tooltip"]').tooltip();
-
-            // Handle modal cleanup when closed
-            $('.modal').on('hidden.bs.modal', function () {
-                handleModalCleanup();
-            });
-
-            // Handle modal cleanup when shown
-            $('.modal').on('shown.bs.modal', function () {
-                // Ensure only one modal backdrop exists
-                var backdrops = document.querySelectorAll('.modal-backdrop');
-                if (backdrops.length > 1) {
-                    for (var i = 1; i < backdrops.length; i++) {
-                        backdrops[i].remove();
-                    }
-                }
-            });
-
-            // Auto-dismiss alerts after 5 seconds
-            $('.alert-dismissible').each(function() {
-                var alert = this;
-                setTimeout(function() {
-                    $(alert).fadeOut('slow', function() {
-                        $(this).remove();
-                    });
-                }, 5000);
-            });
-        });
-
-        // Load requirements when modal is shown
-        document.addEventListener('shown.bs.modal', function (event) {
-            var trigger = event.target;
-            if (!trigger || !trigger.id || !trigger.id.startsWith('clientModal-')) return;
-
-            var clientId = trigger.id.replace('clientModal-', '');
-            var targetElement = document.getElementById('req-list-' + clientId);
-
-            if (targetElement) {
-                var url = requirementsUrlBase + clientId + '?t=' + Date.now();
-
-                fetch(url, {
-                    cache: 'no-store',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(function (response) {
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    return response.text();
-                })
-                .then(function (html) {
-                    targetElement.innerHTML = html;
-                })
-                .catch(function (error) {
-                    console.error('[Requirements] Error loading requirements:', error);
-                    targetElement.innerHTML = '<div class="alert alert-warning"><i class="bi bi-exclamation-triangle"></i> Failed to load requirements. Please try again.</div>';
-                });
-            }
-        });
-
-        // Re-open client modal after redirect if flagged by server
-        (function() {
-            var openClientId = '@(TempData["OpenClientId"] ?? "")';
-            if (openClientId) {
-                var modalElement = document.getElementById('clientModal-' + openClientId);
-                if (modalElement) {
-                    var modal = new bootstrap.Modal(modalElement);
-                    modal.show();
-                }
-            }
-        })();
-
-        // Real-time updates (if SignalR is available)
-        if (window.connection) {
-            connection.on("ReceiveUpdate", function (message) {
-                // Reload the page to get latest data
-                location.reload();
-            });
-        }
-
-        // Refresh requirements list after adding new requirement
-        function refreshRequirementsList(clientId) {
-            var targetElement = document.getElementById('req-list-' + clientId);
-            if (targetElement) {
-                var url = requirementsUrlBase + clientId + '?t=' + Date.now();
-
-                fetch(url, {
-                    cache: 'no-store',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(function (response) {
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    return response.text();
-                })
-                .then(function (html) {
-                    targetElement.innerHTML = html;
-                })
-                .catch(function (error) {
-                    console.error('[Requirements] Error refreshing requirements:', error);
-                });
-            }
-        }
-
-        // Handle Add Requirement form submission
         function handleAddRequirementSubmit(clientId) {
             var form = document.getElementById('addRequirementForm-' + clientId);
-            var formFields = document.getElementById('formFields-' + clientId);
-            var successMessage = document.getElementById('successMessage-' + clientId);
             var submitBtn = document.getElementById('submitBtn-' + clientId);
+            var successMsg = document.getElementById('successMessage-' + clientId);
+            var fields = document.getElementById('formFields-' + clientId);
 
-            // Show loading state with shimmer effect
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Adding...';
-            submitBtn.classList.add('btn-loading');
 
-            // Get form data
-            var formData = new FormData(form);
-
-            // Submit form via AJAX
             fetch(form.action, {
                 method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
+                body: new FormData(form),
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
-            .then(function(response) {
-                if (!response.ok) throw new Error('Network response was not ok');
-                return response.text();
+            .then(res => res.ok ? res.text() : Promise.reject())
+            .then(() => {
+                fields.style.display = 'none';
+                successMsg.style.display = 'block';
+                submitBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Added!';
+                submitBtn.className = 'btn btn-success rounded-pill px-4';
+                setTimeout(() => {
+                    bootstrap.Modal.getInstance(document.getElementById('addReqModal-' + clientId)).hide();
+                    refreshRequirementsList(clientId);
+                }, 2000);
             })
-            .then(function(html) {
-                // Remove loading state
-                submitBtn.classList.remove('btn-loading');
-
-                // Animate form fields exit
-                formFields.classList.add('form-fields-exit');
-
-                setTimeout(function() {
-                    // Hide form fields and show success message
-                    formFields.style.display = 'none';
-                    successMessage.style.display = 'block';
-                    successMessage.classList.add('success-message-enter');
-
-                    // Update submit button
-                    submitBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Requirement Added!';
-                    submitBtn.classList.remove('btn-primary');
-                    submitBtn.classList.add('btn-success');
-                    submitBtn.disabled = true;
-
-                    // Auto-close modal after 3 seconds
-                    setTimeout(function() {
-                        var addReqModal = document.getElementById('addReqModal-' + clientId);
-                        if (addReqModal) {
-                            var bsModal = bootstrap.Modal.getInstance(addReqModal);
-                            if (bsModal) {
-                                bsModal.hide();
-                            }
-                        }
-
-                        // Refresh the requirements list in the client details modal
-                        refreshRequirementsList(clientId);
-                    }, 3000);
-                }, 300);
-            })
-            .catch(function(error) {
-                console.error('Error adding requirement:', error);
-
-                // Remove loading state
-                submitBtn.classList.remove('btn-loading');
-
-                // Show error message
-                var errorHtml = '<div class="alert alert-danger border-0 rounded-3 bg-danger bg-opacity-10 mb-4 success-message-enter">' +
-                    '<div class="d-flex align-items-center">' +
-                    '<div class="bg-danger bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">' +
-                    '<i class="bi bi-exclamation-triangle-fill text-danger"></i>' +
-                    '</div>' +
-                    '<div>' +
-                    '<h6 class="alert-heading fw-bold mb-1 text-danger">Error Adding Requirement</h6>' +
-                    '<p class="mb-0 text-dark">There was an error adding the requirement. Please try again.</p>' +
-                    '</div>' +
-                    '</div>' +
-                    '</div>';
-
-                formFields.insertAdjacentHTML('beforebegin', errorHtml);
-
-                // Reset button
+            .catch(() => {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="bi bi-plus-lg me-2"></i>Add Requirement';
+                submitBtn.innerHTML = 'Error! Try again';
             });
         }
 
-        // Handle Edit Requirement form submission
         function handleEditRequirementSubmit(requirementId) {
             var form = document.getElementById('editRequirementForm-' + requirementId);
             var submitBtn = form.querySelector('button[type="submit"]');
-            var modal = form.closest('.modal');
-            var clientId = modal.getAttribute('data-client-id');
+            var clientId = form.closest('.modal').getAttribute('data-client-id');
 
-            // Show loading state
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Saving...';
-            submitBtn.classList.add('btn-loading');
 
-            // Get form data
-            var formData = new FormData(form);
-
-            // Submit form via AJAX
             fetch(form.action, {
                 method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
+                body: new FormData(form),
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
-            .then(function(response) {
-                if (!response.ok) throw new Error('Network response was not ok');
-                return response.text();
-            })
-            .then(function(html) {
-                // Remove loading state
-                submitBtn.classList.remove('btn-loading');
-
-                // Show success state
+            .then(res => res.ok ? res.text() : Promise.reject())
+            .then(() => {
                 submitBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Saved!';
-                submitBtn.classList.remove('btn-primary');
-                submitBtn.classList.add('btn-success');
-                submitBtn.disabled = true;
-
-                // Auto-close modal after 2 seconds
-                setTimeout(function() {
-                    var editReqModal = document.getElementById('editRequirementModal-' + requirementId);
-                    if (editReqModal) {
-                        var bsModal = bootstrap.Modal.getInstance(editReqModal);
-                        if (bsModal) {
-                            bsModal.hide();
-                        }
-                    }
-
-                    // Refresh the requirements list if we have a client ID
-                    if (clientId) {
-                        refreshRequirementsList(clientId);
-                    }
-                }, 2000);
+                submitBtn.className = 'btn btn-success rounded-pill px-4';
+                setTimeout(() => {
+                    bootstrap.Modal.getInstance(document.getElementById('editRequirementModal-' + requirementId)).hide();
+                    if (clientId) refreshRequirementsList(clientId);
+                }, 1500);
             })
-            .catch(function(error) {
-                console.error('Error updating requirement:', error);
-
-                // Remove loading state
-                submitBtn.classList.remove('btn-loading');
-
-                // Show error message
-                var errorHtml = '<div class="alert alert-danger border-0 rounded-3 bg-danger bg-opacity-10 mb-4">' +
-                    '<div class="d-flex align-items-center">' +
-                    '<div class="bg-danger bg-opacity-20 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">' +
-                    '<i class="bi bi-exclamation-triangle-fill text-danger"></i>' +
-                    '</div>' +
-                    '<div>' +
-                    '<h6 class="alert-heading fw-bold mb-1 text-danger">Error Updating Requirement</h6>' +
-                    '<p class="mb-0 text-dark">There was an error updating the requirement. Please try again.</p>' +
-                    '</div>' +
-                    '</div>' +
-                    '</div>';
-
-                // Insert error message before the form
-                form.insertAdjacentHTML('beforebegin', errorHtml);
-
-                // Reset button
+            .catch(() => {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="bi bi-save me-2"></i>Save Changes';
+                submitBtn.innerHTML = 'Error! Try again';
             });
         }
 
-        // Delete Requirement Function
-        function deleteRequirement(requirementId, clientId) {
-            if (confirm('Are you sure you want to delete this requirement? This action cannot be undone.')) {
-                // Create form data
-                var formData = new FormData();
-                formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
-
-                // Submit delete request
-                fetch('@Url.Action("DeleteRequirement", "PlanningOfficer")/' + requirementId, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(function(response) {
-                    if (response.ok) {
-                        // Refresh the requirements list
-                        refreshRequirementsList(clientId);
-
-                        // Show success message
-                        showToast('Requirement deleted successfully!', 'success');
-                    } else {
-                        throw new Error('Delete failed');
-                    }
-                })
-                .catch(function(error) {
-                    console.error('Error deleting requirement:', error);
-                    showToast('Error deleting requirement. Please try again.', 'error');
-                });
-            }
+        function refreshRequirementsList(clientId) {
+            var target = document.getElementById('req-list-' + clientId);
+            if (!target) return;
+            fetch(requirementsUrlBase + clientId + '?t=' + Date.now(), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => res.ok ? res.text() : Promise.reject())
+            .then(html => target.innerHTML = html)
+            .catch(e => console.error("Refresh failed", e));
         }
 
-        // Show Toast Function
-        function showToast(message, type) {
-            var toast = document.getElementById('successToast');
-            var toastMessage = toast.querySelector('.toast-message');
-            var toastBody = toast.querySelector('.toast-body');
+        function deleteRequirement(id, clientId) {
+            if (!confirm('Delete this requirement?')) return;
+            var formData = new FormData();
+            formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+            fetch('@Url.Action("DeleteRequirement", "PlanningOfficer")/' + id, {
+                method: 'POST', body: formData, headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => res.ok ? (refreshRequirementsList(clientId), showToast('Deleted!')) : alert('Delete failed'));
+        }
 
-            toastMessage.textContent = message;
+        function deletePhotoFromList(photoId, clientId) {
+            if (!confirm('Delete this photo?')) return;
+            var formData = new FormData();
+            formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+            fetch('@Url.Action("DeleteRequirementPhoto", "PlanningOfficer")/' + photoId, {
+                method: 'POST', body: formData, headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => res.json())
+            .then(data => data.success ? (refreshRequirementsList(clientId), showToast('Photo deleted!')) : alert(data.message));
+        }
 
-            if (type === 'error') {
-                toast.classList.remove('text-bg-success');
-                toast.classList.add('text-bg-danger');
+        function showToast(msg) {
+            var t = document.getElementById('successToast');
+            t.querySelector('.toast-message').textContent = msg;
+            bootstrap.Toast.getOrCreateInstance(t).show();
+        }
+
+        function viewFullImage(src, name, type = 'image') {
+            var m = document.getElementById('mediaViewerModal');
+            document.getElementById('mediaViewerModalLabel').innerHTML = `<i class="bi bi-${type === 'image' ? 'image' : 'file-earmark-text'} me-2"></i>Proof: ${name}`;
+            
+            var img = document.getElementById('fullSizeImage');
+            var doc = document.getElementById('docViewer');
+            var link = document.getElementById('downloadMediaLink');
+            
+            if (type === 'image') {
+                img.src = src;
+                img.style.display = 'block';
+                doc.style.display = 'none';
             } else {
-                toast.classList.remove('text-bg-danger');
-                toast.classList.add('text-bg-success');
+                doc.src = src;
+                doc.style.display = 'block';
+                img.style.display = 'none';
             }
-
-            var bsToast = new bootstrap.Toast(toast);
-            bsToast.show();
+            
+            link.href = src;
+            new bootstrap.Modal(m).show();
         }
 
-        // View Full Image Function
-        function viewFullImage(imageSrc, requirementName) {
-            var modal = document.getElementById('imageViewerModal');
-            var modalLabel = document.getElementById('imageViewerModalLabel');
-            var fullSizeImage = document.getElementById('fullSizeImage');
-            var downloadLink = document.getElementById('downloadImageLink');
+        // Lazy load requirements on modal show
+        document.addEventListener('shown.bs.modal', function (event) {
+            var modal = event.target;
+            if (!modal?.id?.startsWith('clientModal-')) return;
+            var clientId = modal.id.replace('clientModal-', '');
+            refreshRequirementsList(clientId);
+        });
 
-            // Update modal title with requirement name
-            modalLabel.innerHTML = '<i class="bi bi-image me-2"></i>Proof of Completion: ' + requirementName;
-
-            // Set image source
-            fullSizeImage.src = imageSrc;
-
-            // Set download link
-            downloadLink.href = imageSrc;
-            downloadLink.download = 'proof_' + requirementName.replace(/[^a-zA-Z0-9]/g, '_') + '.jpg';
-
-            // Show modal
-            var bsModal = new bootstrap.Modal(modal);
-            bsModal.show();
-        }
-
-        // Delete Photo from Requirements List Function
-        function deletePhotoFromList(requirementId, clientId) {
-            if (confirm('Are you sure you want to delete this photo? This action cannot be undone.')) {
-                // Create form data
-                var formData = new FormData();
-                var token = document.querySelector('input[name="__RequestVerificationToken"]');
-                if (token) {
-                    formData.append('__RequestVerificationToken', token.value);
-                }
-
-                // Submit delete photo request
-                fetch('@Url.Action("DeleteRequirementPhoto", "PlanningOfficer")/' + requirementId, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(function(response) {
-                    if (response.ok) {
-                        return response.json();
-                    } else {
-                        throw new Error('Delete failed');
-                    }
-                })
-                .then(function(data) {
-                    if (data.success) {
-                        // Refresh the requirements list
-                        if (typeof refreshRequirementsList === 'function') {
-                            refreshRequirementsList(clientId);
-                        }
-
-                        // Show success message
-                        showToast('Photo deleted successfully!', 'success');
-                    } else {
-                        throw new Error(data.message || 'Delete failed');
-                    }
-                })
-                .catch(function(error) {
-                    console.error('Error deleting photo:', error);
-                    showToast('Error deleting photo. Please try again.', 'error');
-                });
-            }
+        // SignalR auto-reload
+        if (window.connection) {
+            connection.on("ReceiveUpdate", () => location.reload());
         }
     </script>
-
-    <!-- Success Toast -->
-    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1080;">
-        <div id="successToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="bi bi-check-circle-fill me-2"></i>
-                    <span class="toast-message">Success</span>
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Image Viewer Modal -->
-    <div class="modal fade" id="imageViewerModal" tabindex="-1" aria-labelledby="imageViewerModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-xl">
-            <div class="modal-content border-0 shadow">
-                <div class="modal-header bg-dark text-white border-0 py-3">
-                    <h5 class="modal-title fw-bold mb-0" id="imageViewerModalLabel">
-                        <i class="bi bi-image me-2"></i>Proof of Completion Photo
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body p-0 text-center">
-                    <img id="fullSizeImage" src="" alt="Proof of completion" class="img-fluid" style="max-height: 80vh; object-fit: contain;" />
-                </div>
-                <div class="modal-footer bg-light border-0 py-3">
-                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4 py-2" data-bs-dismiss="modal">
-                        <i class="bi bi-x-circle me-2"></i>Close
-                    </button>
-                    <a id="downloadImageLink" href="" download class="btn btn-primary rounded-pill px-4 py-2">
-                        <i class="bi bi-download me-2"></i>Download
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
 }

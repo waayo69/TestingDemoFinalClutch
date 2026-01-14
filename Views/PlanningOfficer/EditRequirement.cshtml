@@ -77,7 +77,7 @@
                                                         style="width: 100%; height: 100px; object-fit: cover; cursor: pointer;"
                                                         data-media-url="@photo.PhotoPath"
                                                         data-media-type="image"
-                                                        onclick="openFullscreenViewer('@photo.PhotoPath', 'image')"
+                                                        onclick="viewFullImage('@photo.PhotoPath', '@Model.RequirementName')"
                                                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2Y4ZjlmYSIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjEyIiBmaWxsPSIjNmM3NTdkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+SW1hZ2UgTm90IEZvdW5kPC90ZXh0Pjwvc3ZnPg==';" />
                                                 }
                                                 else
@@ -86,7 +86,7 @@
                                                         style="cursor: pointer;"
                                                         data-media-url="@photo.PhotoPath"
                                                         data-media-type="document"
-                                                        onclick="openFullscreenViewer('@photo.PhotoPath', 'document')">
+                                                        onclick="viewFullImage('@photo.PhotoPath', '@Model.RequirementName', 'document')">
                                                         @{
                                                             string icon = ext switch
                                                             {
@@ -136,26 +136,6 @@
                     class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
                     <i class="bi bi-save me-2"></i>Save Changes
                 </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Fullscreen Viewer Modal -->
-<div class="modal fade" id="fullscreenViewerModal" tabindex="-1" aria-labelledby="fullscreenViewerModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-fullscreen modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-dark text-white border-0 py-3">
-                <h5 class="modal-title fw-bold mb-0" id="fullscreenViewerModalLabel">
-                    <i class="bi bi-fullscreen me-2"></i>Fullscreen Viewer
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                    aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-0">
-                <div id="fullscreenViewerContent" class="ratio ratio-16x9">
-                    <!-- Image or document content will be loaded here -->
-                </div>
             </div>
         </div>
     </div>
@@ -287,38 +267,5 @@
         }
     }
 
-    // Fullscreen viewer handler
-    function openFullscreenViewer(url, type) {
-        const modalElement = document.getElementById('fullscreenViewerModal');
-        const content = document.getElementById('fullscreenViewerContent');
-        
-        if (!modalElement || !content) return;
-        
-        // Clear previous content
-        content.innerHTML = '';
-        content.className = 'd-flex align-items-center justify-content-center bg-dark';
-        content.style.minHeight = '100vh';
-        
-        if (type === 'image') {
-            const img = document.createElement('img');
-            img.src = url;
-            img.alt = 'Fullscreen image viewer';
-            img.className = 'img-fluid';
-            img.style.maxWidth = '100%';
-            img.style.maxHeight = '95vh';
-            img.style.objectFit = 'contain';
-            content.appendChild(img);
-        } else if (type === 'document') {
-            const iframe = document.createElement('iframe');
-            iframe.src = url;
-            iframe.className = 'w-100';
-            iframe.style.height = '95vh';
-            iframe.style.border = 'none';
-            content.appendChild(iframe);
-        }
-        
-        // Use Bootstrap's modal API to show the modal
-        const modal = new bootstrap.Modal(modalElement);
-        modal.show();
     }
 </script>

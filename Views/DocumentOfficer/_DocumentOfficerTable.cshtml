@@ -1,0 +1,120 @@
+@model TestingDemo.Models.PaginatedList<TestingDemo.Models.ClientModel>
+@{
+    bool isArchived = ViewData["IsArchived"] as bool? ?? false;
+}
+
+@if (Model.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 custom-table">
+            <thead class="bg-light">
+                <tr>
+                    <th class="ps-4">Client</th>
+                    <th>Contact</th>
+                    <th>Permit Type</th>
+                    <th>Tracking #</th>
+                    <th class="text-center pe-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="ps-4 py-3">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar bg-@(isArchived ? "secondary" : "primary") bg-opacity-10 text-@(isArchived ? "secondary" : "primary") rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                                    <span class="fw-bold">@item.ClientName.Substring(0, 1).ToUpper()</span>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-0">@item.ClientName</h6>
+                                    <span class="text-muted small">@item.CreatedDate.ToShortDateString()</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="small fw-medium">@item.ContactPersonNumber</div>
+                            <div class="text-muted small">@item.Email</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border rounded-pill px-3">@item.TypeOfProject</span>
+                        </td>
+                        <td>
+                            <code class="text-primary fw-bold">@item.TrackingNumber</code>
+                        </td>
+                        <td class="text-center pe-4">
+                            <div class="btn-group btn-group-sm rounded-pill overflow-hidden shadow-sm">
+                                <button type="button" class="btn btn-white border-0 px-3" data-bs-toggle="modal"
+                                        data-bs-target="#docClientModal-@item.Id" title="View Details">
+                                    <i class="bi bi-eye text-info"></i> View
+                                </button>
+                                @if (!isArchived)
+                                {
+                                    <button type="button" class="btn btn-white border-0 px-3 done-btn" data-client-id="@item.Id"
+                                            data-client-name="@item.ClientName" title="Done (Proceed to Finance)">
+                                        <i class="bi bi-check-circle text-success"></i> Done
+                                    </button>
+                                    <form asp-action="ProceedToFinance" asp-route-id="@item.Id" method="post"
+                                          class="d-none" id="doneForm-@item.Id"></form>
+                                    
+                                    <form asp-action="ReturnToCustomerCare" asp-route-id="@item.Id" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-white border-0 px-3" 
+                                                onclick="return confirm('Return this client to Customer Care (Liaison)?');"
+                                                title="Return to Customer Care">
+                                            <i class="bi bi-arrow-counterclockwise text-warning"></i> Return
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <div class="card-footer bg-white border-0 py-4 px-4 d-flex justify-content-between align-items-center">
+            <div class="text-muted small">Showing page @Model.PageIndex of @Model.TotalPages</div>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    @if (Model.HasPreviousPage)
+                    {
+                        <li class="page-item">
+                            <a class="page-link rounded-circle border-0 shadow-sm mx-1" asp-action="Index" 
+                               asp-route-sortOrder="@ViewData["CurrentSort"]" 
+                               asp-route-searchString="@ViewData["CurrentFilter"]"
+                               asp-route-pendingPageNumber="@(isArchived ? null : (int?)Model.PageIndex - 1)"
+                               asp-route-archivedPageNumber="@(isArchived ? (int?)Model.PageIndex - 1 : null)">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    }
+                    <li class="page-item active"><span class="page-link rounded-circle border-0 shadow-sm mx-1">@Model.PageIndex</span></li>
+                    @if (Model.HasNextPage)
+                    {
+                        <li class="page-item">
+                            <a class="page-link rounded-circle border-0 shadow-sm mx-1" asp-action="Index" 
+                               asp-route-sortOrder="@ViewData["CurrentSort"]" 
+                               asp-route-searchString="@ViewData["CurrentFilter"]"
+                               asp-route-pendingPageNumber="@(isArchived ? null : (int?)Model.PageIndex + 1)"
+                               asp-route-archivedPageNumber="@(isArchived ? (int?)Model.PageIndex + 1 : null)">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    }
+}
+else
+{
+    <div class="empty-state text-center py-5">
+        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 100px; height: 100px;">
+            <i class="bi bi-folder2-open fs-1 text-muted"></i>
+        </div>
+        <h4 class="fw-bold">No clients found</h4>
+        <p class="text-muted mb-0">Clients for @(isArchived ? "archive" : "documentation") will appear here.</p>
+    </div>
+}

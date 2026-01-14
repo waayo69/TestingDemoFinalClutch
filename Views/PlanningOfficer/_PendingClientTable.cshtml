@@ -1,0 +1,94 @@
+@model TestingDemo.Models.PaginatedList<TestingDemo.Models.ClientModel>
+@using TestingDemo.Models
+
+@{
+    var requirementsByClient = ViewBag.Requirements as IDictionary<int, List<PermitRequirementModel>> ?? new Dictionary<int, List<PermitRequirementModel>>();
+}
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle mb-0 custom-table">
+        <thead class="bg-light">
+            <tr>
+                <th class="ps-4">Client</th>
+                <th>Project Details</th>
+                <th>Status & Priority</th>
+                <th>Progress</th>
+                <th class="text-center pe-4">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                var reqList = requirementsByClient.ContainsKey(item.Id) ? requirementsByClient[item.Id] : new List<PermitRequirementModel>();
+                var totalReq = reqList.Count;
+                var completedReq = reqList.Count(r => r.IsCompleted);
+                var progressValue = totalReq > 0 ? (int)((double)completedReq / totalReq * 100) : 0;
+
+                <tr class="@(item.UrgencyLevel == "Urgent" ? "table-danger table-opacity-10" : "")">
+                    <td class="ps-4 py-3">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                                <span class="fw-bold">@item.ClientName.Substring(0, 1).ToUpper()</span>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-0">@item.ClientName</h6>
+                                <span class="text-muted small">Tracking: @item.TrackingNumber</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="small fw-medium">@item.TypeOfProject</div>
+                        <div class="text-muted small">@item.CreatedDate.ToShortDateString()</div>
+                    </td>
+                    <td>
+                        <div class="d-flex flex-column gap-1">
+                            <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-2 py-1 small fw-bold" style="width: fit-content;">@item.SubStatus</span>
+                            <span class="badge @(item.UrgencyLevel == "Urgent" ? "bg-danger" : item.UrgencyLevel == "Slightly Urgent" ? "bg-warning text-dark" : "bg-success") rounded-pill px-2 py-1 small" style="width: fit-content;">@item.UrgencyLevel</span>
+                        </div>
+                    </td>
+                    <td style="min-width: 150px;">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="fw-bold text-muted small">@completedReq/@totalReq Done</small>
+                            <small class="text-primary fw-bold small">@progressValue%</small>
+                        </div>
+                        <div class="progress rounded-pill shadow-sm" style="height: 6px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated @(progressValue == 100 ? "bg-success" : "bg-primary")" 
+                                 role="progressbar" style="width: @progressValue%"></div>
+                        </div>
+                    </td>
+                    <td class="text-center pe-4">
+                        <div class="btn-group btn-group-sm rounded-pill overflow-hidden shadow-sm">
+                            <button type="button" class="btn btn-white border-0 px-3" title="View Details"
+                                    data-bs-toggle="modal" data-bs-target="#clientModal-@item.Id">
+                                <i class="bi bi-eye text-primary"></i>
+                            </button>
+                            @if (item.Status == "Planning")
+                            {
+                                <button type="button" class="btn btn-white border-0 px-3" title="Send to Liaison"
+                                        data-bs-toggle="modal" data-bs-target="#proceedToLiaisonModal-@item.Id">
+                                    <i class="bi bi-send text-success"></i>
+                                </button>
+                            }
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Client Details & Action Modals -->
+                @await Html.PartialAsync("_ClientProceedToLiaisonModal", item)
+                @await Html.PartialAsync("_ClientDetailsModal", item)
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Requirement Modals -->
+@foreach (var item in Model)
+{
+    if (requirementsByClient.ContainsKey(item.Id))
+    {
+        foreach (var req in requirementsByClient[item.Id])
+        {
+            @await Html.PartialAsync("EditRequirement", req)
+        }
+    }
+}

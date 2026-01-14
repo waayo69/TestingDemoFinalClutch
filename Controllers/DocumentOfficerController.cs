@@ -1,11 +1,16 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using TestingDemo.Models;
-using Microsoft.AspNetCore.SignalR;
 using TestingDemo.Data;
+using TestingDemo.Models;
+using TestingDemo.ViewModels;
+using Microsoft.AspNetCore.SignalR;
 
 namespace TestingDemo.Controllers
 {
@@ -22,17 +27,66 @@ namespace TestingDemo.Controllers
         }
 
         // GET: DocumentOfficer/Index
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string sortOrder, string searchString, int? pendingPageNumber, int? archivedPageNumber)
         {
-            var clients = await _context.Clients
+            ViewData["CurrentSort"] = sortOrder;
+            ViewData["NameSortParm"] = String.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
+            ViewData["DateSortParm"] = sortOrder == "Date" ? "date_desc" : "Date";
+            ViewData["CurrentFilter"] = searchString;
+
+            int pageSize = 10;
+
+            // Query for Pending Documents
+            var pendingQuery = _context.Clients
                 .Where(c => c.Status == "DocumentOfficer")
                 .Include(c => c.RetainershipBIR)
                 .Include(c => c.RetainershipSPP)
                 .Include(c => c.OneTimeTransaction)
                 .Include(c => c.ExternalAudit)
-                .AsNoTracking()
-                .ToListAsync();
-            return View(clients);
+                .AsNoTracking();
+
+            // Query for Archived Clients
+            var archivedQuery = _context.Clients
+                .Where(c => c.Status == "Archived")
+                .Include(c => c.RetainershipBIR)
+                .Include(c => c.RetainershipSPP)
+                .Include(c => c.OneTimeTransaction)
+                .Include(c => c.ExternalAudit)
+                .AsNoTracking();
+
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                pendingQuery = pendingQuery.Where(s => s.ClientName.Contains(searchString) || s.TypeOfProject.Contains(searchString) || s.TrackingNumber.Contains(searchString));
+                archivedQuery = archivedQuery.Where(s => s.ClientName.Contains(searchString) || s.TypeOfProject.Contains(searchString) || s.TrackingNumber.Contains(searchString));
+            }
+
+            switch (sortOrder)
+            {
+                case "name_desc":
+                    pendingQuery = pendingQuery.OrderByDescending(s => s.ClientName);
+                    archivedQuery = archivedQuery.OrderByDescending(s => s.ClientName);
+                    break;
+                case "Date":
+                    pendingQuery = pendingQuery.OrderBy(s => s.CreatedDate);
+                    archivedQuery = archivedQuery.OrderBy(s => s.CreatedDate);
+                    break;
+                case "date_desc":
+                    pendingQuery = pendingQuery.OrderByDescending(s => s.CreatedDate);
+                    archivedQuery = archivedQuery.OrderByDescending(s => s.CreatedDate);
+                    break;
+                default:
+                    pendingQuery = pendingQuery.OrderByDescending(s => s.CreatedDate);
+                    archivedQuery = archivedQuery.OrderByDescending(s => s.CreatedDate);
+                    break;
+            }
+
+            var viewModel = new DocumentOfficerDashboardViewModel
+            {
+                PendingClients = await PaginatedList<ClientModel>.CreateAsync(pendingQuery, pendingPageNumber ?? 1, pageSize),
+                ArchivedClients = await PaginatedList<ClientModel>.CreateAsync(archivedQuery, archivedPageNumber ?? 1, pageSize)
+            };
+
+            return View(viewModel);
         }
 
         // GET: DocumentOfficer/Details/5

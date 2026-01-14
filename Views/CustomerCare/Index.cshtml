@@ -2,174 +2,305 @@
 @using TestingDemo.Models
 @{
     ViewData["Title"] = "Customer Care Dashboard";
-    var liaisonClients = Model.LiaisonClients;
 }
 
 <div class="container-fluid py-4">
-    <!-- TEMP: Quick jump to Details -->
-    <div class="row mb-2">
-        <div class="col-12">
-            <form asp-action="Details" method="get" class="d-inline-flex align-items-center gap-2">
-                <div class="input-group input-group-sm" style="max-width: 360px;">
-                    <span class="input-group-text"><i class="bi bi-hash"></i></span>
-                    <input type="number" name="id" class="form-control" placeholder="Enter Client ID to open Details" required />
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-box-arrow-in-right"></i> Open Details</button>
+    <!-- Premium Header -->
+    <div class="dashboard-header mb-4 p-4 rounded-4 shadow-sm bg-white border-0">
+        <div class="row align-items-center g-3">
+            <div class="col-12 col-lg-6">
+                <div class="d-flex align-items-center">
+                    <div class="header-icon-box bg-primary bg-opacity-10 text-primary p-3 rounded-3 me-3">
+                        <i class="bi bi-people fs-3"></i>
+                    </div>
+                    <div>
+                        <h2 class="fw-bold mb-0 text-dark">@ViewData["Title"]</h2>
+                        <p class="text-muted mb-0">Manage liaison clients and documentation progress</p>
+                    </div>
                 </div>
-                <span class="text-muted small ms-2">Temporary navigation for testing</span>
-            </form>
-        </div>
-    </div>
-    <!-- Header -->
-    <div class="row mb-4 align-items-center">
-        <div class="col-12 col-md-6 mb-2 mb-md-0">
-            <h2 class="fw-bold mb-0"><i class="bi bi-people"></i> @ViewData["Title"]</h2>
-        </div>
-        <div class="col-12 col-md-6 d-flex flex-wrap justify-content-md-end align-items-center gap-2">
-            <!-- Search Form -->
-            <form asp-action="Index" method="get" class="d-flex flex-nowrap">
-                <div class="input-group input-group-sm">
-                    <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" class="form-control"
-                        placeholder="Find by name or permit..." aria-label="Search clients" />
-                    <button class="btn btn-outline-secondary" type="submit" title="Search"><i
-                            class="bi bi-search"></i></button>
-                    @if (!String.IsNullOrEmpty(ViewData["CurrentFilter"] as string))
-                    {
-                        <a asp-action="Index" asp-route-sortOrder="@ViewData["CurrentSort"]"
-                            class="btn btn-outline-secondary" title="Clear Search"><i class="bi bi-x-lg"></i></a>
-                    }
+            </div>
+            <div class="col-12 col-lg-6">
+                <div class="d-flex flex-wrap justify-content-lg-end align-items-center gap-3">
+                    <form asp-action="Index" method="get" class="search-group">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0 border-0 shadow-sm ps-3">
+                                <i class="bi bi-search text-muted"></i>
+                            </span>
+                            <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" 
+                                   class="form-control border-start-0 border-0 shadow-sm ps-2 py-2 rounded-end" 
+                                   placeholder="Search tracking #, name..." style="width: 250px;" />
+                            @if (!String.IsNullOrEmpty(ViewData["CurrentFilter"] as string))
+                            {
+                                <a asp-action="Index" class="btn btn-light border-0 shadow-sm ms-2 rounded-circle" title="Clear search">
+                                    <i class="bi bi-x-lg"></i>
+                                </a>
+                            }
+                        </div>
+                    </form>
+
+                    <div class="dropdown">
+                        <button class="btn btn-white shadow-sm border-0 px-3 py-2 dropdown-toggle d-flex align-items-center gap-2 rounded-3" 
+                                type="button" id="sortDropdown" data-bs-toggle="dropdown">
+                            <i class="bi bi-sort-down text-primary"></i>
+                            <span class="fw-semibold">Sort By</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-2 p-2 rounded-3">
+                            <li><a class="dropdown-item rounded-2 py-2" asp-action="Index" asp-route-sortOrder="" asp-route-searchString="@ViewData["CurrentFilter"]">
+                                <i class="bi bi-alphabet me-2"></i>Name (A-Z)</a></li>
+                            <li><a class="dropdown-item rounded-2 py-2" asp-action="Index" asp-route-sortOrder="@Model.NameSortParm" asp-route-searchString="@ViewData["CurrentFilter"]">
+                                <i class="bi bi-alphabet-reverse me-2"></i>Name (Z-A)</a></li>
+                            <li><a class="dropdown-item rounded-2 py-2" asp-action="Index" asp-route-sortOrder="Date" asp-route-searchString="@ViewData["CurrentFilter"]">
+                                <i class="bi bi-calendar-check me-2"></i>Date (Oldest)</a></li>
+                            <li><a class="dropdown-item rounded-2 py-2" asp-action="Index" asp-route-sortOrder="@Model.DateSortParm" asp-route-searchString="@ViewData["CurrentFilter"]">
+                                <i class="bi bi-calendar-event me-2"></i>Date (Newest)</a></li>
+                        </ul>
+                    </div>
                 </div>
-            </form>
-            <div class="dropdown ms-2">
-                <a class="btn btn-outline-secondary dropdown-toggle btn-sm" href="#" role="button" id="sortMenuLink"
-                    data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-sort-down"></i>
-                    @if (ViewData["CurrentSort"]?.ToString() == "name_desc")
-                    {
-                        <span>Name (Z-A)</span>
-                    }
-                    else if (ViewData["CurrentSort"]?.ToString() == "Date")
-                    {
-
-                        <span>Date (Oldest)</span>
-                    }
-                    else if (ViewData["CurrentSort"]?.ToString() == "date_desc")
-                    {
-
-                        <span>Date (Newest)</span>
-                    }
-                    else
-                    {
-
-                        <span>Name (A-Z)</span>
-                    }
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="sortMenuLink">
-                    <li><a class="dropdown-item" asp-action="Index" asp-route-sortOrder="">Name (A-Z)</a></li>
-                    <li><a class="dropdown-item" asp-action="Index" asp-route-sortOrder="name_desc"
-                            asp-route-searchString="@ViewData["CurrentFilter"]">Name (Z-A)</a></li>
-                    <li><a class="dropdown-item" asp-action="Index" asp-route-sortOrder="Date"
-                            asp-route-searchString="@ViewData["CurrentFilter"]">Date (Oldest)</a></li>
-                    <li><a class="dropdown-item" asp-action="Index" asp-route-sortOrder="date_desc"
-                            asp-route-searchString="@ViewData["CurrentFilter"]">Date (Newest)</a></li>
-                </ul>
             </div>
         </div>
     </div>
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+        <div class="alert alert-success alert-dismissible border-0 shadow-sm fade show mb-4 rounded-3 d-flex align-items-center" role="alert">
+            <div class="bg-success text-white p-2 rounded-circle me-3">
+                <i class="bi bi-check-lg"></i>
+            </div>
+            <div>@TempData["SuccessMessage"]</div>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
 
-    <div class="row g-4">
-        <!-- Liaison Clients Column -->
-        <div class="col-12">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 fw-semibold"><i class="bi bi-person-check"></i> Clients in Liaison</h5>
-                    <span class="badge bg-primary rounded-pill">@liaisonClients.TotalCount</span>
-                </div>
-                <div class="card-body p-0">
-                    @if (liaisonClients.Any())
-                    {
-                        <div class="table-responsive">
-                            <table class="table table-hover table-striped align-middle mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th scope="col">Client</th>
-                                        <th scope="col">Status</th>
-                                        <th scope="col" class="text-center">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var item in liaisonClients)
-                                    {
-                                        <tr>
-                                            <td>
-                                                <div class="fw-bold">@item.ClientName</div>
-                                                <div class="text-muted small">@item.TypeOfProject |
-                                                    @item.CreatedDate.ToShortDateString()</div>
-                                            </td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <span class="badge bg-primary me-2">@item.SubStatus</span>
-                                                </div>
-                                            </td>
-                                            <td class="text-center">
-                                                <div class="btn-group btn-group-sm" role="group">
-                                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-info" title="Inspect">
-                                                        <i class="bi bi-eye"></i>
-                                                    </a>
-                                                    <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                                        data-bs-target="#sendToDocModal" data-client-id="@item.Id"
-                                                        data-client-name="@item.ClientName" title="Send to Documentation"><i
-                                                            class="bi bi-send"></i></button>
-                                                    <button type="button" class="btn btn-warning" data-bs-toggle="modal"
-                                                        data-bs-target="#returnToPlanningModal" data-client-id="@item.Id"
-                                                        data-client-name="@item.ClientName" title="Return to Planning"><i
-                                                            class="bi bi-arrow-counterclockwise"></i></button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="text-center p-4">
-                            <p class="text-muted mb-0">No clients currently in Liaison.</p>
-                        </div>
-                    }
-                </div>
-                @if (liaisonClients.TotalPages > 1)
+    <!-- Tabbed Dashboard -->
+    <div class="dashboard-card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+        <div class="card-header bg-white border-bottom-0 pt-4 px-4">
+            <ul class="nav nav-pills custom-tabs mb-0" id="ccDashboardTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active px-4 py-3 fw-bold d-flex align-items-center gap-2" 
+                            id="liaison-tab" data-bs-toggle="tab" data-bs-target="#liaison" type="button" role="tab">
+                        <i class="bi bi-person-check fs-5"></i>
+                        <span>Liaison Clients</span>
+                        <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary ms-2">@Model.LiaisonClients.TotalCount</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link px-4 py-3 fw-bold d-flex align-items-center gap-2" 
+                            id="sent-tab" data-bs-toggle="tab" data-bs-target="#sent" type="button" role="tab">
+                        <i class="bi bi-send-check fs-5"></i>
+                        <span>Sent / Completed</span>
+                        <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary ms-2">@Model.CompletedClients.TotalCount</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <div class="tab-content p-0" id="ccDashboardTabsContent">
+            <!-- Liaison Clients Tab -->
+            <div class="tab-pane fade show active" id="liaison" role="tabpanel" aria-labelledby="liaison-tab">
+                @if (Model.LiaisonClients.Any())
                 {
-                    <div class="card-footer bg-light">
-                        <nav aria-label="Liaison clients navigation">
-                            <ul class="pagination justify-content-center mb-0 flex-wrap">
-                                <li class="page-item @(liaisonClients.HasPreviousPage ? "" : "disabled")">
-                                    <a class="page-link" asp-action="Index"
-                                        asp-route-liaisonPageNumber="@(liaisonClients.PageIndex - 1)"
-                                        asp-route-sortOrder="@ViewData["CurrentSort"]"
-                                        asp-route-searchString="@ViewData["CurrentFilter"]">&laquo;</a>
-                                </li>
-                                @for (int i = 1; i <= liaisonClients.TotalPages; i++)
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 custom-table">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Client Information</th>
+                                    <th>Status Details</th>
+                                    <th>Urgency</th>
+                                    <th class="text-center pe-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.LiaisonClients)
                                 {
-                                    <li class="page-item @(i == liaisonClients.PageIndex ? "active" : "")"><a class="page-link"
-                                            asp-action="Index" asp-route-liaisonPageNumber="@i"
-                                            asp-route-sortOrder="@ViewData["CurrentSort"]"
-                                            asp-route-searchString="@ViewData["CurrentFilter"]">@i</a></li>
+                                    <tr>
+                                        <td class="ps-4 py-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                                                    <span class="fw-bold">@item.ClientName.Substring(0, 1).ToUpper()</span>
+                                                </div>
+                                                <div>
+                                                    <h6 class="fw-bold mb-0">@item.ClientName</h6>
+                                                    <div class="d-flex align-items-center gap-2 mt-1">
+                                                        <span class="text-muted small">@item.TrackingNumber</span>
+                                                        <span class="bullet"></span>
+                                                        <span class="text-muted small">@item.TypeOfProject</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2 border-0">
+                                                <i class="bi bi-clock-history me-1"></i> @item.SubStatus
+                                            </div>
+                                            <div class="text-muted small mt-1 ps-1">
+                                                Joined @item.CreatedDate.ToString("MMM dd, yyyy")
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @{
+                                                var urgencyClass = item.UrgencyLevel == "High" ? "danger" : (item.UrgencyLevel == "Medium" ? "warning" : "info");
+                                            }
+                                            <span class="badge bg-@urgencyClass bg-opacity-10 text-@urgencyClass border border-@urgencyClass border-opacity-25 px-3 py-2 rounded-pill">
+                                                @item.UrgencyLevel
+                                            </span>
+                                        </td>
+                                        <td class="text-center pe-4">
+                                            <div class="btn-group shadow-sm rounded-pill overflow-hidden">
+                                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-white btn-sm border-0 px-3 py-2" title="Inspect">
+                                                    <i class="bi bi-eye text-primary"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-white btn-sm border-0 px-3 py-2" 
+                                                        data-bs-toggle="modal" data-bs-target="#sendToDocModal" 
+                                                        data-client-id="@item.Id" data-client-name="@item.ClientName" title="Send to Documentation">
+                                                    <i class="bi bi-send text-success"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-white btn-sm border-0 px-3 py-2" 
+                                                        data-bs-toggle="modal" data-bs-target="#returnToPlanningModal" 
+                                                        data-client-id="@item.Id" data-client-name="@item.ClientName" title="Return to Planning">
+                                                    <i class="bi bi-arrow-left text-warning"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
                                 }
-                                <li class="page-item @(liaisonClients.HasNextPage ? "" : "disabled")">
-                                    <a class="page-link" asp-action="Index"
-                                        asp-route-liaisonPageNumber="@(liaisonClients.PageIndex + 1)"
-                                        asp-route-sortOrder="@ViewData["CurrentSort"]"
-                                        asp-route-searchString="@ViewData["CurrentFilter"]">&raquo;</a>
-                                </li>
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-state text-center py-5">
+                        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 100px; height: 100px;">
+                            <i class="bi bi-person-check fs-1 text-muted"></i>
+                        </div>
+                        <h4 class="fw-bold">No clients in Liaison</h4>
+                        <p class="text-muted mb-0">Clients you need to handle will appear here.</p>
+                    </div>
+                }
+
+                @if (Model.LiaisonClients.TotalPages > 1)
+                {
+                    <div class="card-footer bg-white border-0 py-4 px-4 d-flex justify-content-between align-items-center">
+                        <div class="text-muted small">Showing page @Model.LiaisonClients.PageIndex of @Model.LiaisonClients.TotalPages</div>
+                        <nav aria-label="Liaison page navigation">
+                            <ul class="pagination pagination-sm mb-0">
+                                @if (Model.LiaisonClients.HasPreviousPage)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link rounded-circle border-0 shadow-sm mx-1" asp-action="Index" 
+                                           asp-route-liaisonPageNumber="@(Model.LiaisonClients.PageIndex - 1)" 
+                                           asp-route-sortOrder="@ViewData["CurrentSort"]" 
+                                           asp-route-searchString="@ViewData["CurrentFilter"]">
+                                            <i class="bi bi-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                }
+                                <li class="page-item active"><span class="page-link rounded-circle border-0 shadow-sm mx-1">@Model.LiaisonClients.PageIndex</span></li>
+                                @if (Model.LiaisonClients.HasNextPage)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link rounded-circle border-0 shadow-sm mx-1" asp-action="Index" 
+                                           asp-route-liaisonPageNumber="@(Model.LiaisonClients.PageIndex + 1)" 
+                                           asp-route-sortOrder="@ViewData["CurrentSort"]" 
+                                           asp-route-searchString="@ViewData["CurrentFilter"]">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </nav>
+                    </div>
+                }
+            </div>
+
+            <!-- Sent / Completed Tab -->
+            <div class="tab-pane fade" id="sent" role="tabpanel" aria-labelledby="sent-tab">
+                @if (Model.CompletedClients.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 custom-table">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Client Information</th>
+                                    <th>Status</th>
+                                    <th>Tracking #</th>
+                                    <th class="text-center pe-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.CompletedClients)
+                                {
+                                    <tr>
+                                        <td class="ps-4 py-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar bg-secondary bg-opacity-10 text-secondary rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                                                    <span class="fw-bold">@item.ClientName.Substring(0, 1).ToUpper()</span>
+                                                </div>
+                                                <div>
+                                                    <h6 class="fw-bold mb-0">@item.ClientName</h6>
+                                                    <span class="text-muted small">@item.TypeOfProject</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">
+                                                <i class="bi bi-check-circle-fill me-1"></i> @item.Status
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <code class="bg-light px-2 py-1 rounded text-dark">@item.TrackingNumber</code>
+                                        </td>
+                                        <td class="text-center pe-4">
+                                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                                                <i class="bi bi-journal-text me-1"></i> View History
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-state text-center py-5">
+                        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 100px; height: 100px;">
+                            <i class="bi bi-send-check fs-1 text-muted"></i>
+                        </div>
+                        <h4 class="fw-bold">No Sent / Completed Clients</h4>
+                        <p class="text-muted mb-0">Clients you've processed will show up here.</p>
+                    </div>
+                }
+
+                @if (Model.CompletedClients.TotalPages > 1)
+                {
+                    <div class="card-footer bg-white border-0 py-4 px-4 d-flex justify-content-between align-items-center">
+                        <div class="text-muted small">Showing page @Model.CompletedClients.PageIndex of @Model.CompletedClients.TotalPages</div>
+                        <nav aria-label="Completed page navigation">
+                            <ul class="pagination pagination-sm mb-0">
+                                @if (Model.CompletedClients.HasPreviousPage)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link rounded-circle border-0 shadow-sm mx-1" asp-action="Index" 
+                                           asp-route-completedPageNumber="@(Model.CompletedClients.PageIndex - 1)" 
+                                           asp-route-sortOrder="@ViewData["CurrentSort"]" 
+                                           asp-route-searchString="@ViewData["CurrentFilter"]">
+                                            <i class="bi bi-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                }
+                                <li class="page-item active"><span class="page-link rounded-circle border-0 shadow-sm mx-1">@Model.CompletedClients.PageIndex</span></li>
+                                @if (Model.CompletedClients.HasNextPage)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link rounded-circle border-0 shadow-sm mx-1" asp-action="Index" 
+                                           asp-route-completedPageNumber="@(Model.CompletedClients.PageIndex + 1)" 
+                                           asp-route-sortOrder="@ViewData["CurrentSort"]" 
+                                           asp-route-searchString="@ViewData["CurrentFilter"]">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                }
                             </ul>
                         </nav>
                     </div>
@@ -179,74 +310,81 @@
     </div>
 </div>
 
-<!-- Modals -->
-@* Client Details Modals removed - now using direct page navigation *@
-<!-- Send To Documentation Modal -->
+<!-- Modals (maintained from original but restyled) -->
 <div class="modal fade" id="sendToDocModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Send to Documentation</h5><button type="button" class="btn-close"
-                    data-bs-dismiss="modal"></button>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0 ps-4 pt-4">
+                <h5 class="modal-title fw-bold">Send to Documentation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <p class="mb-2">Client: <strong id="stdClientName"></strong></p>
-                <div id="stdAlert" class="alert alert-warning d-none">
-                    <i class="bi bi-exclamation-triangle me-1"></i>
-                    All required requirements must have at least one file uploaded before proceeding.
+            <div class="modal-body p-4">
+                <div class="client-brief mb-4 p-3 bg-light rounded-3 d-flex align-items-center">
+                    <div class="avatar bg-primary text-white rounded-3 p-2 me-3">
+                        <i class="bi bi-person-fill"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Proceeding for:</div>
+                        <strong id="stdClientName" class="fs-5 text-dark"></strong>
+                    </div>
                 </div>
-                <div class="mb-2 fw-semibold">Requirements</div>
-                <ul id="stdRequirements" class="list-group mb-2"></ul>
-                <button type="button" class="btn btn-outline-info btn-sm" id="stdViewFilesBtn">
-                    <i class="bi bi-folder2-open"></i> View Files
-                </button>
+
+                <div id="stdAlert" class="alert alert-warning border-0 rounded-3 d-none mb-4 animate__animated animate__shakeX">
+                    <div class="d-flex">
+                        <i class="bi bi-exclamation-triangle-fill fs-4 me-3 text-warning"></i>
+                        <div>
+                            <div class="fw-bold">Prerequisites Missing</div>
+                            <div class="small">All required requirements must have at least one file uploaded before proceeding.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h6 class="fw-bold mb-3 d-flex align-items-center">
+                    <i class="bi bi-journal-check me-2 text-primary"></i> Requirement Status
+                </h6>
+                <ul id="stdRequirements" class="list-group list-group-flush mb-4 rounded-3 border"></ul>
+                
+                <div class="d-grid mt-2">
+                    <button type="button" class="btn btn-outline-info rounded-pill py-2" id="stdViewFilesBtn">
+                        <i class="bi bi-folder2-open me-2"></i> Open Details to Upload Files
+                    </button>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
                 <form id="stdForm" method="post">
-                    <button id="stdConfirmBtn" type="submit" class="btn btn-primary">
-                        <i class="bi bi-send"></i> Send to Documentation
+                    <button id="stdConfirmBtn" type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm" disabled>
+                        <i class="bi bi-send-fill me-2"></i> Confirm & Proceed
                     </button>
                 </form>
             </div>
         </div>
     </div>
-    </div>
-<!-- Return to Planning Modal -->
-<div class="modal fade" id="returnToPlanningModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirm Return to Planning</h5><button type="button" class="btn-close"
-                    data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to return <strong id="rtpClientName"></strong> to the Planning Officer?</p>
-                <p class="text-muted small">This client will be moved back to the Planning stage.</p>
-            </div>
-            <div class="modal-footer"><button type="button" class="btn btn-secondary"
-                    data-bs-dismiss="modal">Cancel</button>
-                <form id="rtpForm" method="post"><button type="submit" class="btn btn-warning">Return to
-                        Planning</button></form>
-            </div>
-        </div>
-    </div>
 </div>
-<!-- Proceed to Document Officer Modal -->
-<div class="modal fade" id="proceedToDocOfficerModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirm Proceed to Document Officer</h5><button type="button" class="btn-close"
-                    data-bs-dismiss="modal"></button>
+
+<div class="modal fade" id="returnToPlanningModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0 ps-4 pt-4 text-warning">
+                <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-octagon-fill me-2"></i> Confirm Return</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <p>Are you sure you want to proceed <strong id="pdoClientName"></strong> to the Document Officer?</p>
-                <p class="text-muted small">The client will be moved to the Document Officer for the next stage.</p>
+            <div class="modal-body p-4 text-center">
+                <div class="mb-4">
+                    <div class="bg-warning bg-opacity-10 text-warning d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 80px; height: 80px;">
+                        <i class="bi bi-arrow-counterclockwise fs-1"></i>
+                    </div>
+                </div>
+                <h5 class="fw-bold text-dark">Return to Planning Officer?</h5>
+                <p class="text-muted px-3">Are you sure you want to return <strong id="rtpClientName"></strong> to the Planning stage? This will move the client back to their pending list.</p>
             </div>
-            <div class="modal-footer"><button type="button" class="btn btn-secondary"
-                    data-bs-dismiss="modal">Cancel</button>
-                <form id="pdoForm" method="post"><button type="submit" class="btn btn-primary">Proceed</button></form>
+            <div class="modal-footer border-0 p-4 pt-0 justify-content-center">
+                <button type="button" class="btn btn-light rounded-pill px-4 m-1" data-bs-dismiss="modal">Cancel</button>
+                <form id="rtpForm" method="post" class="m-1">
+                    <button type="submit" class="btn btn-warning rounded-pill px-4 shadow-sm text-dark fw-bold">
+                        Confirm Return
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -254,12 +392,39 @@
 
 <audio id="notifySound" src="/sounds/Notifications.wav" preload="auto"></audio>
 
+
 @section Scripts {
     <script>
-        // Modal-related JavaScript removed - now using direct page navigation
-
         document.addEventListener('DOMContentLoaded', function () {
-            // Send to Documentation
+            // Tab persistence
+            const activeTabKey = 'cc_active_tab';
+            const tabs = document.querySelectorAll('#ccDashboardTabs button');
+            
+            // 1. Check URL parameters first
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('completedPageNumber')) {
+                const tab = document.querySelector('#sent-tab');
+                if (tab) bootstrap.Tab.getOrCreateInstance(tab).show();
+            } else if (urlParams.has('liaisonPageNumber')) {
+                const tab = document.querySelector('#liaison-tab');
+                if (tab) bootstrap.Tab.getOrCreateInstance(tab).show();
+            } else {
+                // 2. Check localStorage
+                const lastTab = localStorage.getItem(activeTabKey);
+                if (lastTab) {
+                    const tab = document.getElementById(lastTab);
+                    if (tab) bootstrap.Tab.getOrCreateInstance(tab).show();
+                }
+            }
+
+            // Save tab state
+            tabs.forEach(tab => {
+                tab.addEventListener('shown.bs.tab', (e) => {
+                    localStorage.setItem(activeTabKey, e.target.id);
+                });
+            });
+
+            // Send to Documentation Modal Logic
             var stdModal = document.getElementById('sendToDocModal');
             stdModal.addEventListener('show.bs.modal', function (event) {
                 var button = event.relatedTarget;
@@ -270,99 +435,84 @@
                 var alertEl = stdModal.querySelector('#stdAlert');
                 var confirmBtn = stdModal.querySelector('#stdConfirmBtn');
                 var form = stdModal.querySelector('#stdForm');
-                listEl.innerHTML = '<li class="list-group-item text-muted">Loading...</li>';
+                
+                listEl.innerHTML = '<li class="list-group-item text-center p-4"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Loading...</li>';
                 alertEl.classList.add('d-none');
                 confirmBtn.disabled = true;
                 form.action = '/CustomerCare/ProceedToDocumentOfficer/' + clientId;
-                // View Files button navigates to details page
+                
+                // View Files button
                 var viewBtn = stdModal.querySelector('#stdViewFilesBtn');
                 viewBtn.onclick = function(){
-                    window.open('/CustomerCare/Details/' + clientId, '_blank');
+                   window.location.href = '/CustomerCare/Details/' + clientId;
                 };
+
                 fetch('/CustomerCare/GetRequirementSummary?id=' + clientId, { cache: 'no-store' })
-                    .then(function(r){ if(!r.ok) throw new Error('net'); return r.json(); })
-                    .then(function(data){
+                    .then(r => r.json())
+                    .then(data => {
                         listEl.innerHTML = '';
-                        var items = (data && data.items) || [];
+                        var items = data.items || [];
                         var hasMissing = false;
-                        items.forEach(function(it){
+                        items.forEach(it => {
                             var li = document.createElement('li');
-                            li.className = 'list-group-item d-flex justify-content-between align-items-center';
-                            li.textContent = it.requirementName + (it.isRequired ? ' *' : '');
-                            var badge = document.createElement('span');
-                            badge.className = 'badge bg-' + (it.files > 0 ? 'success' : 'secondary');
-                            badge.textContent = it.files + ' file' + (it.files === 1 ? '' : 's');
-                            li.appendChild(badge);
+                            li.className = 'list-group-item d-flex justify-content-between align-items-center py-2 px-0 border-0 border-bottom';
+                            
+                            const iconClass = it.files > 0 ? 'bi-check-circle-fill text-success' : (it.isRequired ? 'bi-exclamation-circle-fill text-danger' : 'bi-circle text-muted');
+                            
+                            li.innerHTML = `
+                                <div class="d-flex align-items-center">
+                                    <i class="bi ${iconClass} me-2 fs-5"></i>
+                                    <div>
+                                        <div class="fw-medium small">${it.requirementName}</div>
+                                        ${it.isRequired ? '<span class="badge bg-danger bg-opacity-10 text-danger" style="font-size: 0.6rem;">REQUIRED</span>' : ''}
+                                    </div>
+                                </div>
+                                <span class="badge ${it.files > 0 ? 'bg-success bg-opacity-10 text-success' : 'bg-light text-muted'} rounded-pill">
+                                    ${it.files} files
+                                </span>
+                            `;
                             listEl.appendChild(li);
                             if (it.isRequired && (!it.files || it.files === 0)) hasMissing = true;
                         });
-                        if (items.length === 0){
-                            listEl.innerHTML = '<li class="list-group-item text-muted">No requirements added.</li>';
+
+                        if (items.length === 0) {
+                            listEl.innerHTML = '<li class="list-group-item text-muted text-center p-3 border-0">No requirements defined.</li>';
                         }
-                        if (hasMissing){
+
+                        if (hasMissing) {
                             alertEl.classList.remove('d-none');
                             confirmBtn.disabled = true;
+                            confirmBtn.innerHTML = '<i class="bi bi-lock-fill me-2"></i> Requirements Required';
                         } else {
                             alertEl.classList.add('d-none');
                             confirmBtn.disabled = false;
+                            confirmBtn.innerHTML = '<i class="bi bi-send-fill me-2"></i> Confirm & Proceed';
                         }
                     })
-                    .catch(function(){
-                        listEl.innerHTML = '<li class="list-group-item text-danger">Failed to load requirements.</li>';
-                        alertEl.classList.remove('d-none');
+                    .catch(() => {
+                        listEl.innerHTML = '<li class="list-group-item text-danger text-center p-3">Failed to load requirements.</li>';
                         confirmBtn.disabled = true;
                     });
             });
-            // Return to Planning
+
+            // Return to Planning Modal Logic
             var rtpModal = document.getElementById('returnToPlanningModal');
             rtpModal.addEventListener('show.bs.modal', function (event) {
                 var button = event.relatedTarget;
                 var clientId = button.getAttribute('data-client-id');
                 var clientName = button.getAttribute('data-client-name');
-                var modalBodyName = rtpModal.querySelector('#rtpClientName');
-                var form = rtpModal.querySelector('#rtpForm');
-                modalBodyName.textContent = clientName;
-                form.action = '/CustomerCare/ReturnToPlanning/' + clientId;
+                rtpModal.querySelector('#rtpClientName').textContent = clientName;
+                rtpModal.querySelector('#rtpForm').action = '/CustomerCare/ReturnToPlanning/' + clientId;
             });
-            // Proceed to Document Officer
-            var pdoModal = document.getElementById('proceedToDocOfficerModal');
-            pdoModal.addEventListener('show.bs.modal', function (event) {
-                var button = event.relatedTarget;
-                var clientId = button.getAttribute('data-client-id');
-                var clientName = button.getAttribute('data-client-name');
-                var modalBodyName = pdoModal.querySelector('#pdoClientName');
-                var form = pdoModal.querySelector('#pdoForm');
-                modalBodyName.textContent = clientName;
-                form.action = '/CustomerCare/ProceedToDocumentOfficer/' + clientId;
-            });
+            
+            // SignalR Update Handling
+            if (window.connection) {
+                connection.on("ReceiveUpdate", function (message) {
+                    // Flash notification or reload
+                    // To maintain state, we just reload for now as per dashboard standard
+                    location.reload();
+                });
+            }
         });
-        // Store initial client IDs for Liaison table only
-        let liaisonClientIds = Array.from(document.querySelectorAll('.col-lg-6:first-child tbody tr')).map(row => row.querySelector('[data-client-id]')?.getAttribute('data-client-id')).filter(Boolean);
-        function playNotifySound() {
-            var audio = document.getElementById('notifySound');
-            if (audio) {
-                audio.currentTime = 0;
-                audio.play();
-            }
-        }
-        function renderCustomerCare(data) {
-            // Check for new clients in Liaison
-            let newLiaisonIds = (data.LiaisonClients.items || []).map(c => c.id?.toString());
-            let isNewLiaison = newLiaisonIds.some(id => !liaisonClientIds.includes(id));
-            if (isNewLiaison) {
-                playNotifySound();
-            }
-            // Modal check removed - now using direct page navigation
-            // Optionally: soft refresh could be implemented here if needed
-        }
-        if (window.connection) {
-            connection.on("ReceiveUpdate", function (message) {
-                fetch('/CustomerCare/GetLatestData')
-                    .then(response => response.json())
-                    .then(data => {
-                        renderCustomerCare(data);
-                    });
-            });
-        }
     </script>
 }
