@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TestingDemo.Data;
 
@@ -11,9 +12,11 @@ using TestingDemo.Data;
 namespace TestingDemo.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260208190212_AddAssignedPlanningOfficer")]
+    partial class AddAssignedPlanningOfficer
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -313,9 +316,6 @@ namespace TestingDemo.Migrations
                     b.Property<string>("AssignedPlanningOfficerId")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("ClaimedDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("ClientName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -385,9 +385,6 @@ namespace TestingDemo.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TaxId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TrackingMessage")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TrackingNumber")

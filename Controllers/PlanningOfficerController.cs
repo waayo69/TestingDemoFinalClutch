@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -18,11 +19,13 @@ namespace TestingDemo.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public PlanningOfficerController(ApplicationDbContext context, IHubContext<NotificationHub> hubContext)
+        public PlanningOfficerController(ApplicationDbContext context, IHubContext<NotificationHub> hubContext, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _hubContext = hubContext;
+            _userManager = userManager;
         }
 
         // GET: PlanningOfficer/Index
@@ -50,6 +53,16 @@ namespace TestingDemo.Controllers
                 .Include(c => c.OneTimeTransaction)
                 .Include(c => c.ExternalAudit)
                 .AsNoTracking();
+
+            // Filter by assigned Planning Officer (unless user is Admin)
+            if (User.IsInRole("PlanningOfficer") && !User.IsInRole("Admin"))
+            {
+                var currentUserId = _userManager.GetUserId(User);
+                
+                // Show clients assigned to current user OR unassigned clients
+                pendingQuery = pendingQuery.Where(c => c.AssignedPlanningOfficerId == currentUserId || c.AssignedPlanningOfficerId == null);
+                completedQuery = completedQuery.Where(c => c.AssignedPlanningOfficerId == currentUserId || c.AssignedPlanningOfficerId == null);
+            }
 
             if (!string.IsNullOrEmpty(searchString))
             {

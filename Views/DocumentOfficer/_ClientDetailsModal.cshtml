@@ -78,6 +78,13 @@
                                     </dd>
                                     <dt class="col-sm-4">Submitted Date</dt>
                                     <dd class="col-sm-8">@Model.CreatedDate.ToString("MMM dd, yyyy hh:mm tt")</dd>
+                                    @if(Model.Status == "Claimed" || Model.SubStatus == "Ready for Claiming")
+                                    {
+                                        <dt class="col-sm-4">Claimed Date</dt>
+                                        <dd class="col-sm-8 fw-bold @(Model.Status == "Claimed" ? "text-success" : "text-muted")">
+                                            @(Model.Status == "Claimed" && Model.ClaimedDate.HasValue ? Model.ClaimedDate.Value.ToString("MMM dd, yyyy hh:mm tt") : "To be claimed")
+                                        </dd>
+                                    }
                                 </dl>
                             </div>
                         </div>
@@ -307,6 +314,16 @@
                 </div>
             </div>
             <div class="modal-footer bg-light">
+                @if (Model.SubStatus == "Ready for Claiming")
+                {
+                    <form method="post" action="/Archive/MarkAsClaimed/@Model.Id" class="d-inline me-2">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="returnUrl" value="/DocumentOfficer?archivedPageNumber=1" />
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle me-1"></i>Mark as Claimed
+                        </button>
+                    </form>
+                }
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                     <i class="bi bi-x-circle me-1"></i>Close
                 </button>

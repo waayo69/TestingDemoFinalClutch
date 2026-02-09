@@ -52,6 +52,14 @@
                                     data-bs-toggle="modal" data-bs-target="#clientModal-@item.Id">
                                 <i class="bi bi-eye text-primary"></i>
                             </button>
+                            @if (ViewData["IsClearanceTable"] as bool? == true)
+                            {
+                                <button type="button" class="btn btn-white border-0 px-3" title="Mark as Done"
+                                        data-bs-toggle="modal" data-bs-target="#markAsDoneModal"
+                                        data-client-id="@item.Id" data-client-name="@item.ClientName">
+                                    <i class="bi bi-check-circle text-success"></i>
+                                </button>
+                            }
                             <button type="button" class="btn btn-white border-0 px-3" data-bs-toggle="modal"
                                     data-bs-target="#deleteModal" data-client-id="@item.Id" data-client-name="@item.ClientName"
                                     title="Delete">
@@ -69,7 +77,7 @@
 @foreach (var item in Model)
 {
     <div class="modal fade" id="clientModal-@item.Id" tabindex="-1" aria-labelledby="clientModalLabel-@item.Id" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     @{
@@ -101,10 +109,10 @@
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="row g-2 mb-2">
-                        <div class="col-12 col-md-6"><small class="text-muted d-block">Tracking #</small><span class="text-monospace fw-bold">@item.TrackingNumber</span></div>
-                        <div class="col-12 col-md-6"><small class="text-muted d-block">Submitted</small>@item.CreatedDate.ToString("yyyy-MM-dd HH:mm")</div>
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6"><small class="text-muted d-block">Tracking #</small><span class="text-monospace fw-bold">@item.TrackingNumber</span></div>
+                        <div class="col-md-6"><small class="text-muted d-block">Submitted</small>@item.CreatedDate.ToString("yyyy-MM-dd HH:mm")</div>
                     </div>
                     
                     @if (!string.IsNullOrWhiteSpace(item.PlanningReturnNote))
@@ -125,129 +133,128 @@
                         </div>
                     </div>
 
-                    <!-- Client Information -->
-                    <div class="card mb-3">
-                        <div class="card-header bg-primary text-white">
-                            <i class="bi bi-person-badge"></i> Client Information
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-2">
-                                <div class="col-md-6">
-                                    <small class="text-muted d-block">Client Name</small>
-                                    <strong>@item.ClientName</strong>
+                    <!-- Two Column Layout for Information Cards -->
+                    <div class="row g-3">
+                        <!-- Left Column -->
+                        <div class="col-md-6">
+                            <!-- Client Information -->
+                            <div class="card mb-3">
+                                <div class="card-header bg-primary text-white">
+                                    <i class="bi bi-person-badge"></i> Client Information
                                 </div>
-                                <div class="col-md-6">
-                                    <small class="text-muted d-block">Type of Client</small>
-                                    <strong>@item.ClientType</strong>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <small class="text-muted d-block">Client Name</small>
+                                        <strong>@item.ClientName</strong>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block">Type of Client</small>
+                                        <strong>@item.ClientType</strong>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
-                    <!-- Contact Information -->
-                    <div class="card mb-3">
-                        <div class="card-header bg-secondary text-white">
-                            <i class="bi bi-telephone"></i> Contact Information
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-2">
-                                <div class="col-md-6">
-                                    <small class="text-muted d-block">Contact Number</small>
-                                    <strong>@item.ContactPersonNumber</strong>
+                            <!-- Contact Information -->
+                            <div class="card mb-3">
+                                <div class="card-header bg-secondary text-white">
+                                    <i class="bi bi-telephone"></i> Contact Information
                                 </div>
-                                <div class="col-md-6">
-                                    <small class="text-muted d-block">Email</small>
-                                    <strong>@item.Email</strong>
-                                </div>
-                                @if (!string.IsNullOrWhiteSpace(item.ContactPersonEmailAddress))
-                                {
-                                    <div class="col-12">
-                                        <small class="text-muted d-block">Contact Person Email</small>
-                                        <strong>@item.ContactPersonEmailAddress</strong>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <small class="text-muted d-block">Contact Number</small>
+                                        <strong>@item.ContactPersonNumber</strong>
                                     </div>
-                                }
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Company Information -->
-                    <div class="card mb-3">
-                        <div class="card-header bg-info text-white">
-                            <i class="bi bi-building"></i> Company Information
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-2">
-                                @if (!string.IsNullOrWhiteSpace(item.RegisteredCompanyName))
-                                {
-                                    <div class="col-12">
-                                        <small class="text-muted d-block">Registered Company Name</small>
-                                        <strong>@item.RegisteredCompanyName</strong>
+                                    <div class="mb-2">
+                                        <small class="text-muted d-block">Email</small>
+                                        <strong>@item.Email</strong>
                                     </div>
-                                }
-                                <div class="col-12">
-                                    <small class="text-muted d-block">Company Address</small>
-                                    <strong>@item.RegisteredCompanyAddress</strong>
-                                </div>
-                                @if (!string.IsNullOrWhiteSpace(item.TaxId))
-                                {
-                                    <div class="col-md-6">
-                                        <small class="text-muted d-block">Tax ID</small>
-                                        <strong>@item.TaxId</strong>
-                                    </div>
-                                }
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Project Information -->
-                    <div class="card mb-3">
-                        <div class="card-header bg-success text-white">
-                            <i class="bi bi-kanban"></i> Project Information
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-2">
-                                <div class="col-md-6">
-                                    <small class="text-muted d-block">Project Type</small>
-                                    <strong>@item.TypeOfProject</strong>
-                                    @if (!string.IsNullOrWhiteSpace(item.OtherTypeOfProject))
+                                    @if (!string.IsNullOrWhiteSpace(item.ContactPersonEmailAddress))
                                     {
-                                        <span class="text-muted">(@item.OtherTypeOfProject)</span>
+                                        <div>
+                                            <small class="text-muted d-block">Contact Person Email</small>
+                                            <strong>@item.ContactPersonEmailAddress</strong>
+                                        </div>
                                     }
                                 </div>
-                                <div class="col-md-6">
-                                    <small class="text-muted d-block">Urgency Level</small>
-                                    <span class="badge @(item.UrgencyLevel == "Urgent" ? "bg-danger" : item.UrgencyLevel == "Slightly Urgent" ? "bg-warning" : "bg-success")">@item.UrgencyLevel</span>
+                            </div>
+
+                            <!-- Company Information -->
+                            <div class="card mb-3">
+                                <div class="card-header bg-info text-white">
+                                    <i class="bi bi-building"></i> Company Information
                                 </div>
-                                @if (!string.IsNullOrWhiteSpace(item.RequestingParty))
-                                {
-                                    <div class="col-md-6">
-                                        <small class="text-muted d-block">Requesting Party</small>
-                                        <strong>@item.RequestingParty</strong>
-                                        @if (!string.IsNullOrWhiteSpace(item.OtherRequestingParty))
-                                        {
-                                            <span class="text-muted">(@item.OtherRequestingParty)</span>
-                                        }
+                                <div class="card-body">
+                                    @if (!string.IsNullOrWhiteSpace(item.RegisteredCompanyName))
+                                    {
+                                        <div class="mb-2">
+                                            <small class="text-muted d-block">Registered Company Name</small>
+                                            <strong>@item.RegisteredCompanyName</strong>
+                                        </div>
+                                    }
+                                    <div class="mb-2">
+                                        <small class="text-muted d-block">Company Address</small>
+                                        <strong>@item.RegisteredCompanyAddress</strong>
                                     </div>
-                                }
-                                @if (!string.IsNullOrWhiteSpace(item.RequestorName))
-                                {
-                                    <div class="col-md-6">
-                                        <small class="text-muted d-block">Requestor Name</small>
-                                        <strong>@item.RequestorName</strong>
-                                    </div>
-                                }
+                                    @if (!string.IsNullOrWhiteSpace(item.TaxId))
+                                    {
+                                        <div>
+                                            <small class="text-muted d-block">Tax ID</small>
+                                            <strong>@item.TaxId</strong>
+                                        </div>
+                                    }
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Project Type Specific Details -->
-                    <div class="card">
-                        <div class="card-header bg-dark text-white">
-                            <i class="bi bi-file-earmark-text"></i> Project Details
-                        </div>
-                        <div class="card-body" style="max-height: 400px; overflow-y: auto;">
-                            @if (item.TypeOfProject == "Retainership - BIR" && item.RetainershipBIR != null)
-                            {
+                        <!-- Right Column -->
+                        <div class="col-md-6">
+                            <!-- Project Information -->
+                            <div class="card mb-3">
+                                <div class="card-header bg-success text-white">
+                                    <i class="bi bi-kanban"></i> Project Information
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <small class="text-muted d-block">Project Type</small>
+                                        <strong>@item.TypeOfProject</strong>
+                                        @if (!string.IsNullOrWhiteSpace(item.OtherTypeOfProject))
+                                        {
+                                            <span class="text-muted">(@item.OtherTypeOfProject)</span>
+                                        }
+                                    </div>
+                                    <div class="mb-2">
+                                        <small class="text-muted d-block">Urgency Level</small>
+                                        <span class="badge @(item.UrgencyLevel == "Urgent" ? "bg-danger" : item.UrgencyLevel == "Slightly Urgent" ? "bg-warning" : "bg-success")">@item.UrgencyLevel</span>
+                                    </div>
+                                    @if (!string.IsNullOrWhiteSpace(item.RequestingParty))
+                                    {
+                                        <div class="mb-2">
+                                            <small class="text-muted d-block">Requesting Party</small>
+                                            <strong>@item.RequestingParty</strong>
+                                            @if (!string.IsNullOrWhiteSpace(item.OtherRequestingParty))
+                                            {
+                                                <span class="text-muted">(@item.OtherRequestingParty)</span>
+                                            }
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(item.RequestorName))
+                                    {
+                                        <div>
+                                            <small class="text-muted d-block">Requestor Name</small>
+                                            <strong>@item.RequestorName</strong>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Project Type Specific Details -->
+                            <div class="card">
+                                <div class="card-header bg-dark text-white">
+                                    <i class="bi bi-file-earmark-text"></i> Project Details
+                                </div>
+                                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                                    @if (item.TypeOfProject == "Retainership - BIR" && item.RetainershipBIR != null)
+                                    {
                                 <div class="mb-3">
                                     <h6 class="fw-bold text-primary">Retainership - BIR Details</h6>
                                     <div class="row g-2">
@@ -458,6 +465,8 @@
                                     </div>
                                 </div>
                             }
+                        </div>
+                    </div>
                         </div>
                     </div>
                 </div>

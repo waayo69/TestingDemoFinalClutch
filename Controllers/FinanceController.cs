@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -18,11 +19,13 @@ namespace TestingDemo.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public FinanceController(ApplicationDbContext context, IHubContext<NotificationHub> hubContext)
+        public FinanceController(ApplicationDbContext context, IHubContext<NotificationHub> hubContext, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _hubContext = hubContext;
+            _userManager = userManager;
         }
 
         // GET: Finance/Index
@@ -391,10 +394,49 @@ namespace TestingDemo.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // POST: Finance/MarkAsDone/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarkAsDone(int id)
+        {
+            var client = await _context.Clients.FindAsync(id);
+
+            if (client != null)
+            {
+                // Update status to Archived and ready for claiming
+                client.Status = "Archived";
+                client.SubStatus = "Ready for Claiming";
+                client.TrackingMessage = "Your documents are ready! You can claim them now at our office during business hours.";
+                
+                await _context.SaveChangesAsync();
+                await _hubContext.Clients.All.SendAsync("ReceiveUpdate", "Finance data changed");
+
+                TempData["SuccessMessage"] = $"Client {client.ClientName} marked as done and ready for claiming.";
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // GET: Finance/GetPlanningOfficers
+        [HttpGet]
+        public async Task<IActionResult> GetPlanningOfficers()
+        {
+            var planningOfficers = await _userManager.GetUsersInRoleAsync("PlanningOfficer");
+            
+            var officers = planningOfficers.Select(u => new
+            {
+                id = u.Id,
+                fullName = u.FullName,
+                email = u.Email
+            }).OrderBy(u => u.fullName).ToList();
+
+            return Json(officers);
+        }
+
         // POST: Finance/SendToPlanningOfficer/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SendToPlanningOfficer(int id)
+        public async Task<IActionResult> SendToPlanningOfficer(int id, string? assignedUserId)
         {
             var client = await _context.Clients.FindAsync(id);
 
@@ -403,6 +445,13 @@ namespace TestingDemo.Controllers
                 // Update status to indicate it's ready for Planning
                 client.Status = "Planning";
                 client.SubStatus = "New";
+                
+                // Assign Planning Officer if provided
+                if (!string.IsNullOrEmpty(assignedUserId))
+                {
+                    client.AssignedPlanningOfficerId = assignedUserId;
+                }
+                
                 await _context.SaveChangesAsync();
                 await _hubContext.Clients.All.SendAsync("ReceiveUpdate", "Finance data changed");
 

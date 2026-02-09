@@ -33,6 +33,11 @@
     }
 }
 
+<!-- Hidden form to provide AntiForgeryToken for JS -->
+<form id="antiForgeryForm" style="display:none;">
+    @Html.AntiForgeryToken()
+</form>
+
 <style>
     :root {
         --bg: #ffffff;
@@ -1018,6 +1023,21 @@
                                     </div>
                                 </div>
                                 <div class="archive-card-footer">
+                                    @if (item.SubStatus == "Ready for Claiming")
+                                    {
+                                        <form method="post" asp-action="MarkAsClaimed" asp-route-id="@item.Id" class="mb-2">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-success btn-sm w-100">
+                                                <i class="bi bi-check-circle me-1"></i>Mark as Claimed
+                                            </button>
+                                        </form>
+                                    }
+                                    @if (item.Status == "Claimed" && item.ClaimedDate.HasValue)
+                                    {
+                                        <div class="text-center mb-2 small text-success">
+                                            <i class="bi bi-check-all"></i> Claimed: @item.ClaimedDate.Value.ToString("MMM dd, hh:mm tt")
+                                        </div>
+                                    }
                                     <button type="button" class="btn btn-primary btn-sm w-100"
                                             onclick="viewArchiveDetails('@item.Id')">
                                         <i class="bi bi-eye me-1"></i>View Details
@@ -1065,9 +1085,24 @@
                                             <span class="text-muted">@item.CreatedDate.ToString("MMM dd, yyyy")</span>
                                         </div>
                                         <div class="col-md-2">
-                                            <span class="badge bg-success">@item.Status</span>
+                                            <span class="badge @(item.Status == "Claimed" ? "bg-primary" : "bg-success")">@item.Status</span>
+                                            @if (item.Status == "Claimed" && item.ClaimedDate.HasValue)
+                                            {
+                                                <div class="small text-muted mt-1" style="font-size: 0.75rem;">
+                                                    @item.ClaimedDate.Value.ToString("MMM dd, hh:mm tt")
+                                                </div>
+                                            }
                                         </div>
                                         <div class="col-md-2 text-center">
+                                            @if (item.SubStatus == "Ready for Claiming")
+                                            {
+                                                <form method="post" asp-action="MarkAsClaimed" asp-route-id="@item.Id" class="d-inline me-1">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-success btn-sm" title="Mark as Claimed">
+                                                        <i class="bi bi-check-circle"></i>
+                                                    </button>
+                                                </form>
+                                            }
                                             <button type="button" class="btn btn-outline-primary btn-sm"
                                                     onclick="viewArchiveDetails('@item.Id')" title="View Details">
                                                 <i class="bi bi-eye"></i>
@@ -1157,7 +1192,7 @@
                     <p class="mt-3 text-muted">Loading client details...</p>
                 </div>
             </div>
-            <div class="modal-footer bg-light">
+            <div class="modal-footer bg-light" id="archiveDetailsFooter">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                     <i class="bi bi-arrow-left"></i> Close
                 </button>
@@ -1270,6 +1305,14 @@
                                     </div>
                                     <div class="card-body">
                                         <dl class="row">
+                                            <dt class="col-sm-4">Tracking Number</dt>
+                                            <dd class="col-sm-8 fw-bold text-primary">${client.trackingNumber || 'N/A'}</dd>
+
+                                            <dt class="col-sm-4">Claimed Date</dt>
+                                            <dd class="col-sm-8 fw-bold ${client.claimedDate ? 'text-success' : 'text-muted'}">
+                                                ${client.claimedDate || 'To be claimed'}
+                                            </dd>
+
                                             <dt class="col-sm-4">Client Name</dt>
                                             <dd class="col-sm-8">${client.clientName || 'N/A'}</dd>
 
@@ -1317,7 +1360,30 @@
                         </div>
                     `;
 
+
                     document.getElementById('archiveDetailsContent').innerHTML = content;
+
+                    // Update footer with Claimed button if applicable
+                    const footer = document.getElementById('archiveDetailsFooter');
+                    let footerContent = '';
+                    
+                    if (client.subStatus === "Ready for Claiming") {
+                        footerContent += `
+                            <form method="post" action="/Archive/MarkAsClaimed/${client.id}" class="d-inline me-2">
+                                <input name="__RequestVerificationToken" type="hidden" value="${document.querySelector('input[name="__RequestVerificationToken"]').value}" />
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check-circle me-1"></i>Mark as Claimed
+                                </button>
+                            </form>
+                        `;
+                    }
+                    
+                    footerContent += `
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-arrow-left"></i> Close
+                        </button>
+                    `;
+                    footer.innerHTML = footerContent;
                 })
                 .catch(error => {
                     console.error('Error fetching archive details:', error);

@@ -115,10 +115,12 @@
                     }
                     else
                     {
-                        <div class="empty-state">
-                            <i class="bi bi-mailbox2 text-secondary"></i>
-                            <h4 class="text-secondary fw-bold">Queue is empty</h4>
-                            <p class="text-muted">New applications will appear here once they are submitted.</p>
+                        <div class="empty-state text-center py-5">
+                            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 100px; height: 100px;">
+                                <i class="bi bi-folder2-open fs-1 text-muted"></i>
+                            </div>
+                            <h4 class="fw-bold">No clients found</h4>
+                            <p class="text-muted mb-0">Clients for documentation will appear here.</p>
                         </div>
                     }
                     
@@ -148,10 +150,12 @@
                     }
                     else
                     {
-                        <div class="empty-state">
-                            <i class="bi bi-shield-check text-success"></i>
-                            <h4 class="text-success fw-bold">All caught up!</h4>
-                            <p class="text-muted">No clients are currently awaiting financial clearance.</p>
+                        <div class="empty-state text-center py-5">
+                            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 100px; height: 100px;">
+                                <i class="bi bi-folder2-open fs-1 text-muted"></i>
+                            </div>
+                            <h4 class="fw-bold">No clients found</h4>
+                            <p class="text-muted mb-0">Clients for documentation will appear here.</p>
                         </div>
                     }
                     
@@ -181,10 +185,12 @@
                     }
                     else
                     {
-                        <div class="empty-state">
-                            <i class="bi bi-people text-info"></i>
-                            <h4 class="text-info fw-bold">No active projects</h4>
-                            <p class="text-muted">Projects will appear here once they move to the planning stage.</p>
+                        <div class="empty-state text-center py-5">
+                            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 100px; height: 100px;">
+                                <i class="bi bi-folder2-open fs-1 text-muted"></i>
+                            </div>
+                            <h4 class="fw-bold">No clients found</h4>
+                            <p class="text-muted mb-0">Clients for documentation will appear here.</p>
                         </div>
                     }
                     
@@ -218,7 +224,17 @@
                     <i class="bi bi-send fs-1"></i>
                 </div>
                 <h4 class="modal-title fw-bold mb-2">Send to Planning</h4>
-                <p class="text-muted mb-0 mx-3">Are you sure you want to move <strong id="clientNamePlaceholder" class="text-dark"></strong> to the Planning stage?</p>
+                <p class="text-muted mb-3 mx-3">Are you sure you want to move <strong id="clientNamePlaceholder" class="text-dark"></strong> to the Planning stage?</p>
+                
+                <!-- Planning Officer Assignment Dropdown -->
+                <div class="text-start mx-auto" style="max-width: 400px;">
+                    <label for="assignedPlanningOfficer" class="form-label text-muted small">
+                        <i class="bi bi-person-badge"></i> Assign Planning Officer <span class="text-muted">(Optional)</span>
+                    </label>
+                    <select id="assignedPlanningOfficer" class="form-select">
+                        <option value="">Loading...</option>
+                    </select>
+                </div>
             </div>
             <div class="modal-footer border-0 justify-content-center pb-4">
                 <button type="button" class="btn btn-light px-4 rounded-3" data-bs-dismiss="modal">Cancel</button>
@@ -273,6 +289,30 @@
                 <form id="deleteForm" method="post" class="d-inline">
                     @Html.AntiForgeryToken()
                     <button type="submit" class="btn btn-danger px-4 rounded-3 fw-bold">Delete Client</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="markAsDoneModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
+                    <i class="bi bi-check-circle fs-1"></i>
+                </div>
+                <h4 class="modal-title fw-bold mb-2">Mark as Done</h4>
+                <p class="text-muted mb-0 mx-3">Are you sure <strong id="markAsDoneClientName" class="text-dark"></strong>'s clearance is complete and ready for claiming?</p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center pb-4">
+                <button type="button" class="btn btn-light px-4 rounded-3" data-bs-dismiss="modal">Cancel</button>
+                <form id="markAsDoneForm" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-success px-4 rounded-3 fw-bold">Confirm & Mark Done</button>
                 </form>
             </div>
         </div>
@@ -337,9 +377,78 @@
                 }
             }
 
-            setupModal('sendToPlanningModal', '#clientNamePlaceholder', '/Finance/SendToPlanningOfficer/');
+            // Special setup for Send to Planning Modal with Planning Officer dropdown
+            var sendToPlanningModal = document.getElementById('sendToPlanningModal');
+            if (sendToPlanningModal) {
+                // Load Planning Officers when modal is shown
+                sendToPlanningModal.addEventListener('show.bs.modal', function (event) {
+                    var button = event.relatedTarget;
+                    var clientId = button.getAttribute('data-client-id');
+                    var clientName = button.getAttribute('data-client-name');
+                    
+                    if (clientId && clientName) {
+                        var text = sendToPlanningModal.querySelector('#clientNamePlaceholder');
+                        if (text) text.textContent = clientName;
+                        
+                        var form = sendToPlanningModal.querySelector('form');
+                        if (form) form.action = '/Finance/SendToPlanningOfficer/' + clientId;
+                        
+                        // Load Planning Officers
+                        var dropdown = document.getElementById('assignedPlanningOfficer');
+                        if (dropdown) {
+                            dropdown.innerHTML = '<option value="">Loading...</option>';
+                            
+                            fetch('/Finance/GetPlanningOfficers')
+                                .then(response => response.json())
+                                .then(officers => {
+                                    dropdown.innerHTML = '<option value="">-- None (Unassigned) --</option>';
+                                    officers.forEach(officer => {
+                                        var option = document.createElement('option');
+                                        option.value = officer.id;
+                                        option.textContent = officer.fullName + ' (' + officer.email + ')';
+                                        dropdown.appendChild(option);
+                                    });
+                                })
+                                .catch(error => {
+                                    console.error('Error loading Planning Officers:', error);
+                                    dropdown.innerHTML = '<option value="">-- Error Loading Officers --</option>';
+                                });
+                        }
+                    }
+                });
+                
+                // Handle form submission to include assigned officer
+                var planningForm = sendToPlanningModal.querySelector('form');
+                if (planningForm) {
+                    planningForm.addEventListener('submit', function(e) {
+                        var dropdown = document.getElementById('assignedPlanningOfficer');
+                        if (dropdown && dropdown.value) {
+                            // Add hidden input for assigned user ID
+                            var hiddenInput = document.createElement('input');
+                            hiddenInput.type = 'hidden';
+                            hiddenInput.name = 'assignedUserId';
+                            hiddenInput.value = dropdown.value;
+                            planningForm.appendChild(hiddenInput);
+                        }
+                    });
+                }
+            }
+
             setupModal('archiveModal', '#archiveClientName', '/Finance/ArchiveClient/');
             setupModal('deleteModal', '#deleteClientName', '/Finance/Delete/');
+
+            // Mark as Done Modal
+            var markAsDoneModal = document.getElementById('markAsDoneModal');
+            if (markAsDoneModal) {
+                markAsDoneModal.addEventListener('show.bs.modal', function (event) {
+                    var button = event.relatedTarget;
+                    var clientId = button.getAttribute('data-client-id');
+                    var clientName = button.getAttribute('data-client-name');
+
+                    document.getElementById('markAsDoneClientName').textContent = clientName;
+                    document.getElementById('markAsDoneForm').action = '/Finance/MarkAsDone/' + clientId;
+                });
+            }
 
             // Auto-dismiss alerts
             setTimeout(() => {

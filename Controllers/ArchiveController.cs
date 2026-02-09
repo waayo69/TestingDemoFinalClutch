@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.IO;
 using TestingDemo.Models;
 using TestingDemo.Data;
 
@@ -13,10 +15,12 @@ namespace TestingDemo.Controllers
     public class ArchiveController : BaseController
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
-        public ArchiveController(ApplicationDbContext context)
+        public ArchiveController(ApplicationDbContext context, IHubContext<NotificationHub> hubContext)
         {
             _context = context;
+            _hubContext = hubContext;
         }
 
         // GET: Archive/Index
@@ -40,7 +44,7 @@ namespace TestingDemo.Controllers
             ViewData["CurrentFilter"] = searchString;
 
             var clients = from c in _context.Clients
-                          where c.Status == "Archived"
+                          where c.Status == "Archived" || c.Status == "Claimed"
                           select c;
 
             if (!String.IsNullOrEmpty(searchString))
@@ -90,6 +94,33 @@ namespace TestingDemo.Controllers
 
             int pageSize = 10;
             return View(await PaginatedList<ClientModel>.CreateAsync(clients.AsNoTracking(), pageNumber ?? 1, pageSize));
+        }
+
+        // POST: Archive/MarkAsClaimed/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarkAsClaimed(int id, string returnUrl = null)
+        {
+            var client = await _context.Clients.FindAsync(id);
+
+            if (client != null)
+            {
+                client.Status = "Claimed";
+                client.ClaimedDate = DateTime.Now;
+                client.TrackingMessage = $"Documents claimed on {DateTime.Now:MMMM dd, yyyy 'at' hh:mm tt}. Thank you!";
+                
+                await _context.SaveChangesAsync();
+                await _hubContext.Clients.All.SendAsync("ReceiveUpdate", "Archive data changed");
+
+                TempData["SuccessMessage"] = $"Client {client.ClientName} marked as claimed.";
+            }
+
+            if (!string.IsNullOrEmpty(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Archive/Details/5
@@ -200,6 +231,8 @@ namespace TestingDemo.Controllers
                 otherTypeOfProject = client.OtherTypeOfProject,
                 otherRequestingParty = client.OtherRequestingParty,
                 createdDate = client.CreatedDate.ToString("yyyy-MM-dd HH:mm"),
+                claimedDate = client.ClaimedDate.HasValue ? client.ClaimedDate.Value.ToString("MMM dd, yyyy hh:mm tt") : null,
+                subStatus = client.SubStatus,
                 retainershipBIR = client.RetainershipBIR,
                 retainershipSPP = client.RetainershipSPP,
                 oneTimeTransaction = client.OneTimeTransaction,
@@ -226,7 +259,7 @@ namespace TestingDemo.Controllers
         public async Task<IActionResult> GetLatestData(string sortOrder, string currentFilter, string searchString, int? pageNumber, string TypeOfProject, string CreatedDateFrom, string CreatedDateTo)
         {
             var clients = from c in _context.Clients
-                          where c.Status == "Archived"
+                          where c.Status == "Archived" || c.Status == "Claimed"
                           select c;
             if (!string.IsNullOrEmpty(searchString))
                 clients = clients.Where(s => s.ClientName.Contains(searchString));

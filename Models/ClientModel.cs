@@ -62,5 +62,14 @@ namespace TestingDemo.Models
         [RegularExpression(@"^[A-Z]{4}-\d{6}$", ErrorMessage = "Tracking number must be in the format AWYZ-078923")]
         public string TrackingNumber { get; set; }
         public string SubStatus { get; set; } = "New"; //New, For Review, From (department)
+
+        // Assigned Planning Officer
+        public string? AssignedPlanningOfficerId { get; set; }
+
+        // Tracking message for client-facing status updates
+        public string? TrackingMessage { get; set; }
+
+        // Date when documents were claimed
+        public DateTime? ClaimedDate { get; set; }
     }
 }

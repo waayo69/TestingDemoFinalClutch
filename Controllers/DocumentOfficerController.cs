@@ -47,7 +47,7 @@ namespace TestingDemo.Controllers
 
             // Query for Archived Clients
             var archivedQuery = _context.Clients
-                .Where(c => c.Status == "Archived")
+                .Where(c => c.Status == "Archived" || c.Status == "Claimed")
                 .Include(c => c.RetainershipBIR)
                 .Include(c => c.RetainershipSPP)
                 .Include(c => c.OneTimeTransaction)
@@ -127,7 +127,7 @@ namespace TestingDemo.Controllers
             if (client != null)
             {
                 client.Status = "Clearance";
-                client.Status = "New";
+                client.SubStatus = "New";
                 await _context.SaveChangesAsync();
                 await _hubContext.Clients.All.SendAsync("ReceiveUpdate", "DocumentOfficer data changed");
                 TempData["SuccessMessage"] = "Client has been sent to Finance for clearance.";

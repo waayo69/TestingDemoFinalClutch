@@ -13,6 +13,10 @@
                     <th>Contact</th>
                     <th>Permit Type</th>
                     <th>Tracking #</th>
+                    @if (isArchived)
+                    {
+                        <th>Claimed Date</th>
+                    }
                     <th class="text-center pe-4">Actions</th>
                 </tr>
             </thead>
@@ -41,6 +45,20 @@
                         <td>
                             <code class="text-primary fw-bold">@item.TrackingNumber</code>
                         </td>
+                        @if (isArchived)
+                        {
+                            <td>
+                                @if (item.Status == "Claimed" && item.ClaimedDate.HasValue)
+                                {
+                                    <span class="text-success fw-bold">@item.ClaimedDate.Value.ToString("MMM dd, yyyy")</span>
+                                    <div class="small text-muted">@item.ClaimedDate.Value.ToString("hh:mm tt")</div>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-light text-muted border">To be claimed</span>
+                                }
+                            </td>
+                        }
                         <td class="text-center pe-4">
                             <div class="btn-group btn-group-sm rounded-pill overflow-hidden shadow-sm">
                                 <button type="button" class="btn btn-white border-0 px-3" data-bs-toggle="modal"
