@@ -1,14 +1,16 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using TestingDemo.Data;
 using TestingDemo.Models;
 using TestingDemo.ViewModels;
-using Microsoft.AspNetCore.SignalR;
-using TestingDemo.Data;
-using Microsoft.AspNetCore.Http;
-using System.IO;
 
 namespace TestingDemo.Controllers
 {
@@ -17,11 +19,13 @@ namespace TestingDemo.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public CustomerCareController(ApplicationDbContext context, IHubContext<NotificationHub> hubContext)
+        public CustomerCareController(ApplicationDbContext context, IHubContext<NotificationHub> hubContext, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _hubContext = hubContext;
+            _userManager = userManager;
         }
 
         // GET: CustomerCare/Index
@@ -50,7 +54,16 @@ namespace TestingDemo.Controllers
                 .Include(c => c.RetainershipSPP)
                 .Include(c => c.OneTimeTransaction)
                 .Include(c => c.ExternalAudit)
+                .Include(c => c.ExternalAudit)
                 .AsNoTracking();
+
+            // Filter by assigned Customer Care user (unless user is Admin)
+            if (User.IsInRole("CustomerCare") && !User.IsInRole("Admin"))
+            {
+                var currentUserId = _userManager.GetUserId(User);
+                liaisonQuery = liaisonQuery.Where(c => c.AssignedCustomerCareId == currentUserId || c.AssignedCustomerCareId == null);
+                completedQuery = completedQuery.Where(c => c.AssignedCustomerCareId == currentUserId || c.AssignedCustomerCareId == null);
+            }
 
             if (!String.IsNullOrEmpty(searchString))
             {
@@ -118,7 +131,7 @@ namespace TestingDemo.Controllers
         // POST: CustomerCare/ProceedToDocumentOfficer/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ProceedToDocumentOfficer(int id)
+        public async Task<IActionResult> ProceedToDocumentOfficer(int id, string? assignedUserId)
         {
             var client = await _context.Clients.FindAsync(id);
             if (client == null)
@@ -138,10 +151,24 @@ namespace TestingDemo.Controllers
 
             client.Status = "DocumentOfficer";
             client.SubStatus = "New";
+
+            if (!string.IsNullOrEmpty(assignedUserId))
+            {
+                client.AssignedDocumentOfficerId = assignedUserId;
+            }
+
             await _context.SaveChangesAsync();
             await _hubContext.Clients.All.SendAsync("ReceiveUpdate", "CustomerCare data changed");
             TempData["SuccessMessage"] = "Client moved to Document Officer.";
             return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetDocumentOfficerUsers()
+        {
+            var users = await _userManager.GetUsersInRoleAsync("DocumentOfficer");
+            var result = users.Select(u => new { u.Id, Name = u.FullName }).ToList();
+            return Json(result);
         }
 
         // POST: CustomerCare/ReturnToPlanning/5
@@ -199,6 +226,13 @@ namespace TestingDemo.Controllers
             var completedQuery = _context.Clients
                 .Where(c => c.Status == "DocumentOfficer" || c.Status == "Completed" || c.Status == "FinanceProgress")
                 .AsNoTracking();
+
+            if (User.IsInRole("CustomerCare") && !User.IsInRole("Admin"))
+            {
+                var currentUserId = _userManager.GetUserId(User);
+                liaisonQuery = liaisonQuery.Where(c => c.AssignedCustomerCareId == currentUserId || c.AssignedCustomerCareId == null);
+                completedQuery = completedQuery.Where(c => c.AssignedCustomerCareId == currentUserId || c.AssignedCustomerCareId == null);
+            }
 
             if (!string.IsNullOrEmpty(searchString))
             {

@@ -401,9 +401,28 @@
         // Lazy load requirements on modal show
         document.addEventListener('shown.bs.modal', function (event) {
             var modal = event.target;
-            if (!modal?.id?.startsWith('clientModal-')) return;
-            var clientId = modal.id.replace('clientModal-', '');
-            refreshRequirementsList(clientId);
+            if (modal?.id?.startsWith('clientModal-')) {
+                var clientId = modal.id.replace('clientModal-', '');
+                refreshRequirementsList(clientId);
+            }
+            
+            // Populate assigned Customer Care user dropdown
+            if (modal?.id?.startsWith('proceedToLiaisonModal-')) {
+                var select = modal.querySelector('.assign-cc-select');
+                if (select && select.options.length <= 1) { // Only fetch if not already loaded
+                    fetch('@Url.Action("GetCustomerCareUsers", "PlanningOfficer")')
+                        .then(r => r.json())
+                        .then(users => {
+                            users.forEach(u => {
+                                var opt = document.createElement('option');
+                                opt.value = u.id;
+                                opt.textContent = u.name;
+                                select.appendChild(opt);
+                            });
+                        })
+                        .catch(err => console.error('Failed to load CC users', err));
+                }
+            }
         });
 
         // SignalR auto-reload

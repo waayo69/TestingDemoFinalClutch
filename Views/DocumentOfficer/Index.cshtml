@@ -132,11 +132,19 @@
                     <i class="bi bi-send-check fs-1"></i>
                 </div>
                 <h5 class="fw-bold text-dark">Proceed to Finance?</h5>
-                <p class="text-muted px-3">Are you sure you want to mark <strong id="doneClientName"></strong> as done? This will proceed the client to Finance for clearance.</p>
+                <p class="text-muted px-3 mb-4">Are you sure you want to mark <strong id="doneClientName"></strong> as done? This will proceed the client to Finance for clearance.</p>
+                <form id="doneModalForm" method="post" class="text-start">
+                    <div class="mb-3 px-3">
+                        <label for="assignedUserId" class="form-label fw-bold text-dark"><i class="bi bi-person-badge me-2"></i>Assign to Finance (Optional)</label>
+                        <select class="form-select assign-fin-select" id="assignedUserId" name="assignedUserId">
+                            <option value="">-- Unassigned (Available to all Finance Users) --</option>
+                        </select>
+                    </div>
+                </form>
             </div>
             <div class="modal-footer border-0 p-4 pt-0 justify-content-center">
                 <button type="button" class="btn btn-light rounded-pill px-4 m-1" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success rounded-pill px-4 shadow-sm fw-bold m-1" id="confirmDoneBtn">
+                <button type="button" class="btn btn-success rounded-pill px-4 shadow-sm fw-bold m-1" id="confirmDoneBtn" onclick="document.getElementById('doneModalForm').submit()">
                     Yes, Proceed
                 </button>
             </div>
@@ -184,14 +192,27 @@
                 if (btn) {
                     clientIdToSubmit = btn.getAttribute('data-client-id');
                     document.getElementById('doneClientName').textContent = btn.getAttribute('data-client-name');
+                    
+                    var form = document.getElementById('doneModalForm');
+                    form.action = '/DocumentOfficer/ProceedToFinance/' + clientIdToSubmit;
+                    
+                    // Populate assigned Finance user dropdown
+                    var select = form.querySelector('.assign-fin-select');
+                    if (select && select.options.length <= 1) { // Only fetch if not already loaded
+                        fetch('@Url.Action("GetFinanceUsers", "DocumentOfficer")')
+                            .then(r => r.json())
+                            .then(users => {
+                                users.forEach(u => {
+                                    var opt = document.createElement('option');
+                                    opt.value = u.id;
+                                    opt.textContent = u.name;
+                                    select.appendChild(opt);
+                                });
+                            })
+                            .catch(err => console.error('Failed to load Finance users', err));
+                    }
+                    
                     doneModal.show();
-                }
-            });
-
-            document.getElementById('confirmDoneBtn').addEventListener('click', function () {
-                if (clientIdToSubmit) {
-                    document.getElementById('doneForm-' + clientIdToSubmit).submit();
-                    doneModal.hide();
                 }
             });
 

@@ -71,5 +71,14 @@ namespace TestingDemo.Models
 
         // Date when documents were claimed
         public DateTime? ClaimedDate { get; set; }
+
+        // Assigned Customer Care
+        public string? AssignedCustomerCareId { get; set; }
+
+        // Assigned Document Officer
+        public string? AssignedDocumentOfficerId { get; set; }
+
+        // Assigned Finance
+        public string? AssignedFinanceId { get; set; }
     }
 }

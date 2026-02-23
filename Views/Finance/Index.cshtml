@@ -319,6 +319,29 @@
     </div>
 </div>
 
+<!-- File Viewer Modal -->
+<div class="modal fade" id="fileViewerModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold"><i class="bi bi-eye text-primary me-2"></i> File Viewer: <span class="fw-normal" id="viewerFileName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-center bg-light">
+                <div id="fileViewerContent" class="d-flex justify-content-center align-items-center" style="min-height: 400px; background-color: #f8f9fa;">
+                    <!-- Content will be injected here -->
+                </div>
+            </div>
+            <div class="modal-footer border-0 justify-content-center pb-4 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-4 m-1" data-bs-dismiss="modal">Close</button>
+                <a id="downloadFileBtn" href="#" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm m-1" download>
+                    <i class="bi bi-download me-2"></i> Download File
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <audio id="notifySound" src="/sounds/Notifications.wav" preload="auto"></audio>
 
 @section Scripts {
@@ -487,23 +510,60 @@
             var modal = event.target;
             if (!modal?.id?.startsWith('clientModal-')) return;
             var clientId = modal.id.replace('clientModal-', '');
+            
+            // 1. Load Planning Officer format requirements checklist
             var target = modal.querySelector('#req-list-' + clientId);
             var section = modal.querySelector('#requirements-section-' + clientId);
-            if (!target) return;
-            
-            fetch('/PlanningOfficer/Requirements/' + clientId + '?readOnly=true&t=' + Date.now(), {
-                cache: 'no-store', headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(res => res.ok ? res.text() : Promise.reject())
-            .then(html => {
-                target.innerHTML = html;
-                var hasReq = target.querySelector('.requirement-item, .list-group-item, .form-check');
-                if (section) section.style.display = hasReq ? 'block' : 'none';
-            })
-            .catch(() => {
-                target.innerHTML = '<div class="alert alert-warning py-2 mb-0">Unabled to load requirements list.</div>';
-                if (section) section.style.display = 'none';
-            });
+            if (target) {
+                fetch('/PlanningOfficer/Requirements/' + clientId + '?readOnly=true&t=' + Date.now(), {
+                    cache: 'no-store', headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(res => res.ok ? res.text() : Promise.reject())
+                .then(html => {
+                    target.innerHTML = html;
+                    var hasReq = target.querySelector('.requirement-item, .list-group-item, .form-check');
+                    if (section) section.style.display = hasReq ? 'block' : 'none';
+                })
+                .catch(() => {
+                    target.innerHTML = '<div class="alert alert-warning py-2 mb-0">Unabled to load requirements list.</div>';
+                    if (section) section.style.display = 'none';
+                });
+            }
+
+            // 2. Load Finance Requirement Files view (submitted files)
+            var filesElement = modal.querySelector('#fin-requirement-files-' + clientId);
+            if (filesElement && filesElement.innerHTML.includes('spinner-border')) {
+                fetch('/Finance/GetRequirementFiles?clientId=' + clientId + '&t=' + Date.now(), {
+                    cache: 'no-store',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(r => r.text())
+                .then(html => { filesElement.innerHTML = html; })
+                .catch(() => { filesElement.innerHTML = '<div class="alert alert-warning">Failed to load requirement files.</div>'; });
+            }
+        });
+
+        // Global file viewer handlers (for Finance View requirement file)
+        document.addEventListener('click', function (e) {
+            if (e.target.closest('.view-fin-file-btn')) {
+                const btn = e.target.closest('.view-fin-file-btn');
+                const fileUrl = btn.getAttribute('data-file-url');
+                const fileName = btn.getAttribute('data-file-name');
+                const fileType = btn.getAttribute('data-file-type').toLowerCase();
+                
+                document.getElementById('viewerFileName').textContent = fileName;
+                document.getElementById('downloadFileBtn').href = fileUrl;
+                
+                const contentDiv = document.getElementById('fileViewerContent');
+                if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].some(ext => fileType.includes(ext))) {
+                    contentDiv.innerHTML = `<img src="${fileUrl}" class="img-fluid rounded shadow-sm" style="max-height: 70vh;" />`;
+                } else if (fileType.includes('.pdf')) {
+                    contentDiv.innerHTML = `<iframe src="${fileUrl}" style="width: 100%; height: 70vh; border: none;"></iframe>`;
+                } else {
+                    contentDiv.innerHTML = `<div class="text-center p-5"><i class="bi bi-file-earmark fs-1 text-muted mb-3"></i><h5>${fileName}</h5><p>Cannot preview this type.</p></div>`;
+                }
+                new bootstrap.Modal(document.getElementById('fileViewerModal')).show();
+            }
         });
     </script>
 }

@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -10,7 +12,6 @@ using System.Threading.Tasks;
 using TestingDemo.Data;
 using TestingDemo.Models;
 using TestingDemo.ViewModels;
-using Microsoft.AspNetCore.SignalR;
 
 namespace TestingDemo.Controllers
 {
@@ -19,11 +20,13 @@ namespace TestingDemo.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public DocumentOfficerController(ApplicationDbContext context, IHubContext<NotificationHub> hubContext)
+        public DocumentOfficerController(ApplicationDbContext context, IHubContext<NotificationHub> hubContext, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _hubContext = hubContext;
+            _userManager = userManager;
         }
 
         // GET: DocumentOfficer/Index
@@ -52,7 +55,16 @@ namespace TestingDemo.Controllers
                 .Include(c => c.RetainershipSPP)
                 .Include(c => c.OneTimeTransaction)
                 .Include(c => c.ExternalAudit)
+                .Include(c => c.ExternalAudit)
                 .AsNoTracking();
+
+            // Filter by assigned Document Officer user (unless user is Admin)
+            if (User.IsInRole("DocumentOfficer") && !User.IsInRole("Admin"))
+            {
+                var currentUserId = _userManager.GetUserId(User);
+                pendingQuery = pendingQuery.Where(c => c.AssignedDocumentOfficerId == currentUserId || c.AssignedDocumentOfficerId == null);
+                archivedQuery = archivedQuery.Where(c => c.AssignedDocumentOfficerId == currentUserId || c.AssignedDocumentOfficerId == null);
+            }
 
             if (!String.IsNullOrEmpty(searchString))
             {
@@ -121,18 +133,32 @@ namespace TestingDemo.Controllers
         // POST: DocumentOfficer/ProceedToFinance/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ProceedToFinance(int id)
+        public async Task<IActionResult> ProceedToFinance(int id, string? assignedUserId)
         {
             var client = await _context.Clients.FindAsync(id);
             if (client != null)
             {
                 client.Status = "Clearance";
                 client.SubStatus = "New";
+
+                if (!string.IsNullOrEmpty(assignedUserId))
+                {
+                    client.AssignedFinanceId = assignedUserId;
+                }
+
                 await _context.SaveChangesAsync();
                 await _hubContext.Clients.All.SendAsync("ReceiveUpdate", "DocumentOfficer data changed");
                 TempData["SuccessMessage"] = "Client has been sent to Finance for clearance.";
             }
             return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetFinanceUsers()
+        {
+            var users = await _userManager.GetUsersInRoleAsync("Finance");
+            var result = users.Select(u => new { u.Id, Name = u.FullName }).ToList();
+            return Json(result);
         }
 
         // POST: DocumentOfficer/ReturnToCustomerCare/5
@@ -155,15 +181,22 @@ namespace TestingDemo.Controllers
         [HttpGet]
         public async Task<IActionResult> GetLatestData()
         {
-            var clients = await _context.Clients
+            var clients = _context.Clients
                 .Where(c => c.Status == "DocumentOfficer")
                 .Include(c => c.RetainershipBIR)
                 .Include(c => c.RetainershipSPP)
                 .Include(c => c.OneTimeTransaction)
                 .Include(c => c.ExternalAudit)
-                .AsNoTracking()
-                .ToListAsync();
-            return Json(clients);
+                .Include(c => c.ExternalAudit)
+                .AsNoTracking();
+
+            if (User.IsInRole("DocumentOfficer") && !User.IsInRole("Admin"))
+            {
+                var currentUserId = _userManager.GetUserId(User);
+                clients = clients.Where(c => c.AssignedDocumentOfficerId == currentUserId || c.AssignedDocumentOfficerId == null);
+            }
+
+            return Json(await clients.ToListAsync());
         }
 
         // GET: DocumentOfficer/ViewRequirementFile/5

@@ -43,9 +43,16 @@ namespace TestingDemo.Services
             _timer = new Timer(ExecuteBackup, null, initialDelay, interval);
 
             // Keep the service running
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
-                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                while (!stoppingToken.IsCancellationRequested)
+                {
+                    await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                // Expected when the application is shutting down
             }
         }
 

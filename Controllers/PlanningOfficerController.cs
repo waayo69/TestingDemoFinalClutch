@@ -509,7 +509,7 @@ namespace TestingDemo.Controllers
         // POST: PlanningOfficer/ProceedToLiaison/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ProceedToLiaison(int id)
+        public async Task<IActionResult> ProceedToLiaison(int id, string? assignedUserId)
         {
             var client = await _context.Clients.FindAsync(id);
             if (client == null)
@@ -519,11 +519,25 @@ namespace TestingDemo.Controllers
 
             client.Status = "CustomerCare"; // Status updated to CustomerCare
             client.SubStatus = "New";
+
+            if (!string.IsNullOrEmpty(assignedUserId))
+            {
+                client.AssignedCustomerCareId = assignedUserId;
+            }
+
             await _context.SaveChangesAsync();
             await _hubContext.Clients.All.SendAsync("ReceiveUpdate", "PlanningOfficer data changed");
 
             TempData["SuccessMessage"] = $"Client {client.ClientName} has been proceeded to Customer Care.";
             return RedirectToAction("Index");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetCustomerCareUsers()
+        {
+            var users = await _userManager.GetUsersInRoleAsync("CustomerCare");
+            var result = users.Select(u => new { u.Id, Name = u.FullName }).ToList();
+            return Json(result);
         }
 
         // POST: PlanningOfficer/BackToFinance/5

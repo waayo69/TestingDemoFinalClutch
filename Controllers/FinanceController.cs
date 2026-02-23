@@ -581,5 +581,55 @@ namespace TestingDemo.Controllers
             } while (await _context.Clients.AnyAsync(c => c.TrackingNumber == tracking));
             return tracking;
         }
+        // GET: Finance/ViewRequirementFile/5
+        public async Task<IActionResult> ViewRequirementFile(int id)
+        {
+            var photo = await _context.RequirementPhotos.FindAsync(id);
+            if (photo == null)
+            {
+                return NotFound();
+            }
+
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", photo.PhotoPath.TrimStart('/'));
+            if (!System.IO.File.Exists(filePath))
+            {
+                return NotFound("File not found on server.");
+            }
+
+            var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
+            var fileName = Path.GetFileName(photo.PhotoPath);
+            var contentType = GetContentType(fileName);
+
+            return File(fileBytes, contentType, fileName);
+        }
+
+        // GET: Finance/GetRequirementFiles/5
+        [HttpGet]
+        public async Task<IActionResult> GetRequirementFiles(int clientId)
+        {
+            var requirements = await _context.PermitRequirements
+                .Include(pr => pr.Photos)
+                .Where(pr => pr.ClientId == clientId)
+                .ToListAsync();
+
+            return PartialView("_RequirementFilesReadOnlyPartial", requirements);
+        }
+
+        private string GetContentType(string fileName)
+        {
+            var extension = Path.GetExtension(fileName).ToLowerInvariant();
+            return extension switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".gif" => "image/gif",
+                ".pdf" => "application/pdf",
+                ".doc" => "application/msword",
+                ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                ".xls" => "application/vnd.ms-excel",
+                ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                _ => "application/octet-stream"
+            };
+        }
     }
 }

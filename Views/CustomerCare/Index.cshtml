@@ -344,6 +344,13 @@
                 </h6>
                 <ul id="stdRequirements" class="list-group list-group-flush mb-4 rounded-3 border"></ul>
                 
+                <div class="mt-4 text-start mb-4">
+                    <label for="assignedUserId" class="form-label fw-bold text-dark"><i class="bi bi-person-badge me-2"></i>Assign to Document Officer (Optional)</label>
+                    <select class="form-select assign-do-select" id="assignedUserId" name="assignedUserId" form="stdForm">
+                        <option value="">-- Unassigned (Available to all Document Officers) --</option>
+                    </select>
+                </div>
+                
                 <div class="d-grid mt-2">
                     <button type="button" class="btn btn-outline-info rounded-pill py-2" id="stdViewFilesBtn">
                         <i class="bi bi-folder2-open me-2"></i> Open Details to Upload Files
@@ -446,6 +453,22 @@
                 viewBtn.onclick = function(){
                    window.location.href = '/CustomerCare/Details/' + clientId;
                 };
+
+                // Populate assigned Document Officer dropdown
+                var select = stdModal.querySelector('.assign-do-select');
+                if (select && select.options.length <= 1) { // Only fetch if not already loaded
+                    fetch('@Url.Action("GetDocumentOfficerUsers", "CustomerCare")')
+                        .then(r => r.json())
+                        .then(users => {
+                            users.forEach(u => {
+                                var opt = document.createElement('option');
+                                opt.value = u.id;
+                                opt.textContent = u.name;
+                                select.appendChild(opt);
+                            });
+                        })
+                        .catch(err => console.error('Failed to load Document Officer users', err));
+                }
 
                 fetch('/CustomerCare/GetRequirementSummary?id=' + clientId, { cache: 'no-store' })
                     .then(r => r.json())

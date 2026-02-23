@@ -65,13 +65,20 @@
                             <div class="text-muted">No requirements have been added yet.</div>
                         }
                     </div>
+
+                    <div class="mt-4 text-start">
+                        <label for="assignedUserId-@Model.Id" class="form-label fw-bold text-dark"><i class="bi bi-person-badge me-2"></i>Assign to Customer Care (Optional)</label>
+                        <select class="form-select assign-cc-select" id="assignedUserId-@Model.Id" name="assignedUserId" form="proceedForm-@Model.Id">
+                            <option value="">-- Unassigned (Available to all Customer Care) --</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer border-0 py-3">
                 <button type="button" class="btn btn-outline-secondary rounded-pill px-4 py-2" data-bs-dismiss="modal">
                     <i class="bi bi-x-circle me-2"></i>Cancel
                 </button>
-                <form asp-action="ProceedToLiaison" asp-route-id="@Model.Id" method="post" style="display:inline;">
+                <form id="proceedForm-@Model.Id" asp-action="ProceedToLiaison" asp-route-id="@Model.Id" method="post" style="display:inline;">
                     <button type="submit" class="btn btn-success rounded-pill px-4 py-2 shadow-sm">
                         <i class="bi bi-check-lg me-2"></i>Proceed to Customer Care
                     </button>

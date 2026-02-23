@@ -314,7 +314,7 @@
                 </div>
             </div>
             <div class="modal-footer bg-light">
-                @if (Model.SubStatus == "Ready for Claiming")
+                @if (Model.SubStatus == "Ready for Claiming" && Model.Status != "Claimed")
                 {
                     <form method="post" action="/Archive/MarkAsClaimed/@Model.Id" class="d-inline me-2">
                         @Html.AntiForgeryToken()
