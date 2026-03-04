@@ -330,11 +330,9 @@ namespace TestingDemo.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ClientType")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ContactPersonEmailAddress")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ContactPersonNumber")
@@ -368,15 +366,12 @@ namespace TestingDemo.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RegisteredCompanyName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RequestingParty")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RequestorName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("RetainershipBIRId")

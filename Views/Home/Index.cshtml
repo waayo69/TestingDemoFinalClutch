@@ -1,312 +1,400 @@
 @model TestingDemo.ViewModels.DashboardViewModel
 @{
-    ViewData["Title"] = "Dashboard";
+    ViewData["Title"] = "Queue Monitor";
 }
 
-<div class="dashboard-container">
-    <div class="dashboard-grid">
-        <!-- Liaison Section -->
-        <div class="dashboard-grid-item dashboard-liaison">
-            <div class="dashboard-title">LIAISON</div>
-            <table class="dashboard-table">
-                <thead>
-                    <tr>
-                        <th>NAME</th>
-                        <th>SERVICE</th>
-                        <th>LOCATION</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model?.LiaisonClients?.Any() == true)
+<style>
+    /* Ultra-Minimalist Professional Queue Dashboard */
+    :root {
+        --q-header-h: 120px;
+        --q-card-p: 0.75rem;
+        --q-font-base: 0.85rem;
+        --q-font-title: 1.3rem;
+        --q-font-card: 0.95rem;
+    }
+
+    .queue-monitor {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 65px); /* Adjust for navbar */
+        padding: 1.25rem;
+        font-family: 'Inter', -apple-system, sans-serif;
+        color: var(--text);
+        overflow: hidden;
+    }
+
+    .monitor-header {
+        flex: 0 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .monitor-title h1 {
+        font-size: var(--q-font-title);
+        font-weight: 800;
+        margin: 0;
+        letter-spacing: -0.03em;
+    }
+
+    .monitor-stats {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+    }
+
+    .stat-val { font-weight: 700; color: var(--text); }
+
+    .queue-grid {
+        flex: 1 1 auto;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr); /* 5 Columns now */
+        gap: 1rem;
+        overflow: hidden;
+    }
+
+    .queue-col {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-width: 0;
+        background: rgba(0,0,0,0.015);
+        border-radius: 8px;
+        border: 1px solid var(--border-light);
+    }
+
+    body.dark-mode .queue-col { background: rgba(255,255,255,0.01); }
+
+    .col-header {
+        flex: 0 0 auto;
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        padding: 0.75rem;
+        background: var(--bg-soft);
+        border-bottom: 2px solid var(--border);
+        border-radius: 8px 8px 0 0;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .h-finance { border-color: #3b82f6; color: #3b82f6; }
+    .h-planning { border-color: #8b5cf6; color: #8b5cf6; }
+    .h-liaison { border-color: #f59e0b; color: #f59e0b; }
+    .h-filing { border-color: #10b981; color: #10b981; }
+    .h-claiming { border-color: #ec4899; color: #ec4899; } /* Pink for clearance */
+
+    .client-list {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        padding: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    /* Custom Scrollbar */
+    .client-list::-webkit-scrollbar { width: 4px; }
+    .client-list::-webkit-scrollbar-track { background: transparent; }
+    .client-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+    .client-list::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+    .client-card {
+        background: var(--bg);
+        border: 1px solid var(--border-light);
+        border-radius: 6px;
+        padding: var(--q-card-p);
+        transition: all 0.15s ease;
+        position: relative;
+    }
+
+    .client-card:hover {
+        border-color: var(--text-muted);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .card-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        margin-bottom: 0.25rem;
+    }
+
+    .card-name {
+        font-size: var(--q-font-card);
+        font-weight: 700;
+        margin-bottom: 0.4rem;
+        color: var(--text);
+        line-height: 1.1;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .card-details {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        margin-bottom: 0.6rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.75rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid var(--border-light);
+    }
+
+    .assigned-to {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        color: var(--text);
+        font-weight: 600;
+        max-width: 65%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .assigned-label { color: var(--text-muted); font-size: 0.65rem; font-weight: 500; }
+
+    .queue-timer {
+        color: var(--text-muted);
+        font-size: 0.7rem;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .urgency-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 3px; }
+    .urgency-urgent { background-color: #ef4444; }
+    .urgency-sl-urgent { background-color: #f59e0b; }
+    .urgency-normal { background-color: #10b981; }
+
+    .empty-state {
+        padding: 1rem;
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 0.7rem;
+        font-style: italic;
+    }
+
+    .live-indicator { display: inline-flex; align-items: center; gap: 0.4rem; color: #10b981; font-weight: 700; font-size: 0.7rem; }
+    .pulse-dot { width: 5px; height: 5px; background: currentColor; border-radius: 50%; animation: pulse 2s infinite; }
+    @@keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.6); opacity: 0; } 100% { transform: scale(1); opacity: 0; } }
+
+    #liveClock { font-size: 1rem; font-weight: 800; color: var(--text); }
+</style>
+
+<div class="queue-monitor">
+    <header class="monitor-header">
+        <div class="monitor-title">
+            <h1>Queue Monitor</h1>
+            <div class="live-indicator">
+                <span class="pulse-dot"></span>
+                ACTIVE
+            </div>
+        </div>
+        <div class="monitor-stats">
+            <a href="@Url.Action("Monitor", "Home")" target="_blank" class="btn btn-outline-secondary btn-sm py-0" style="font-size: 0.65rem; font-weight: 700; border-radius: 4px;">
+                <i class="bi bi-display me-1"></i> MONITOR MODE
+            </a>
+            <div id="liveClock">--:--:--</div>
+        </div>
+    </header>
+
+    <div class="queue-grid">
+        <!-- FINANCE -->
+        <div class="queue-col">
+            <div class="col-header h-finance">Finance (@Model.FinanceClients.Count)</div>
+            <div class="client-list">
+                @if (Model.FinanceClients?.Any() == true)
+                {
+                    @foreach (var item in Model.FinanceClients)
                     {
-                        @foreach (var client in Model.LiaisonClients)
-                        {
-                            <tr>
-                                <td title="@client.ClientName">@client.ClientName</td>
-                                <td title="@client.TypeOfProject">@client.TypeOfProject</td>
-                                <td title="@client.RegisteredCompanyAddress">@client.RegisteredCompanyAddress</td>
-                            </tr>
-                        }
+                        <div class="client-card">
+                            <div class="card-meta">
+                                <span>#@item.Client.TrackingNumber</span>
+                                <span><span class="urgency-dot urgency-@(item.Client.UrgencyLevel.ToLower().Replace(" ", "-"))"></span>@item.Client.UrgencyLevel</span>
+                            </div>
+                            <div class="card-name" title="@item.Client.ClientName">@item.Client.ClientName</div>
+                            <div class="card-details">@item.Client.TypeOfProject</div>
+                            <div class="card-footer">
+                                <div class="assigned-to">
+                                    <span class="assigned-label">PIC:</span>
+                                    <span>@(item.AssignedUserName ?? "Open")</span>
+                                </div>
+                                <div class="queue-timer" data-start="@item.Client.CreatedDate.ToString("o")">0m</div>
+                            </div>
+                        </div>
                     }
-                    else
-                    {
-                        <tr>
-                            <td colspan="3" class="no-data">No clients available</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                }
+                else { <div class="empty-state">Clear</div> }
+            </div>
         </div>
 
-        <!-- Finance Section -->
-        <div class="dashboard-grid-item dashboard-finance">
-            <div class="dashboard-title">FINANCE</div>
-            <table class="dashboard-table">
-                <thead>
-                    <tr>
-                        <th>NAME</th>
-                        <th>SERVICE</th>
-                        <th>LOCATION</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model?.FinanceClients?.Any() == true)
+        <!-- PLANNING -->
+        <div class="queue-col">
+            <div class="col-header h-planning">Planning Officer (@Model.PlanningClients.Count)</div>
+            <div class="client-list">
+                @if (Model.PlanningClients?.Any() == true)
+                {
+                    @foreach (var item in Model.PlanningClients)
                     {
-                        @foreach (var client in Model.FinanceClients)
-                        {
-                            <tr>
-                                <td title="@client.ClientName">@client.ClientName</td>
-                                <td title="@client.TypeOfProject">@client.TypeOfProject</td>
-                                <td title="@client.RegisteredCompanyAddress">@client.RegisteredCompanyAddress</td>
-                            </tr>
-                        }
+                        <div class="client-card">
+                            <div class="card-meta">
+                                <span>#@item.Client.TrackingNumber</span>
+                                <span><span class="urgency-dot urgency-@(item.Client.UrgencyLevel.ToLower().Replace(" ", "-"))"></span>@item.Client.UrgencyLevel</span>
+                            </div>
+                            <div class="card-name" title="@item.Client.ClientName">@item.Client.ClientName</div>
+                            <div class="card-details">@item.Client.RegisteredCompanyAddress</div>
+                            <div class="card-footer">
+                                <div class="assigned-to">
+                                    <span class="assigned-label">PIC:</span>
+                                    <span>@(item.AssignedUserName ?? "Open")</span>
+                                </div>
+                                <div class="queue-timer" data-start="@item.Client.CreatedDate.ToString("o")">0m</div>
+                            </div>
+                        </div>
                     }
-                    else
-                    {
-                        <tr>
-                            <td colspan="3" class="no-data">No clients available</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                }
+                else { <div class="empty-state">Clear</div> }
+            </div>
         </div>
 
-        <!-- Planning Section -->
-        <div class="dashboard-grid-item dashboard-planning">
-            <div class="dashboard-title">PLANNING</div>
-            <table class="dashboard-table">
-                <thead>
-                    <tr>
-                        <th>NAME</th>
-                        <th>SERVICE</th>
-                        <th>LOCATION</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model?.PlanningClients?.Any() == true)
+        <!-- LIAISON -->
+        <div class="queue-col">
+            <div class="col-header h-liaison">Customer Care (@(Model.LiaisonClients.Count + Model.ReceivedClients.Count))</div>
+            <div class="client-list">
+                @{ var lClients = Model.LiaisonClients.Concat(Model.ReceivedClients).ToList(); }
+                @if (lClients.Any())
+                {
+                    @foreach (var item in lClients)
                     {
-                        @foreach (var client in Model.PlanningClients)
-                        {
-                            <tr>
-                                <td title="@client.ClientName">@client.ClientName</td>
-                                <td title="@client.TypeOfProject">@client.TypeOfProject</td>
-                                <td title="@client.RegisteredCompanyAddress">@client.RegisteredCompanyAddress</td>
-                            </tr>
-                        }
+                        <div class="client-card">
+                            <div class="card-meta">
+                                <span>#@item.Client.TrackingNumber</span>
+                                <span><span class="urgency-dot urgency-@(item.Client.UrgencyLevel.ToLower().Replace(" ", "-"))"></span>@item.Client.UrgencyLevel</span>
+                            </div>
+                            <div class="card-name" title="@item.Client.ClientName">@item.Client.ClientName</div>
+                            <div class="card-details">@item.Client.ContactPersonNumber</div>
+                            <div class="card-footer">
+                                <div class="assigned-to">
+                                    <span class="assigned-label">PIC:</span>
+                                    <span>@(item.AssignedUserName ?? "Open")</span>
+                                </div>
+                                <div class="queue-timer" data-start="@item.Client.CreatedDate.ToString("o")">0m</div>
+                            </div>
+                        </div>
                     }
-                    else
-                    {
-                        <tr>
-                            <td colspan="3" class="no-data">No clients available</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                }
+                else { <div class="empty-state">Clear</div> }
+            </div>
         </div>
 
-        <!-- Documentation Section -->
-        <div class="dashboard-grid-item dashboard-documentation">
-            <div class="dashboard-title">DOCUMENTATION</div>
-            <table class="dashboard-table">
-                <thead>
-                    <tr>
-                        <th>NAME</th>
-                        <th>SERVICE</th>
-                        <th>LOCATION</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model?.DocumentationClients?.Any() == true)
+        <!-- FILING -->
+        <div class="queue-col">
+            <div class="col-header h-filing">Documentation Officer (@Model.DocumentationClients.Count)</div>
+            <div class="client-list">
+                @if (Model.DocumentationClients?.Any() == true)
+                {
+                    @foreach (var item in Model.DocumentationClients)
                     {
-                        @foreach (var client in Model.DocumentationClients)
-                        {
-                            <tr>
-                                <td title="@client.ClientName">@client.ClientName</td>
-                                <td title="@client.TypeOfProject">@client.TypeOfProject</td>
-                                <td title="@client.RegisteredCompanyAddress">@client.RegisteredCompanyAddress</td>
-                            </tr>
-                        }
+                        <div class="client-card">
+                            <div class="card-meta">
+                                <span>#@item.Client.TrackingNumber</span>
+                                <span><span class="urgency-dot urgency-@(item.Client.UrgencyLevel.ToLower().Replace(" ", "-"))"></span>@item.Client.UrgencyLevel</span>
+                            </div>
+                            <div class="card-name" title="@item.Client.ClientName">@item.Client.ClientName</div>
+                            <div class="card-details">@item.Client.SubStatus</div>
+                            <div class="card-footer">
+                                <div class="assigned-to">
+                                    <span class="assigned-label">PIC:</span>
+                                    <span>@(item.AssignedUserName ?? "Open")</span>
+                                </div>
+                                <div class="queue-timer" data-start="@item.Client.CreatedDate.ToString("o")">0m</div>
+                            </div>
+                        </div>
                     }
-                    else
+                }
+                else { <div class="empty-state">Clear</div> }
+            </div>
+        </div>
+
+        <!-- CLEARANCE -->
+        <div class="queue-col">
+            <div class="col-header h-claiming">Finance (Clearance) (@Model.ClearanceClients.Count)</div>
+            <div class="client-list">
+                @if (Model.ClearanceClients?.Any() == true)
+                {
+                    @foreach (var item in Model.ClearanceClients)
                     {
-                        <tr>
-                            <td colspan="3" class="no-data">No clients available</td>
-                        </tr>
+                        <div class="client-card">
+                            <div class="card-meta">
+                                <span>#@item.Client.TrackingNumber</span>
+                                <span><span class="urgency-dot urgency-@(item.Client.UrgencyLevel.ToLower().Replace(" ", "-"))"></span>@item.Client.UrgencyLevel</span>
+                            </div>
+                            <div class="card-name" title="@item.Client.ClientName">@item.Client.ClientName</div>
+                            <div class="card-details">Ready for Claiming</div>
+                            <div class="card-footer">
+                                <div class="assigned-to">
+                                    <span class="assigned-label">PIC:</span>
+                                    <span>@(item.AssignedUserName ?? "Finalized")</span>
+                                </div>
+                                <div class="queue-timer" data-start="@item.Client.CreatedDate.ToString("o")">0m</div>
+                            </div>
+                        </div>
                     }
-                </tbody>
-            </table>
+                }
+                else { <div class="empty-state">No claims pending</div> }
+            </div>
         </div>
     </div>
 </div>
 
-
 <audio id="notifySound" src="/sounds/Notifications.mp3" preload="auto"></audio>
-
-<!-- Scripts -->
-<script>
-    // Secondary Screen Detection
-    function checkForSecondaryScreen() {
-        if (window.screen.availWidth > window.screen.width || window.screen.availHeight > window.screen.height) {
-            let newWin = window.open("/", "SecondaryScreen", "width=1920,height=1080");
-            if (newWin) {
-                newWin.moveTo(window.screen.availWidth - newWin.outerWidth, 0);
-                newWin.focus();
-            }
-        } else {
-            console.log("No secondary screen detected. The homepage will be displayed on the primary screen.");
-        }
-    }
-
-    // Initialize on load
-    window.addEventListener('load', checkForSecondaryScreen);
-
-    // Utility function for table sorting (if needed later)
-    function sortTable(tableElement, columnIndex, ascending = true) {
-        const tbody = tableElement.querySelector('tbody');
-        const rows = Array.from(tbody.querySelectorAll('tr'));
-
-        rows.sort((a, b) => {
-            const aValue = a.cells[columnIndex].textContent.trim();
-            const bValue = b.cells[columnIndex].textContent.trim();
-
-            if (ascending) {
-                return aValue.localeCompare(bValue);
-            } else {
-                return bValue.localeCompare(aValue);
-            }
-        });
-
-        rows.forEach(row => tbody.appendChild(row));
-    }
-
-    // Add click handlers for responsive table interactions
-    document.addEventListener('DOMContentLoaded', function () {
-        const tables = document.querySelectorAll('.dashboard-table');
-
-        tables.forEach(table => {
-            // Add double-click handler for rows (you can customize this)
-            const rows = table.querySelectorAll('tbody tr');
-            rows.forEach(row => {
-                row.addEventListener('dblclick', function () {
-                    // Example: highlight the row or trigger an action
-                    this.style.backgroundColor = '#e3f2fd';
-                    setTimeout(() => {
-                        this.style.backgroundColor = '';
-                    }, 2000);
-                });
-            });
-        });
-    });
-
-    // Store initial client IDs for all dashboard tables
-    function getClientIds(selector) {
-        return Array.from(document.querySelectorAll(selector)).map(row => row.querySelector('td[title]')?.textContent?.trim()).filter(Boolean);
-    }
-    let liaisonClientIds = getClientIds('.dashboard-liaison tbody tr');
-    let financeClientIds = getClientIds('.dashboard-finance tbody tr');
-    let planningClientIds = getClientIds('.dashboard-planning tbody tr');
-    let documentationClientIds = getClientIds('.dashboard-documentation tbody tr');
-    function playNotifySound() {
-        var audio = document.getElementById('notifySound');
-        if (audio) {
-            audio.currentTime = 0;
-            audio.play();
-        }
-    }
-    function renderHomeDashboard(data) {
-        let isNew = false;
-        if (data.LiaisonClients) {
-            let newIds = (data.LiaisonClients || []).map(c => c.clientName);
-            isNew = newIds.some(id => !liaisonClientIds.includes(id));
-        }
-        if (data.FinanceClients) {
-            let newIds = (data.FinanceClients || []).map(c => c.clientName);
-            isNew = isNew || newIds.some(id => !financeClientIds.includes(id));
-        }
-        if (data.PlanningClients) {
-            let newIds = (data.PlanningClients || []).map(c => c.clientName);
-            isNew = isNew || newIds.some(id => !planningClientIds.includes(id));
-        }
-        if (data.DocumentationClients) {
-            let newIds = (data.DocumentationClients || []).map(c => c.clientName);
-            isNew = isNew || newIds.some(id => !documentationClientIds.includes(id));
-        }
-        if (isNew) {
-            playNotifySound();
-        }
-        location.reload();
-    }
-    if (window.connection) {
-        connection.on("ReceiveUpdate", function (message) {
-            fetch('/Home/GetLatestData')
-                .then(response => response.json())
-                .then(data => {
-                    renderHomeDashboard(data);
-                });
-        });
-    }
-</script>
-
-@functions {
-    public string GetPriorityClass(string priority)
-    {
-        return priority switch
-        {
-            "Normal" => "table-success",
-            "Slightly Important" => "table-warning",
-            "Urgent" => "table-danger",
-            _ => ""
-        };
-    }
-}
 
 @section Scripts {
     <script>
-        // Store initial client IDs for all dashboard tables
-        function getClientIds(selector) {
-            return Array.from(document.querySelectorAll(selector)).map(row => row.querySelector('td[title]')?.textContent?.trim()).filter(Boolean);
+        function updateUI() {
+            const now = new Date();
+            const clock = document.getElementById('liveClock');
+            if (clock) clock.innerText = now.toLocaleTimeString();
+
+            document.querySelectorAll('.queue-timer').forEach(timer => {
+                const start = new Date(timer.dataset.start);
+                const diff = Math.floor((now - start) / 60000);
+                timer.innerText = diff < 60 ? `${diff}m` : `${Math.floor(diff/60)}h ${diff%60}m`;
+                
+                if (diff > 60) timer.style.color = '#ef4444';
+                else if (diff > 30) timer.style.color = '#f59e0b';
+            });
         }
-        let liaisonClientIds = getClientIds('.dashboard-liaison tbody tr');
-        let financeClientIds = getClientIds('.dashboard-finance tbody tr');
-        let planningClientIds = getClientIds('.dashboard-planning tbody tr');
-        let documentationClientIds = getClientIds('.dashboard-documentation tbody tr');
-        function playNotifySound() {
-            var audio = document.getElementById('notifySound');
-            if (audio) {
-                audio.currentTime = 0;
-                audio.play();
-            }
-        }
-        function renderHomeDashboard(data) {
-            let isNew = false;
-            if (data.LiaisonClients) {
-                let newIds = (data.LiaisonClients || []).map(c => c.clientName);
-                isNew = newIds.some(id => !liaisonClientIds.includes(id));
-            }
-            if (data.FinanceClients) {
-                let newIds = (data.FinanceClients || []).map(c => c.clientName);
-                isNew = isNew || newIds.some(id => !financeClientIds.includes(id));
-            }
-            if (data.PlanningClients) {
-                let newIds = (data.PlanningClients || []).map(c => c.clientName);
-                isNew = isNew || newIds.some(id => !planningClientIds.includes(id));
-            }
-            if (data.DocumentationClients) {
-                let newIds = (data.DocumentationClients || []).map(c => c.clientName);
-                isNew = isNew || newIds.some(id => !documentationClientIds.includes(id));
-            }
-            if (isNew) {
-                playNotifySound();
-            }
-            location.reload();
-        }
+
+        setInterval(updateUI, 1000);
+        updateUI();
+
         if (window.connection) {
-            connection.on("ReceiveUpdate", function (message) {
-                fetch('/Home/GetLatestData')
-                    .then(response => response.json())
-                    .then(data => {
-                        renderHomeDashboard(data);
-                    });
+            connection.on("ReceiveUpdate", function () {
+                if (window.location.pathname === "/" || window.location.pathname.toLowerCase() === "/home/index") {
+                    const audio = document.getElementById('notifySound');
+                    if (audio) audio.play().catch(() => {});
+                    setTimeout(() => location.reload(), 1000);
+                }
             });
         }
     </script>

@@ -114,9 +114,6 @@ namespace TestingDemo.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ClientModel client)
         {
-            // Remove TrackingNumber from validation since it will be set in code
-            ModelState.Remove("TrackingNumber");
-
             ViewBag.PostedForm = Request.Form.Keys.ToDictionary(k => k, k => Request.Form[k]);
 
             if (string.IsNullOrEmpty(client.TaxId))
@@ -200,19 +197,29 @@ namespace TestingDemo.Controllers
             client.OtherTypeOfProject = Request.Form["OtherTypeOfProject"];
             client.OtherRequestingParty = Request.Form["OtherRequestingParty"];
 
+            // Generate tracking number early so it's ready for the model
+            client.TrackingNumber = await GenerateUniqueTrackingNumber();
+            ModelState.Remove("TrackingNumber");
+
+            // Remove other fields that might be null but are non-nullable in model strings (pre-C# 8 nullable)
+            // though our ClientModel update should have fixed this.
+            if (string.IsNullOrEmpty(client.RegisteredCompanyName)) ModelState.Remove("RegisteredCompanyName");
+            if (string.IsNullOrEmpty(client.ContactPersonEmailAddress)) ModelState.Remove("ContactPersonEmailAddress");
+            if (string.IsNullOrEmpty(client.RequestorName)) ModelState.Remove("RequestorName");
+
             if (ModelState.IsValid)
             {
                 client.CreatedDate = DateTime.Now;
                 client.Status = "Pending";
                 client.SubStatus = "New";
-                // Generate unique tracking number
-                client.TrackingNumber = await GenerateUniqueTrackingNumber();
+                
                 _context.Add(client);
                 await _context.SaveChangesAsync();
                 await _hubContext.Clients.All.SendAsync("ReceiveUpdate", "Finance data changed");
                 TempData["SuccessMessage"] = "Client created successfully!";
                 return RedirectToAction(nameof(Index));
             }
+            // If we're here, validation failed. Show errors for debugging if needed.
             ViewBag.DebugErrors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
             return View(client);
         }

@@ -12,8 +12,8 @@ using TestingDemo.Data;
 namespace TestingDemo.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251020145412_clutchfix")]
-    partial class clutchfix
+    [Migration("20260303170103_THISNew_localDB")]
+    partial class THISNew_localDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -313,16 +313,29 @@ namespace TestingDemo.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AssignedCustomerCareId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AssignedDocumentOfficerId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AssignedFinanceId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AssignedPlanningOfficerId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ClaimedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("ClientName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ClientType")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ContactPersonEmailAddress")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ContactPersonNumber")
@@ -356,15 +369,12 @@ namespace TestingDemo.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RegisteredCompanyName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RequestingParty")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RequestorName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("RetainershipBIRId")
@@ -377,7 +387,14 @@ namespace TestingDemo.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("SubStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("TaxId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TrackingMessage")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TrackingNumber")

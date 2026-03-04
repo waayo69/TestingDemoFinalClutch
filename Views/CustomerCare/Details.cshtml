@@ -271,6 +271,27 @@
         </div>
     </div>
 
+    <!-- Actions Section -->
+    <div class="card shadow-sm border-0 rounded-3 mb-5 mt-4">
+        <div class="card-header bg-light border-0 py-3">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-lightning-charge me-2 text-primary"></i> Actions</h5>
+        </div>
+        <div class="card-body p-4">
+            <div class="d-flex flex-wrap gap-3 justify-content-center">
+                <button type="button" class="btn btn-outline-warning btn-lg px-4 rounded-pill fw-bold" 
+                        data-bs-toggle="modal" data-bs-target="#returnToPlanningModal" 
+                        data-client-id="@Model.Id" data-client-name="@Model.ClientName">
+                    <i class="bi bi-arrow-left-circle me-2"></i> Return to Planning
+                </button>
+                <button type="button" class="btn btn-primary btn-lg px-5 rounded-pill shadow-sm fw-bold" 
+                        data-bs-toggle="modal" data-bs-target="#sendToDocModal" 
+                        data-client-id="@Model.Id" data-client-name="@Model.ClientName">
+                    <i class="bi bi-send-check me-2"></i> Send to Documentation
+                </button>
+            </div>
+        </div>
+    </div>
+
     @* Per-requirement modals for editing (upload files) *@
     @foreach (var req in requirements)
     {
@@ -347,6 +368,88 @@
             </div>
         </div>
     }
+
+    <!-- Sent to Documentation Modal -->
+    <div class="modal fade" id="sendToDocModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-0 pb-0 ps-4 pt-4">
+                    <h5 class="modal-title fw-bold">Send to Documentation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="client-brief mb-4 p-3 bg-light rounded-3 d-flex align-items-center">
+                        <div class="avatar bg-primary text-white rounded-3 p-2 me-3">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted small">Proceeding for:</div>
+                            <strong id="stdClientName" class="fs-5 text-dark"></strong>
+                        </div>
+                    </div>
+
+                    <div id="stdAlert" class="alert alert-warning border-0 rounded-3 d-none mb-4 animate__animated animate__shakeX">
+                        <div class="d-flex">
+                            <i class="bi bi-exclamation-triangle-fill fs-4 me-3 text-warning"></i>
+                            <div>
+                                <div class="fw-bold">Prerequisites Missing</div>
+                                <div class="small">All required requirements must have at least one file uploaded before proceeding.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold mb-3 d-flex align-items-center">
+                        <i class="bi bi-journal-check me-2 text-primary"></i> Requirement Status
+                    </h6>
+                    <ul id="stdRequirements" class="list-group list-group-flush mb-4 rounded-3 border"></ul>
+                    
+                    <div class="mt-4 text-start mb-4">
+                        <label for="assignedUserId" class="form-label fw-bold text-dark"><i class="bi bi-person-badge me-2"></i>Assign to Document Officer (Optional)</label>
+                        <select class="form-select assign-do-select" id="assignedUserId" name="assignedUserId" form="stdForm">
+                            <option value="">-- Unassigned (Available to all Document Officers) --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <form id="stdForm" method="post">
+                        <button id="stdConfirmBtn" type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm" disabled>
+                            <i class="bi bi-send-fill me-2"></i> Confirm & Proceed
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Return to Planning Modal -->
+    <div class="modal fade" id="returnToPlanningModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-0 pb-0 ps-4 pt-4 text-warning">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-octagon-fill me-2"></i> Confirm Return</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <div class="mb-4">
+                        <div class="bg-warning bg-opacity-10 text-warning d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 80px; height: 80px;">
+                            <i class="bi bi-arrow-counterclockwise fs-1"></i>
+                        </div>
+                    </div>
+                    <h5 class="fw-bold text-dark">Return to Planning Officer?</h5>
+                    <p class="text-muted px-3">Are you sure you want to return <strong id="rtpClientName"></strong> to the Planning stage? This will move the client back to their pending list.</p>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0 justify-content-center">
+                    <button type="button" class="btn btn-light rounded-pill px-4 m-1" data-bs-dismiss="modal">Cancel</button>
+                    <form id="rtpForm" method="post" class="m-1">
+                        <button type="submit" class="btn btn-warning rounded-pill px-4 shadow-sm text-dark fw-bold">
+                            Confirm Return
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- File Viewer Modal -->
@@ -420,6 +523,103 @@ document.addEventListener('click', function (e) {
                 </div>
             `;
         }
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Send to Documentation Modal Logic
+    var stdModal = document.getElementById('sendToDocModal');
+    if (stdModal) {
+        stdModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var clientId = button.getAttribute('data-client-id');
+            var clientName = button.getAttribute('data-client-name');
+            stdModal.querySelector('#stdClientName').textContent = clientName;
+            var listEl = stdModal.querySelector('#stdRequirements');
+            var alertEl = stdModal.querySelector('#stdAlert');
+            var confirmBtn = stdModal.querySelector('#stdConfirmBtn');
+            var form = stdModal.querySelector('#stdForm');
+            
+            listEl.innerHTML = '<li class="list-group-item text-center p-4"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Loading...</li>';
+            alertEl.classList.add('d-none');
+            confirmBtn.disabled = true;
+            form.action = '/CustomerCare/ProceedToDocumentOfficer/' + clientId;
+            
+            // Populate assigned Document Officer dropdown
+            var select = stdModal.querySelector('.assign-do-select');
+            if (select && select.options.length <= 1) {
+                fetch('@Url.Action("GetDocumentOfficerUsers", "CustomerCare")')
+                    .then(r => r.json())
+                    .then(users => {
+                        users.forEach(u => {
+                            var opt = document.createElement('option');
+                            opt.value = u.id;
+                            opt.textContent = u.name;
+                            select.appendChild(opt);
+                        });
+                    })
+                    .catch(err => console.error('Failed to load Document Officer users', err));
+            }
+
+            fetch('/CustomerCare/GetRequirementSummary?id=' + clientId, { cache: 'no-store' })
+                .then(r => r.json())
+                .then(data => {
+                    listEl.innerHTML = '';
+                    var items = data.items || [];
+                    var hasMissing = false;
+                    items.forEach(it => {
+                        var li = document.createElement('li');
+                        li.className = 'list-group-item d-flex justify-content-between align-items-center py-2 px-0 border-0 border-bottom';
+                        
+                        const iconClass = it.files > 0 ? 'bi-check-circle-fill text-success' : (it.isRequired ? 'bi-exclamation-circle-fill text-danger' : 'bi-circle text-muted');
+                        
+                        li.innerHTML = `
+                            <div class="d-flex align-items-center">
+                                <i class="bi ${iconClass} me-2 fs-5"></i>
+                                <div>
+                                    <div class="fw-medium small">${it.requirementName}</div>
+                                    ${it.isRequired ? '<span class="badge bg-danger bg-opacity-10 text-danger" style="font-size: 0.6rem;">REQUIRED</span>' : ''}
+                                </div>
+                            </div>
+                            <span class="badge ${it.files > 0 ? 'bg-success bg-opacity-10 text-success' : 'bg-light text-muted'} rounded-pill">
+                                ${it.files} files
+                            </span>
+                        `;
+                        listEl.appendChild(li);
+                        if (it.isRequired && (!it.files || it.files === 0)) hasMissing = true;
+                    });
+
+                    if (items.length === 0) {
+                        listEl.innerHTML = '<li class="list-group-item text-muted text-center p-3 border-0">No requirements defined.</li>';
+                    }
+
+                    if (hasMissing) {
+                        alertEl.classList.remove('d-none');
+                        confirmBtn.disabled = true;
+                        confirmBtn.innerHTML = '<i class="bi bi-lock-fill me-2"></i> Requirements Required';
+                    } else {
+                        alertEl.classList.add('d-none');
+                        confirmBtn.disabled = false;
+                        confirmBtn.innerHTML = '<i class="bi bi-send-fill me-2"></i> Confirm & Proceed';
+                    }
+                })
+                .catch(() => {
+                    listEl.innerHTML = '<li class="list-group-item text-danger text-center p-3">Failed to load requirements.</li>';
+                    confirmBtn.disabled = true;
+                });
+        });
+    }
+
+    // Return to Planning Modal Logic
+    var rtpModal = document.getElementById('returnToPlanningModal');
+    if (rtpModal) {
+        rtpModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var clientId = button.getAttribute('data-client-id');
+            var clientName = button.getAttribute('data-client-name');
+            rtpModal.querySelector('#rtpClientName').textContent = clientName;
+            rtpModal.querySelector('#rtpForm').action = '/CustomerCare/ReturnToPlanning/' + clientId;
+        });
     }
 });
 </script>

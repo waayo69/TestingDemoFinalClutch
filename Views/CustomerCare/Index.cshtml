@@ -4,162 +4,133 @@
     ViewData["Title"] = "Customer Care Dashboard";
 }
 
-<div class="container-fluid py-4">
-    <!-- Premium Header -->
-    <div class="dashboard-header mb-4 p-4 rounded-4 shadow-sm bg-white border-0">
-        <div class="row align-items-center g-3">
-            <div class="col-12 col-lg-6">
-                <div class="d-flex align-items-center">
-                    <div class="header-icon-box bg-primary bg-opacity-10 text-primary p-3 rounded-3 me-3">
-                        <i class="bi bi-people fs-3"></i>
-                    </div>
-                    <div>
-                        <h2 class="fw-bold mb-0 text-dark">@ViewData["Title"]</h2>
-                        <p class="text-muted mb-0">Manage liaison clients and documentation progress</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-lg-6">
-                <div class="d-flex flex-wrap justify-content-lg-end align-items-center gap-3">
-                    <form asp-action="Index" method="get" class="search-group">
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0 border-0 shadow-sm ps-3">
-                                <i class="bi bi-search text-muted"></i>
-                            </span>
-                            <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" 
-                                   class="form-control border-start-0 border-0 shadow-sm ps-2 py-2 rounded-end" 
-                                   placeholder="Search tracking #, name..." style="width: 250px;" />
-                            @if (!String.IsNullOrEmpty(ViewData["CurrentFilter"] as string))
-                            {
-                                <a asp-action="Index" class="btn btn-light border-0 shadow-sm ms-2 rounded-circle" title="Clear search">
-                                    <i class="bi bi-x-lg"></i>
-                                </a>
-                            }
-                        </div>
-                    </form>
+<div class="container py-4">
+    <!-- Simple Header -->
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-6">
+            <h2 class="mb-0"><i class="bi bi-people"></i> @ViewData["Title"]</h2>
+            <p class="text-muted small mb-0">Manage processing clients and documentation progress</p>
+        </div>
+        <div class="col-md-6 text-md-end mt-3 mt-md-0">
+            <!-- Optional: Add buttons here if needed -->
+        </div>
+    </div>
 
-                    <div class="dropdown">
-                        <button class="btn btn-white shadow-sm border-0 px-3 py-2 dropdown-toggle d-flex align-items-center gap-2 rounded-3" 
-                                type="button" id="sortDropdown" data-bs-toggle="dropdown">
-                            <i class="bi bi-sort-down text-primary"></i>
-                            <span class="fw-semibold">Sort By</span>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-2 p-2 rounded-3">
-                            <li><a class="dropdown-item rounded-2 py-2" asp-action="Index" asp-route-sortOrder="" asp-route-searchString="@ViewData["CurrentFilter"]">
-                                <i class="bi bi-alphabet me-2"></i>Name (A-Z)</a></li>
-                            <li><a class="dropdown-item rounded-2 py-2" asp-action="Index" asp-route-sortOrder="@Model.NameSortParm" asp-route-searchString="@ViewData["CurrentFilter"]">
-                                <i class="bi bi-alphabet-reverse me-2"></i>Name (Z-A)</a></li>
-                            <li><a class="dropdown-item rounded-2 py-2" asp-action="Index" asp-route-sortOrder="Date" asp-route-searchString="@ViewData["CurrentFilter"]">
-                                <i class="bi bi-calendar-check me-2"></i>Date (Oldest)</a></li>
-                            <li><a class="dropdown-item rounded-2 py-2" asp-action="Index" asp-route-sortOrder="@Model.DateSortParm" asp-route-searchString="@ViewData["CurrentFilter"]">
-                                <i class="bi bi-calendar-event me-2"></i>Date (Newest)</a></li>
-                        </ul>
-                    </div>
-                </div>
+    <!-- Simple Search & Filters -->
+    <div class="row mb-3 g-2">
+        <div class="col-md-6">
+            <form asp-action="Index" method="get" class="d-flex gap-2">
+                <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" 
+                       class="form-control" placeholder="Search tracking #, name..." />
+                @if (!String.IsNullOrEmpty(ViewData["CurrentFilter"] as string))
+                {
+                    <a asp-action="Index" class="btn btn-outline-secondary" title="Clear">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                }
+                <button type="submit" class="btn btn-dark"><i class="bi bi-search"></i></button>
+            </form>
+        </div>
+        <div class="col-md-6 d-flex justify-content-md-end gap-2">
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-sort-down"></i> Sort By
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" asp-action="Index" asp-route-sortOrder="" asp-route-searchString="@ViewData["CurrentFilter"]">Name (A-Z)</a></li>
+                    <li><a class="dropdown-item" asp-action="Index" asp-route-sortOrder="@Model.NameSortParm" asp-route-searchString="@ViewData["CurrentFilter"]">Name (Z-A)</a></li>
+                    <li><a class="dropdown-item" asp-action="Index" asp-route-sortOrder="Date" asp-route-searchString="@ViewData["CurrentFilter"]">Date (Oldest)</a></li>
+                    <li><a class="dropdown-item" asp-action="Index" asp-route-sortOrder="@Model.DateSortParm" asp-route-searchString="@ViewData["CurrentFilter"]">Date (Newest)</a></li>
+                </ul>
             </div>
         </div>
     </div>
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success alert-dismissible border-0 shadow-sm fade show mb-4 rounded-3 d-flex align-items-center" role="alert">
-            <div class="bg-success text-white p-2 rounded-circle me-3">
-                <i class="bi bi-check-lg"></i>
+        <div class="alert alert-success alert-dismissible fade show mb-4 shadow-sm border-0 border-start border-4 border-success" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-check-circle-fill text-success fs-4 me-3"></i>
+                <div>@TempData["SuccessMessage"]</div>
             </div>
-            <div>@TempData["SuccessMessage"]</div>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
 
-    <!-- Tabbed Dashboard -->
-    <div class="dashboard-card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
-        <div class="card-header bg-white border-bottom-0 pt-4 px-4">
-            <ul class="nav nav-pills custom-tabs mb-0" id="ccDashboardTabs" role="tablist">
+    <!-- Simple Tabbed Dashboard -->
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden mb-5">
+        <div class="card-header bg-light border-bottom">
+            <ul class="nav nav-tabs card-header-tabs" id="ccDashboardTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active px-4 py-3 fw-bold d-flex align-items-center gap-2" 
-                            id="liaison-tab" data-bs-toggle="tab" data-bs-target="#liaison" type="button" role="tab">
-                        <i class="bi bi-person-check fs-5"></i>
-                        <span>Liaison Clients</span>
-                        <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary ms-2">@Model.LiaisonClients.TotalCount</span>
+                    <button class="nav-link active fw-bold" id="liaison-tab" data-bs-toggle="tab" data-bs-target="#liaison" type="button" role="tab">
+                        <i class="bi bi-person-check me-1"></i> Processing
+                        <small class="badge bg-secondary ms-1">@Model.LiaisonClients.TotalCount</small>
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link px-4 py-3 fw-bold d-flex align-items-center gap-2" 
-                            id="sent-tab" data-bs-toggle="tab" data-bs-target="#sent" type="button" role="tab">
-                        <i class="bi bi-send-check fs-5"></i>
-                        <span>Sent / Completed</span>
-                        <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary ms-2">@Model.CompletedClients.TotalCount</span>
+                    <button class="nav-link fw-bold" id="sent-tab" data-bs-toggle="tab" data-bs-target="#sent" type="button" role="tab">
+                        <i class="bi bi-send-check me-1"></i> Sent / Completed
+                        <small class="badge bg-secondary ms-1">@Model.CompletedClients.TotalCount</small>
                     </button>
                 </li>
             </ul>
         </div>
 
-        <div class="tab-content p-0" id="ccDashboardTabsContent">
+        <div class="tab-content" id="ccDashboardTabsContent">
             <!-- Liaison Clients Tab -->
-            <div class="tab-pane fade show active" id="liaison" role="tabpanel" aria-labelledby="liaison-tab">
+            <div class="tab-pane fade show active" id="liaison" role="tabpanel">
                 @if (Model.LiaisonClients.Any())
                 {
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0 custom-table">
-                            <thead class="bg-light">
+                        <table class="table table-striped table-hover align-middle mb-0">
+                            <thead class="table-dark">
                                 <tr>
-                                    <th class="ps-4">Client Information</th>
-                                    <th>Status Details</th>
+                                    <th class="ps-3">Tracking #</th>
+                                    <th>Client Name</th>
+                                    <th>Project Type</th>
+                                    <th>Status</th>
+                                    <th>Progress</th>
                                     <th>Urgency</th>
-                                    <th class="text-center pe-4">Actions</th>
+                                    <th class="text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach (var item in Model.LiaisonClients)
                                 {
                                     <tr>
-                                        <td class="ps-4 py-3">
-                                            <div class="d-flex align-items-center">
-                                                <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-                                                    <span class="fw-bold">@item.ClientName.Substring(0, 1).ToUpper()</span>
-                                                </div>
-                                                <div>
-                                                    <h6 class="fw-bold mb-0">@item.ClientName</h6>
-                                                    <div class="d-flex align-items-center gap-2 mt-1">
-                                                        <span class="text-muted small">@item.TrackingNumber</span>
-                                                        <span class="bullet"></span>
-                                                        <span class="text-muted small">@item.TypeOfProject</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
+                                        <td class="ps-3 text-monospace fw-bold">@item.TrackingNumber</td>
+                                        <td>@item.ClientName</td>
+                                        <td>@item.TypeOfProject</td>
                                         <td>
-                                            <div class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2 border-0">
-                                                <i class="bi bi-clock-history me-1"></i> @item.SubStatus
+                                            <span class="badge bg-info">@item.SubStatus</span>
+                                            <div class="text-muted small mt-1">Joined @item.CreatedDate.ToString("MMM dd, yyyy")</div>
+                                        </td>
+                                        <td style="min-width: 120px;">
+                                            @{
+                                                var reqList = Model.RequirementsByClient != null && Model.RequirementsByClient.ContainsKey(item.Id) ? Model.RequirementsByClient[item.Id] : new List<PermitRequirementModel>();
+                                                var totalReq = reqList.Count;
+                                                var completedReq = reqList.Count(r => r.IsCompleted);
+                                                var progressValue = totalReq > 0 ? (int)((double)completedReq / totalReq * 100) : 0;
+                                            }
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <small class="text-muted small">@completedReq/@totalReq</small>
+                                                <small class="text-primary fw-bold small">@progressValue%</small>
                                             </div>
-                                            <div class="text-muted small mt-1 ps-1">
-                                                Joined @item.CreatedDate.ToString("MMM dd, yyyy")
+                                            <div class="progress" style="height: 5px;">
+                                                <div class="progress-bar @(progressValue == 100 ? "bg-success" : "bg-primary")" 
+                                                     role="progressbar" style="width: @progressValue%"></div>
                                             </div>
                                         </td>
                                         <td>
                                             @{
-                                                var urgencyClass = item.UrgencyLevel == "High" ? "danger" : (item.UrgencyLevel == "Medium" ? "warning" : "info");
+                                                var urgencyClass = item.UrgencyLevel == "High" ? "danger" : (item.UrgencyLevel == "Medium" ? "warning text-dark" : "info");
                                             }
-                                            <span class="badge bg-@urgencyClass bg-opacity-10 text-@urgencyClass border border-@urgencyClass border-opacity-25 px-3 py-2 rounded-pill">
-                                                @item.UrgencyLevel
-                                            </span>
+                                            <span class="badge bg-@urgencyClass">@item.UrgencyLevel</span>
                                         </td>
-                                        <td class="text-center pe-4">
-                                            <div class="btn-group shadow-sm rounded-pill overflow-hidden">
-                                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-white btn-sm border-0 px-3 py-2" title="Inspect">
-                                                    <i class="bi bi-eye text-primary"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-white btn-sm border-0 px-3 py-2" 
-                                                        data-bs-toggle="modal" data-bs-target="#sendToDocModal" 
-                                                        data-client-id="@item.Id" data-client-name="@item.ClientName" title="Send to Documentation">
-                                                    <i class="bi bi-send text-success"></i>
-                                                </button>
-                                                <button type="button" class="btn btn-white btn-sm border-0 px-3 py-2" 
-                                                        data-bs-toggle="modal" data-bs-target="#returnToPlanningModal" 
-                                                        data-client-id="@item.Id" data-client-name="@item.ClientName" title="Return to Planning">
-                                                    <i class="bi bi-arrow-left text-warning"></i>
-                                                </button>
-                                            </div>
+                                        <td class="text-center">
+                                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary rounded-pill px-4" title="Details">
+                                                <i class="bi bi-eye-fill me-1"></i> View
+                                            </a>
                                         </td>
                                     </tr>
                                 }
@@ -169,43 +140,27 @@
                 }
                 else
                 {
-                    <div class="empty-state text-center py-5">
-                        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 100px; height: 100px;">
-                            <i class="bi bi-person-check fs-1 text-muted"></i>
-                        </div>
-                        <h4 class="fw-bold">No clients in Liaison</h4>
-                        <p class="text-muted mb-0">Clients you need to handle will appear here.</p>
+                    <div class="text-center py-5">
+                        <i class="bi bi-person-check fs-1 text-muted"></i>
+                        <h4 class="mt-3">No clients in Processing</h4>
+                        <p class="text-muted">Clients you need to handle will appear here.</p>
                     </div>
                 }
 
                 @if (Model.LiaisonClients.TotalPages > 1)
                 {
-                    <div class="card-footer bg-white border-0 py-4 px-4 d-flex justify-content-between align-items-center">
-                        <div class="text-muted small">Showing page @Model.LiaisonClients.PageIndex of @Model.LiaisonClients.TotalPages</div>
-                        <nav aria-label="Liaison page navigation">
+                    <div class="card-footer bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                        <div class="text-muted small">Page @Model.LiaisonClients.PageIndex of @Model.LiaisonClients.TotalPages</div>
+                        <nav>
                             <ul class="pagination pagination-sm mb-0">
                                 @if (Model.LiaisonClients.HasPreviousPage)
                                 {
-                                    <li class="page-item">
-                                        <a class="page-link rounded-circle border-0 shadow-sm mx-1" asp-action="Index" 
-                                           asp-route-liaisonPageNumber="@(Model.LiaisonClients.PageIndex - 1)" 
-                                           asp-route-sortOrder="@ViewData["CurrentSort"]" 
-                                           asp-route-searchString="@ViewData["CurrentFilter"]">
-                                            <i class="bi bi-chevron-left"></i>
-                                        </a>
-                                    </li>
+                                    <li class="page-item"><a class="page-link shadow-sm" asp-action="Index" asp-route-liaisonPageNumber="@(Model.LiaisonClients.PageIndex - 1)" asp-route-sortOrder="@ViewData["CurrentSort"]" asp-route-searchString="@ViewData["CurrentFilter"]"><i class="bi bi-chevron-left"></i></a></li>
                                 }
-                                <li class="page-item active"><span class="page-link rounded-circle border-0 shadow-sm mx-1">@Model.LiaisonClients.PageIndex</span></li>
+                                <li class="page-item active"><span class="page-link shadow-sm">@Model.LiaisonClients.PageIndex</span></li>
                                 @if (Model.LiaisonClients.HasNextPage)
                                 {
-                                    <li class="page-item">
-                                        <a class="page-link rounded-circle border-0 shadow-sm mx-1" asp-action="Index" 
-                                           asp-route-liaisonPageNumber="@(Model.LiaisonClients.PageIndex + 1)" 
-                                           asp-route-sortOrder="@ViewData["CurrentSort"]" 
-                                           asp-route-searchString="@ViewData["CurrentFilter"]">
-                                            <i class="bi bi-chevron-right"></i>
-                                        </a>
-                                    </li>
+                                    <li class="page-item"><a class="page-link shadow-sm" asp-action="Index" asp-route-liaisonPageNumber="@(Model.LiaisonClients.PageIndex + 1)" asp-route-sortOrder="@ViewData["CurrentSort"]" asp-route-searchString="@ViewData["CurrentFilter"]"><i class="bi bi-chevron-right"></i></a></li>
                                 }
                             </ul>
                         </nav>
@@ -214,43 +169,33 @@
             </div>
 
             <!-- Sent / Completed Tab -->
-            <div class="tab-pane fade" id="sent" role="tabpanel" aria-labelledby="sent-tab">
+            <div class="tab-pane fade" id="sent" role="tabpanel">
                 @if (Model.CompletedClients.Any())
                 {
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0 custom-table">
-                            <thead class="bg-light">
+                        <table class="table table-striped table-hover align-middle mb-0">
+                            <thead class="table-dark">
                                 <tr>
-                                    <th class="ps-4">Client Information</th>
+                                    <th class="ps-3">Tracking #</th>
+                                    <th>Client Name</th>
+                                    <th>Project Type</th>
                                     <th>Status</th>
-                                    <th>Tracking #</th>
-                                    <th class="text-center pe-4">Actions</th>
+                                    <th class="text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach (var item in Model.CompletedClients)
                                 {
                                     <tr>
-                                        <td class="ps-4 py-3">
-                                            <div class="d-flex align-items-center">
-                                                <div class="avatar bg-secondary bg-opacity-10 text-secondary rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-                                                    <span class="fw-bold">@item.ClientName.Substring(0, 1).ToUpper()</span>
-                                                </div>
-                                                <div>
-                                                    <h6 class="fw-bold mb-0">@item.ClientName</h6>
-                                                    <span class="text-muted small">@item.TypeOfProject</span>
-                                                </div>
-                                            </div>
-                                        </td>
+                                        <td class="ps-3 text-monospace fw-bold">@item.TrackingNumber</td>
+                                        <td>@item.ClientName</td>
+                                        <td>@item.TypeOfProject</td>
                                         <td>
-                                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">
+                                            <span class="badge bg-success">
                                                 <i class="bi bi-check-circle-fill me-1"></i> @item.Status
                                             </span>
                                         </td>
-                                        <td>
-                                            <code class="bg-light px-2 py-1 rounded text-dark">@item.TrackingNumber</code>
-                                        </td>
-                                        <td class="text-center pe-4">
+                                        <td class="text-center">
                                             <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm rounded-pill px-3">
                                                 <i class="bi bi-journal-text me-1"></i> View History
                                             </a>
@@ -263,43 +208,27 @@
                 }
                 else
                 {
-                    <div class="empty-state text-center py-5">
-                        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 100px; height: 100px;">
-                            <i class="bi bi-send-check fs-1 text-muted"></i>
-                        </div>
-                        <h4 class="fw-bold">No Sent / Completed Clients</h4>
-                        <p class="text-muted mb-0">Clients you've processed will show up here.</p>
+                    <div class="text-center py-5">
+                        <i class="bi bi-send-check fs-1 text-muted"></i>
+                        <h4 class="mt-3">No Sent / Completed Clients</h4>
+                        <p class="text-muted">Clients you've processed will show up here.</p>
                     </div>
                 }
 
                 @if (Model.CompletedClients.TotalPages > 1)
                 {
-                    <div class="card-footer bg-white border-0 py-4 px-4 d-flex justify-content-between align-items-center">
-                        <div class="text-muted small">Showing page @Model.CompletedClients.PageIndex of @Model.CompletedClients.TotalPages</div>
-                        <nav aria-label="Completed page navigation">
+                    <div class="card-footer bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                        <div class="text-muted small">Page @Model.CompletedClients.PageIndex of @Model.CompletedClients.TotalPages</div>
+                        <nav>
                             <ul class="pagination pagination-sm mb-0">
                                 @if (Model.CompletedClients.HasPreviousPage)
                                 {
-                                    <li class="page-item">
-                                        <a class="page-link rounded-circle border-0 shadow-sm mx-1" asp-action="Index" 
-                                           asp-route-completedPageNumber="@(Model.CompletedClients.PageIndex - 1)" 
-                                           asp-route-sortOrder="@ViewData["CurrentSort"]" 
-                                           asp-route-searchString="@ViewData["CurrentFilter"]">
-                                            <i class="bi bi-chevron-left"></i>
-                                        </a>
-                                    </li>
+                                    <li class="page-item"><a class="page-link shadow-sm" asp-action="Index" asp-route-completedPageNumber="@(Model.CompletedClients.PageIndex - 1)" asp-route-sortOrder="@ViewData["CurrentSort"]" asp-route-searchString="@ViewData["CurrentFilter"]"><i class="bi bi-chevron-left"></i></a></li>
                                 }
-                                <li class="page-item active"><span class="page-link rounded-circle border-0 shadow-sm mx-1">@Model.CompletedClients.PageIndex</span></li>
+                                <li class="page-item active"><span class="page-link shadow-sm">@Model.CompletedClients.PageIndex</span></li>
                                 @if (Model.CompletedClients.HasNextPage)
                                 {
-                                    <li class="page-item">
-                                        <a class="page-link rounded-circle border-0 shadow-sm mx-1" asp-action="Index" 
-                                           asp-route-completedPageNumber="@(Model.CompletedClients.PageIndex + 1)" 
-                                           asp-route-sortOrder="@ViewData["CurrentSort"]" 
-                                           asp-route-searchString="@ViewData["CurrentFilter"]">
-                                            <i class="bi bi-chevron-right"></i>
-                                        </a>
-                                    </li>
+                                    <li class="page-item"><a class="page-link shadow-sm" asp-action="Index" asp-route-completedPageNumber="@(Model.CompletedClients.PageIndex + 1)" asp-route-sortOrder="@ViewData["CurrentSort"]" asp-route-searchString="@ViewData["CurrentFilter"]"><i class="bi bi-chevron-right"></i></a></li>
                                 }
                             </ul>
                         </nav>
@@ -309,93 +238,9 @@
         </div>
     </div>
 </div>
-
-<!-- Modals (maintained from original but restyled) -->
-<div class="modal fade" id="sendToDocModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg rounded-4">
-            <div class="modal-header border-0 pb-0 ps-4 pt-4">
-                <h5 class="modal-title fw-bold">Send to Documentation</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-4">
-                <div class="client-brief mb-4 p-3 bg-light rounded-3 d-flex align-items-center">
-                    <div class="avatar bg-primary text-white rounded-3 p-2 me-3">
-                        <i class="bi bi-person-fill"></i>
-                    </div>
-                    <div>
-                        <div class="text-muted small">Proceeding for:</div>
-                        <strong id="stdClientName" class="fs-5 text-dark"></strong>
-                    </div>
-                </div>
-
-                <div id="stdAlert" class="alert alert-warning border-0 rounded-3 d-none mb-4 animate__animated animate__shakeX">
-                    <div class="d-flex">
-                        <i class="bi bi-exclamation-triangle-fill fs-4 me-3 text-warning"></i>
-                        <div>
-                            <div class="fw-bold">Prerequisites Missing</div>
-                            <div class="small">All required requirements must have at least one file uploaded before proceeding.</div>
-                        </div>
-                    </div>
-                </div>
-
-                <h6 class="fw-bold mb-3 d-flex align-items-center">
-                    <i class="bi bi-journal-check me-2 text-primary"></i> Requirement Status
-                </h6>
-                <ul id="stdRequirements" class="list-group list-group-flush mb-4 rounded-3 border"></ul>
-                
-                <div class="mt-4 text-start mb-4">
-                    <label for="assignedUserId" class="form-label fw-bold text-dark"><i class="bi bi-person-badge me-2"></i>Assign to Document Officer (Optional)</label>
-                    <select class="form-select assign-do-select" id="assignedUserId" name="assignedUserId" form="stdForm">
-                        <option value="">-- Unassigned (Available to all Document Officers) --</option>
-                    </select>
-                </div>
-                
-                <div class="d-grid mt-2">
-                    <button type="button" class="btn btn-outline-info rounded-pill py-2" id="stdViewFilesBtn">
-                        <i class="bi bi-folder2-open me-2"></i> Open Details to Upload Files
-                    </button>
-                </div>
-            </div>
-            <div class="modal-footer border-0 p-4 pt-0">
-                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                <form id="stdForm" method="post">
-                    <button id="stdConfirmBtn" type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm" disabled>
-                        <i class="bi bi-send-fill me-2"></i> Confirm & Proceed
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
 </div>
 
-<div class="modal fade" id="returnToPlanningModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg rounded-4">
-            <div class="modal-header border-0 pb-0 ps-4 pt-4 text-warning">
-                <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-octagon-fill me-2"></i> Confirm Return</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-4 text-center">
-                <div class="mb-4">
-                    <div class="bg-warning bg-opacity-10 text-warning d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 80px; height: 80px;">
-                        <i class="bi bi-arrow-counterclockwise fs-1"></i>
-                    </div>
-                </div>
-                <h5 class="fw-bold text-dark">Return to Planning Officer?</h5>
-                <p class="text-muted px-3">Are you sure you want to return <strong id="rtpClientName"></strong> to the Planning stage? This will move the client back to their pending list.</p>
-            </div>
-            <div class="modal-footer border-0 p-4 pt-0 justify-content-center">
-                <button type="button" class="btn btn-light rounded-pill px-4 m-1" data-bs-dismiss="modal">Cancel</button>
-                <form id="rtpForm" method="post" class="m-1">
-                    <button type="submit" class="btn btn-warning rounded-pill px-4 shadow-sm text-dark fw-bold">
-                        Confirm Return
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Modals removal (Centralized in Details view) -->
 
 <audio id="notifySound" src="/sounds/Notifications.wav" preload="auto"></audio>
 
@@ -431,101 +276,11 @@
                 });
             });
 
-            // Send to Documentation Modal Logic
-            var stdModal = document.getElementById('sendToDocModal');
-            stdModal.addEventListener('show.bs.modal', function (event) {
-                var button = event.relatedTarget;
-                var clientId = button.getAttribute('data-client-id');
-                var clientName = button.getAttribute('data-client-name');
-                stdModal.querySelector('#stdClientName').textContent = clientName;
-                var listEl = stdModal.querySelector('#stdRequirements');
-                var alertEl = stdModal.querySelector('#stdAlert');
-                var confirmBtn = stdModal.querySelector('#stdConfirmBtn');
-                var form = stdModal.querySelector('#stdForm');
-                
-                listEl.innerHTML = '<li class="list-group-item text-center p-4"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Loading...</li>';
-                alertEl.classList.add('d-none');
-                confirmBtn.disabled = true;
-                form.action = '/CustomerCare/ProceedToDocumentOfficer/' + clientId;
-                
-                // View Files button
-                var viewBtn = stdModal.querySelector('#stdViewFilesBtn');
-                viewBtn.onclick = function(){
-                   window.location.href = '/CustomerCare/Details/' + clientId;
-                };
-
-                // Populate assigned Document Officer dropdown
-                var select = stdModal.querySelector('.assign-do-select');
-                if (select && select.options.length <= 1) { // Only fetch if not already loaded
-                    fetch('@Url.Action("GetDocumentOfficerUsers", "CustomerCare")')
-                        .then(r => r.json())
-                        .then(users => {
-                            users.forEach(u => {
-                                var opt = document.createElement('option');
-                                opt.value = u.id;
-                                opt.textContent = u.name;
-                                select.appendChild(opt);
-                            });
-                        })
-                        .catch(err => console.error('Failed to load Document Officer users', err));
-                }
-
-                fetch('/CustomerCare/GetRequirementSummary?id=' + clientId, { cache: 'no-store' })
-                    .then(r => r.json())
-                    .then(data => {
-                        listEl.innerHTML = '';
-                        var items = data.items || [];
-                        var hasMissing = false;
-                        items.forEach(it => {
-                            var li = document.createElement('li');
-                            li.className = 'list-group-item d-flex justify-content-between align-items-center py-2 px-0 border-0 border-bottom';
-                            
-                            const iconClass = it.files > 0 ? 'bi-check-circle-fill text-success' : (it.isRequired ? 'bi-exclamation-circle-fill text-danger' : 'bi-circle text-muted');
-                            
-                            li.innerHTML = `
-                                <div class="d-flex align-items-center">
-                                    <i class="bi ${iconClass} me-2 fs-5"></i>
-                                    <div>
-                                        <div class="fw-medium small">${it.requirementName}</div>
-                                        ${it.isRequired ? '<span class="badge bg-danger bg-opacity-10 text-danger" style="font-size: 0.6rem;">REQUIRED</span>' : ''}
-                                    </div>
-                                </div>
-                                <span class="badge ${it.files > 0 ? 'bg-success bg-opacity-10 text-success' : 'bg-light text-muted'} rounded-pill">
-                                    ${it.files} files
-                                </span>
-                            `;
-                            listEl.appendChild(li);
-                            if (it.isRequired && (!it.files || it.files === 0)) hasMissing = true;
-                        });
-
-                        if (items.length === 0) {
-                            listEl.innerHTML = '<li class="list-group-item text-muted text-center p-3 border-0">No requirements defined.</li>';
-                        }
-
-                        if (hasMissing) {
-                            alertEl.classList.remove('d-none');
-                            confirmBtn.disabled = true;
-                            confirmBtn.innerHTML = '<i class="bi bi-lock-fill me-2"></i> Requirements Required';
-                        } else {
-                            alertEl.classList.add('d-none');
-                            confirmBtn.disabled = false;
-                            confirmBtn.innerHTML = '<i class="bi bi-send-fill me-2"></i> Confirm & Proceed';
-                        }
-                    })
-                    .catch(() => {
-                        listEl.innerHTML = '<li class="list-group-item text-danger text-center p-3">Failed to load requirements.</li>';
-                        confirmBtn.disabled = true;
-                    });
-            });
-
-            // Return to Planning Modal Logic
-            var rtpModal = document.getElementById('returnToPlanningModal');
-            rtpModal.addEventListener('show.bs.modal', function (event) {
-                var button = event.relatedTarget;
-                var clientId = button.getAttribute('data-client-id');
-                var clientName = button.getAttribute('data-client-name');
-                rtpModal.querySelector('#rtpClientName').textContent = clientName;
-                rtpModal.querySelector('#rtpForm').action = '/CustomerCare/ReturnToPlanning/' + clientId;
+            // Save tab state
+            tabs.forEach(tab => {
+                tab.addEventListener('shown.bs.tab', (e) => {
+                    localStorage.setItem(activeTabKey, e.target.id);
+                });
             });
             
             // SignalR Update Handling

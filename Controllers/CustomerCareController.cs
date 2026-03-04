@@ -100,6 +100,20 @@ namespace TestingDemo.Controllers
                 DateSortParm = ViewData["DateSortParm"]?.ToString()
             };
 
+            // Get requirements for all clients in both lists
+            var liaisonClients = viewModel.LiaisonClients;
+            var completedClients = viewModel.CompletedClients;
+            var allClientIds = liaisonClients.Select(c => c.Id).Concat(completedClients.Select(c => c.Id)).ToList();
+            
+            var requirements = await _context.PermitRequirements
+                .Where(r => allClientIds.Contains(r.ClientId))
+                .Include(r => r.Photos)
+                .ToListAsync();
+
+            viewModel.RequirementsByClient = requirements
+                .GroupBy(r => r.ClientId)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
             return View(viewModel);
         }
 

@@ -9,5 +9,6 @@ namespace TestingDemo.ViewModels
         public string CurrentSort { get; set; }
         public string NameSortParm { get; set; }
         public string DateSortParm { get; set; }
+        public System.Collections.Generic.IDictionary<int, System.Collections.Generic.List<PermitRequirementModel>> RequirementsByClient { get; set; }
     }
 }

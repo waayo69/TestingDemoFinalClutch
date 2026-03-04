@@ -28,51 +28,30 @@
                         <i class="bi bi-house-door"></i><span> Home</span>
                     </a>
                 </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle text-white" href="#" id="usersDropdown" role="button"
-                       data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-people"></i> Users
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Admin" asp-action="Users">
+                        <i class="bi bi-people"></i><span> Manage Users</span>
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="usersDropdown">
-                        <li>
-                            <a class="dropdown-item" asp-controller="Admin" asp-action="Users">
-                                <i class="bi bi-people"></i> Manage Users
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" asp-controller="Admin" asp-action="PendingApprovals">
-                                <i class="bi bi-person-check"></i> Pending Approvals
-                            </a>
-                        </li>
-                    </ul>
                 </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle text-white" href="#" id="departmentsDropdown"
-                       role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-building"></i> Departments
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Finance" asp-action="Index">
+                        <i class="bi bi-cash-coin"></i><span> Finance</span>
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="departmentsDropdown">
-                        <li>
-                            <a class="dropdown-item" asp-controller="Finance" asp-action="Index">
-                                <i class="bi bi-cash-coin"></i> Finance
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" asp-controller="PlanningOfficer" asp-action="Index">
-                                <i class="bi bi-clipboard-check"></i> Planning Officer
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" asp-controller="CustomerCare" asp-action="Index">
-                                <i class="bi bi-person-badge"></i> Customer Care
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" asp-controller="DocumentOfficer" asp-action="Index">
-                                <i class="bi bi-folder-check"></i> Document Officer
-                            </a>
-                        </li>
-                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="PlanningOfficer" asp-action="Index">
+                        <i class="bi bi-clipboard-check"></i><span> Planning Officer</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="CustomerCare" asp-action="Index">
+                        <i class="bi bi-chat-dots"></i><span> Customer Care</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="DocumentOfficer" asp-action="Index">
+                        <i class="bi bi-folder-check"></i><span> Documentation Officer</span>
+                    </a>
                 </li>
             }
             else if (User.Identity?.IsAuthenticated == true && User.IsInRole("Finance"))

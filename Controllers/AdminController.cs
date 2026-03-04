@@ -62,14 +62,17 @@ public class AdminController : Controller
                 return View();
             }
 
-            // Create new user with all required fields
+            // Calculate age server-side for accuracy
+            int calculatedAge = DateTime.Today.Year - birthDate.Year;
+            if (birthDate.Date > DateTime.Today.AddYears(-calculatedAge)) calculatedAge--;
+
             var user = new ApplicationUser
             {
                 UserName = email,
                 Email = email,
                 EmailConfirmed = true,
                 FullName = fullName,
-                Age = age,
+                Age = calculatedAge,
                 BirthDate = birthDate,
                 Address = address,
                 City = city,
@@ -183,8 +186,15 @@ public class AdminController : Controller
         if (user == null) return NotFound();
 
         user.FullName = model.FullName;
-        user.Age = model.Age;
         user.BirthDate = model.BirthDate;
+        
+        // Calculate age server-side
+        if (model.BirthDate.HasValue)
+        {
+            int calculatedAge = DateTime.Today.Year - model.BirthDate.Value.Year;
+            if (model.BirthDate.Value.Date > DateTime.Today.AddYears(-calculatedAge)) calculatedAge--;
+            user.Age = calculatedAge;
+        }
         user.Address = model.Address;
         user.City = model.City;
         user.State = model.State;
@@ -262,37 +272,6 @@ public class AdminController : Controller
         }
 
         return RedirectToAction("Users");
-    }
-
-    public async Task<IActionResult> PendingApprovals()
-    {
-        var users = await _userManager.Users.Where(u => !u.IsApproved).ToListAsync();
-        var userViewModels = new List<UserViewModel>();
-        foreach (var user in users)
-        {
-            var roles = await _userManager.GetRolesAsync(user);
-            userViewModels.Add(new UserViewModel
-            {
-                Id = user.Id,
-                Email = user.Email ?? string.Empty,
-                FullName = user.FullName ?? string.Empty,
-                Role = roles.FirstOrDefault() ?? "No Role"
-            });
-        }
-        return View(userViewModels);
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> ApproveUser(string id)
-    {
-        var user = await _userManager.FindByIdAsync(id);
-        if (user != null)
-        {
-            user.IsApproved = true;
-            await _userManager.UpdateAsync(user);
-            await _hubContext.Clients.All.SendAsync("ReceiveUpdate", "Admin data changed");
-        }
-        return RedirectToAction("PendingApprovals");
     }
 
     //Search Bar 

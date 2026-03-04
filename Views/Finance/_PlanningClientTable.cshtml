@@ -1,64 +1,49 @@
 @model TestingDemo.Models.PaginatedList<TestingDemo.Models.ClientModel>
 
 <div class="table-responsive">
-    <table class="table table-hover align-middle mb-0 custom-table">
-        <thead class="bg-light">
+    <table class="table table-striped table-hover align-middle mb-0">
+        <thead class="table-dark">
             <tr>
-                <th class="ps-4">Client</th>
-                <th>Project Details</th>
-                <th>Tracking #</th>
+                <th class="ps-3">Tracking #</th>
+                <th>Client Name</th>
+                <th>Project Type</th>
                 <th>Status</th>
-                <th class="text-center pe-4">Actions</th>
+                <th>Submitted</th>
+                <th class="text-center">Actions</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var item in Model)
             {
-                <tr class="@(item.UrgencyLevel == "Urgent" ? "table-danger table-opacity-10" : "")">
-                    <td class="ps-4 py-3">
-                        <div class="d-flex align-items-center">
-                            <div class="avatar bg-info bg-opacity-10 text-info rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-                                <span class="fw-bold">@item.ClientName.Substring(0, 1).ToUpper()</span>
-                            </div>
-                            <div>
-                                <h6 class="fw-bold mb-0">@item.ClientName</h6>
-                                <span class="text-muted small">@item.CreatedDate.ToShortDateString()</span>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="small fw-medium">@item.TypeOfProject</div>
-                        <div class="text-muted small">@item.ContactPersonNumber</div>
-                    </td>
-                    <td>
-                        <code class="text-primary fw-bold">@item.TrackingNumber</code>
-                    </td>
+                <tr>
+                    <td class="ps-3 text-monospace fw-bold">@item.TrackingNumber</td>
+                    <td>@item.ClientName</td>
+                    <td>@item.TypeOfProject</td>
                     <td>
                         @{
                             var statusBadgeClass = item.Status switch
                             {
                                 "Clearance" => "bg-warning text-dark",
-                                "Finance" => "bg-primary text-white",
-                                "Planning" => "bg-info text-white",
-                                "CustomerCare" => "bg-success text-white",
-                                "For Review" => "bg-danger text-white",
-                                _ => "bg-secondary text-white"
+                                "Finance" => "bg-primary",
+                                "Planning" => "bg-info",
+                                "CustomerCare" => "bg-success",
+                                "For Review" => "bg-danger",
+                                _ => "bg-secondary"
                             };
                         }
-                        <span class="badge @statusBadgeClass rounded-pill px-3 py-2 fw-medium">
-                            @item.Status
-                        </span>
+                        <span class="badge @statusBadgeClass">@item.Status</span>
                     </td>
-                    <td class="text-center pe-4">
-                        <div class="btn-group btn-group-sm rounded-pill overflow-hidden shadow-sm">
-                            <button type="button" class="btn btn-white border-0 px-3" title="View Details"
+                    <td>@item.CreatedDate.ToShortDateString()</td>
+                    <td class="text-center">
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-outline-primary" title="Details"
                                     data-bs-toggle="modal" data-bs-target="#clientModal-@item.Id">
-                                <i class="bi bi-eye text-primary"></i>
+                                <i class="bi bi-eye"></i>
                             </button>
-                            <button type="button" class="btn btn-white border-0 px-3" data-bs-toggle="modal"
+                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal"
                                     data-bs-target="#deleteModal" data-client-id="@item.Id" data-client-name="@item.ClientName"
                                     title="Delete">
-                                <i class="bi bi-trash text-danger"></i>
+                                <i class="bi bi-trash"></i>
                             </button>
                         </div>
                     </td>

@@ -22,33 +22,68 @@ namespace TestingDemo.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var clients = await _context.Clients.ToListAsync();
+            var model = await GetDashboardData();
+            return View(model);
+        }
 
-            var model = new TestingDemo.ViewModels.DashboardViewModel
-            {
-                LiaisonClients = clients.Where(c => c.Status == "Liaison").ToList(),
-                FinanceClients = clients.Where(c => c.Status == "Pending" || c.Status == "Finance" || c.Status == "Clearance").ToList(),
-                PlanningClients = clients.Where(c => c.Status == "Planning").ToList(),
-                ReceivedClients = clients.Where(c => c.Status == "CustomerCareReceived").ToList(),
-                DocumentationClients = clients.Where(c => c.Status == "DocumentOfficer").ToList()
-            };
-
+        public async Task<IActionResult> Monitor()
+        {
+            var model = await GetDashboardData();
             return View(model);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetLatestData()
         {
-            var clients = await _context.Clients.ToListAsync();
-            var model = new TestingDemo.ViewModels.DashboardViewModel
-            {
-                LiaisonClients = clients.Where(c => c.Status == "Liaison").ToList(),
-                FinanceClients = clients.Where(c => c.Status == "Pending" || c.Status == "Finance" || c.Status == "Clearance").ToList(),
-                PlanningClients = clients.Where(c => c.Status == "Planning").ToList(),
-                ReceivedClients = clients.Where(c => c.Status == "CustomerCareReceived").ToList(),
-                DocumentationClients = clients.Where(c => c.Status == "DocumentOfficer").ToList()
-            };
+            var model = await GetDashboardData();
             return Json(model);
+        }
+
+        private async Task<TestingDemo.ViewModels.DashboardViewModel> GetDashboardData()
+        {
+            var clients = await _context.Clients.ToListAsync();
+            var users = await _context.Users.ToListAsync();
+
+            string GetUserName(string? userId) => users.FirstOrDefault(u => u.Id == userId)?.FullName ?? (users.FirstOrDefault(u => u.Id == userId)?.UserName ?? "Unassigned");
+
+            var model = new TestingDemo.ViewModels.DashboardViewModel();
+
+            foreach (var client in clients)
+            {
+                var item = new TestingDemo.ViewModels.ClientQueueItem
+                {
+                    Client = client,
+                };
+
+                if (client.Status == "Liaison" || client.Status == "CustomerCare" || client.Status == "CustomerCareReceived")
+                {
+                    item.AssignedUserName = GetUserName(client.AssignedCustomerCareId);
+                    if (client.Status == "Liaison") model.LiaisonClients.Add(item);
+                    else model.ReceivedClients.Add(item);
+                }
+                else if (client.Status == "Pending" || client.Status == "Finance")
+                {
+                    item.AssignedUserName = GetUserName(client.AssignedFinanceId);
+                    model.FinanceClients.Add(item);
+                }
+                else if (client.Status == "Clearance" || (client.Status == "Archived" && client.SubStatus == "Ready for Claiming"))
+                {
+                    item.AssignedUserName = GetUserName(client.AssignedFinanceId);
+                    model.ClearanceClients.Add(item);
+                }
+                else if (client.Status == "Planning")
+                {
+                    item.AssignedUserName = GetUserName(client.AssignedPlanningOfficerId);
+                    model.PlanningClients.Add(item);
+                }
+                else if (client.Status == "DocumentOfficer")
+                {
+                    item.AssignedUserName = GetUserName(client.AssignedDocumentOfficerId);
+                    model.DocumentationClients.Add(item);
+                }
+            }
+
+            return model;
         }
 
         public IActionResult Privacy()

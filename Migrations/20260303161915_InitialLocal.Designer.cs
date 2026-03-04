@@ -12,8 +12,8 @@ using TestingDemo.Data;
 namespace TestingDemo.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251006053240_MultiPhotoSupportForRequirements")]
-    partial class MultiPhotoSupportForRequirements
+    [Migration("20260303161915_InitialLocal")]
+    partial class InitialLocal
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -313,6 +313,21 @@ namespace TestingDemo.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AssignedCustomerCareId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AssignedDocumentOfficerId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AssignedFinanceId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AssignedPlanningOfficerId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ClaimedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("ClientName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -377,7 +392,14 @@ namespace TestingDemo.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("SubStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("TaxId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TrackingMessage")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TrackingNumber")

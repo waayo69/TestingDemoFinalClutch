@@ -30,14 +30,14 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label asp-for="Age"><span class="text-danger">*</span> Age</label>
-                        <input asp-for="Age" type="number" class="form-control" min="1" max="120" required />
-                        <div class="invalid-feedback">Please enter a valid age between 1 and 120.</div>
+                        <input asp-for="Age" type="number" class="form-control" readonly required />
+                        <div class="invalid-feedback">Please enter a valid age.</div>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
                         <label asp-for="BirthDate"><span class="text-danger">*</span> Birth Date</label>
-                        <input asp-for="BirthDate" type="date" class="form-control"
+                        <input asp-for="BirthDate" type="date" class="form-control" id="birthDate"
                             max="@DateTime.Now.ToString("yyyy-MM-dd")" required />
                         <div class="invalid-feedback">Please enter a valid birth date.</div>
                     </div>
@@ -130,4 +130,30 @@
             }, false);
         });
     })();
+
+    // Age calculation logic
+    document.addEventListener('DOMContentLoaded', function () {
+        var birthDateInput = document.getElementById('birthDate');
+        var ageInput = document.querySelector('input[name="Age"]');
+
+        function calculateAge() {
+            if (!birthDateInput.value) return;
+            var birthDate = new Date(birthDateInput.value);
+            var today = new Date();
+            var age = today.getFullYear() - birthDate.getFullYear();
+            var m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            ageInput.value = isNaN(age) || age < 0 ? '' : age;
+        }
+
+        if (birthDateInput && ageInput) {
+            birthDateInput.addEventListener('change', calculateAge);
+            // Run on load if birthdate exists but age is 0 or empty
+            if (birthDateInput.value && (ageInput.value === '0' || !ageInput.value)) {
+                calculateAge();
+            }
+        }
+    });
 </script>

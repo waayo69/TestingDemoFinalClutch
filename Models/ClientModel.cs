@@ -11,11 +11,11 @@ namespace TestingDemo.Models
         [EmailAddress]
         public string Email { get; set; }
 
-        public string RequestingParty { get; set; }
-        public string RequestorName { get; set; }
+        public string? RequestingParty { get; set; }
+        public string? RequestorName { get; set; }
         public DateTime CreatedDate { get; set; } = DateTime.Now;
 
-        public string ClientType { get; set; }
+        public string? ClientType { get; set; }
 
         [Required(ErrorMessage = "Client Name is required")]
         [Display(Name = "Client Name")]
@@ -29,9 +29,9 @@ namespace TestingDemo.Models
         [Phone]
         public string ContactPersonNumber { get; set; }
 
-        public string ContactPersonEmailAddress { get; set; }
+        public string? ContactPersonEmailAddress { get; set; }
 
-        public string RegisteredCompanyName { get; set; }
+        public string? RegisteredCompanyName { get; set; }
         [Required(ErrorMessage = "Company Address is required")]
         [Display(Name = "CompanyAddress")]
         public string RegisteredCompanyAddress { get; set; }

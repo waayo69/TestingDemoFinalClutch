@@ -6,44 +6,37 @@
 @if (Model.Any())
 {
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0 custom-table">
-            <thead class="bg-light">
+        <table class="table table-striped table-hover align-middle mb-0">
+            <thead class="table-dark">
                 <tr>
-                    <th class="ps-4">Client</th>
-                    <th>Contact</th>
+                    <th class="ps-3">Client Name</th>
+                    <th>Contact Info</th>
                     <th>Permit Type</th>
                     <th>Tracking #</th>
                     @if (isArchived)
                     {
                         <th>Claimed Date</th>
                     }
-                    <th class="text-center pe-4">Actions</th>
+                    <th class="text-center">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var item in Model)
                 {
                     <tr>
-                        <td class="ps-4 py-3">
-                            <div class="d-flex align-items-center">
-                                <div class="avatar bg-@(isArchived ? "secondary" : "primary") bg-opacity-10 text-@(isArchived ? "secondary" : "primary") rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-                                    <span class="fw-bold">@item.ClientName.Substring(0, 1).ToUpper()</span>
-                                </div>
-                                <div>
-                                    <h6 class="fw-bold mb-0">@item.ClientName</h6>
-                                    <span class="text-muted small">@item.CreatedDate.ToShortDateString()</span>
-                                </div>
-                            </div>
+                        <td class="ps-3">
+                            <div class="fw-bold">@item.ClientName</div>
+                            <div class="text-muted small">Joined @item.CreatedDate.ToString("MMM dd, yyyy")</div>
                         </td>
                         <td>
                             <div class="small fw-medium">@item.ContactPersonNumber</div>
                             <div class="text-muted small">@item.Email</div>
                         </td>
                         <td>
-                            <span class="badge bg-light text-dark border rounded-pill px-3">@item.TypeOfProject</span>
+                            <span class="badge bg-info">@item.TypeOfProject</span>
                         </td>
                         <td>
-                            <code class="text-primary fw-bold">@item.TrackingNumber</code>
+                            <code class="text-dark fw-bold">@item.TrackingNumber</code>
                         </td>
                         @if (isArchived)
                         {
@@ -55,30 +48,30 @@
                                 }
                                 else
                                 {
-                                    <span class="badge bg-light text-muted border">To be claimed</span>
+                                    <span class="badge bg-secondary">To be claimed</span>
                                 }
                             </td>
                         }
-                        <td class="text-center pe-4">
-                            <div class="btn-group btn-group-sm rounded-pill overflow-hidden shadow-sm">
-                                <button type="button" class="btn btn-white border-0 px-3" data-bs-toggle="modal"
+                        <td class="text-center">
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-info" data-bs-toggle="modal"
                                         data-bs-target="#docClientModal-@item.Id" title="View Details">
-                                    <i class="bi bi-eye text-info"></i> View
+                                    <i class="bi bi-eye"></i> Details
                                 </button>
                                 @if (!isArchived)
                                 {
-                                    <button type="button" class="btn btn-white border-0 px-3 done-btn" data-client-id="@item.Id"
+                                    <button type="button" class="btn btn-outline-success done-btn" data-client-id="@item.Id"
                                             data-client-name="@item.ClientName" title="Done (Proceed to Finance)">
-                                        <i class="bi bi-check-circle text-success"></i> Done
+                                        <i class="bi bi-check-circle"></i> Done
                                     </button>
                                     <form asp-action="ProceedToFinance" asp-route-id="@item.Id" method="post"
                                           class="d-none" id="doneForm-@item.Id"></form>
                                     
                                     <form asp-action="ReturnToCustomerCare" asp-route-id="@item.Id" method="post" class="d-inline">
-                                        <button type="submit" class="btn btn-white border-0 px-3" 
+                                        <button type="submit" class="btn btn-outline-warning" 
                                                 onclick="return confirm('Return this client to Customer Care (Liaison)?');"
                                                 title="Return to Customer Care">
-                                            <i class="bi bi-arrow-counterclockwise text-warning"></i> Return
+                                            <i class="bi bi-arrow-counterclockwise"></i> Return
                                         </button>
                                     </form>
                                 }

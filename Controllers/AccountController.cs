@@ -44,11 +44,6 @@ public class AccountController : BaseController
         {
             var roles = await _userManager.GetRolesAsync(user);
             bool isAdmin = roles.Contains("Admin");
-            if (!isAdmin && !user.IsApproved)
-            {
-                ViewBag.Error = "Your account is pending admin approval. Please wait for approval.";
-                return View();
-            }
             var result = await _signInManager.PasswordSignInAsync(user, password, false, false);
             if (result.Succeeded)
             {
@@ -340,11 +335,6 @@ public class AccountController : BaseController
             ViewBag.Error = "No account found with that email.";
             return View();
         }
-        if (!user.IsApproved)
-        {
-            ViewBag.Error = "Your account is pending admin approval. You cannot reset your password until it is approved.";
-            return View();
-        }
         // Generate OTP
         var otp = new Random().Next(100000, 999999).ToString();
         HttpContext.Session.SetString("ResetPwOtp", otp);
@@ -465,9 +455,6 @@ public class AccountController : BaseController
             ModelState.AddModelError("", string.Join("; ", result.Errors.Select(e => e.Description)));
             return View();
         }
-        // Set IsApproved = false ONLY after password reset
-        user.IsApproved = false;
-        await _userManager.UpdateAsync(user);
         // Clear session
         HttpContext.Session.Remove("ResetPwOtp");
         HttpContext.Session.Remove("ResetPwEmail");
